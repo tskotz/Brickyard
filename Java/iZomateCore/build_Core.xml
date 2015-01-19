@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Mar 6, 2012 11:50:52 AM                                                        
+
+     project    
+     description
+                   
+     tskotz                                                                
+     ====================================================================== -->
+<project name="iZomateCore" default="main" basedir=".">
+	<!-- Sets variables which can later be used. -->
+	<!-- The value of a property is accessed via ${} -->
+	<property name="src.dir" location="." />
+	<property name="build.dir" location="..\tempIZCoreBin" />
+	<property name="dist.dir" location="..\Jars" />
+
+	<description>
+            iZomateCore build script
+    </description>
+
+	<!-- Sets the classpath -->
+	<path id="classpath">
+	        <fileset dir="${dist.dir}" includes=""/>
+	</path>
+
+    <!-- ================================= 
+          target: Main              
+         ================================= -->
+ 	<target name="main" depends="clean, makedir, compile, jar" description="Main target">
+	</target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: depends                      
+      - - - - - - - - - - - - - - - - - -->
+	
+	<!-- Deletes the existing build -->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete file="${dist.dir}\iZomateCore.jar" />
+	</target>
+
+	<!-- Creates the build and dist directories -->
+	<target name="makedir">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- Compiles the java code -->
+	<target name="compile">
+		<javac 	encoding="UTF-8" 
+				srcdir="${src.dir}" 
+				destdir="${build.dir}" 
+				classpathref="classpath" 
+				debug="true" 
+				debuglevel="lines,source"
+				target="1.6"
+				source="1.6"
+				includeAntRuntime="false"
+				>
+		</javac>
+	</target>
+
+	<!-- Creates the jar file  -->
+	<target name="jar">
+		<jar destfile="${dist.dir}\iZomateCore.jar" basedir="${build.dir}"></jar>
+	</target>
+
+</project>

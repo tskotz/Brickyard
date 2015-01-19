@@ -1,0 +1,62 @@
+<html>
+<head>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <style>
+	#table,th,td {
+	  border:1px solid black;
+	  border-collapse:collapse;
+	}
+	th,td {
+	padding:5px;
+	}
+	tr.dh th {
+		background-color: #222222; color: white;
+	}
+	tr.d0 td {
+		background-color: #FFFFFF; color: black;
+	}
+	tr.d1 td {
+		background-color: #CCCCCC; color: black;
+	}
+</style>
+  
+<SCRIPT TYPE="text/javascript">
+	function ApplyTestSelection( input )
+	{
+		alert( "To be implemented" );
+	}
+             
+	function ApplyFilter( )
+	{
+		alert( "To be implemented" );
+	}
+</SCRIPT>
+</head>
+<body>
+
+<!-- Insert Header -->
+
+<div id="SelectTestsPanelDiv" style="padding:10px; color:black; background-color:eeeeee; border:black 1px solid" >
+	<div id="TestCategoryDiv" >
+	<button type="button" onclick="ApplyFilter()">Filter</button>
+	<b>Action:</b>
+		<select id="TestsRoot" onchange="ApplyTestSelection({id:'TestsRoot'})" >
+		<option>Run</option>
+		<option>Delete</option>
+		</select>
+	</div>
+	<table id="JobTable" style="width:100%;table-layout:fixed;">
+		<tr class=dh>
+			<th style="width:15px;"></th>
+			<th style="xwidth:100px;">Job Info</th>
+			<th>Tests</th>
+		</tr>
+	</table>
+	</div>
+</div>
+
+</body>
+</html>

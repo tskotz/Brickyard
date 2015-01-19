@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Mar 6, 2012 11:50:52 AM                                                        
+
+     project    
+     description
+                   
+     tskotz                                                                
+     ====================================================================== -->
+<project name="AutomationToolbox" default="main" basedir=".">
+	<!-- Sets variables which can later be used. -->
+	<!-- The value of a property is accessed via ${} -->
+	<property name="src.dir" 	location="." />
+	<property name="build.dir" 	location="../tempToolboxBin" />
+	<property name="output.dir" location="../" />
+	<property name="dist.dir" 	location="../Jars" />
+
+	<description>
+            AutomationToolbox executable jar build script
+    </description>
+
+	<!-- Sets the build classpath -->
+	<path id="classpath">
+	        <fileset dir="${dist.dir}" includes="iZomateCore.jar"/>
+	        <fileset dir="${dist.dir}" includes="iZomateRemoteServer.jar"/>
+	        <fileset dir="${dist.dir}" includes="sigar/sigar.jar"/>
+        	<fileset dir="${dist.dir}" includes="jdom.jar"/>
+        	<fileset dir="${dist.dir}" includes="derby.jar"/>
+        	<fileset dir="${dist.dir}" includes="derbyclient.jar"/>
+	</path>
+
+    <!-- ================================= 
+          target: Main              
+         ================================= -->
+ 	<target name="main" depends="clean, makedir, compile, jar" description="Main target">
+	</target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: depends                      
+      - - - - - - - - - - - - - - - - - -->
+	
+	<!-- Deletes the existing build -->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete file="${output.dir}/AutomationToolbox.jar" />
+	</target>
+
+	<!-- Creates the build and dist directories -->
+	<target name="makedir">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- Compiles the java code -->
+	<target name="compile">	
+		<javac encoding="UTF-8" srcdir="${src.dir}" destdir="${build.dir}" classpathref="classpath" debug="true" debuglevel="lines,source"></javac>
+	</target>
+
+	<!-- Creates the jar file  -->
+	<target name="jar">
+		<jar destfile="${output.dir}/AutomationToolbox.jar" basedir="${build.dir}">
+			<manifest>
+				<!-- Who is building this jar? -->
+	            <attribute name="Built-By" value="${user.name}" />
+	            <!-- Information about the program itself -->
+	            <attribute name="Implementation-Vendor" value="iZotope inc." />
+	            <attribute name="Implementation-Title" value="Automation Toolbox" />
+	            <attribute name="Implementation-Version" value="1.0.0" />
+	            <!-- this tells which class should run when executing your jar -->
+				<attribute name="Main-Class" value="AutomationToolbox.src.ToolboxWindow"/>
+				<attribute name="Class-Path" value="jars/iZomateCore.jar jars/iZomateRemoteServer.jar jars/jdom.jar jars/sigar/sigar.jar jars/sigar/log4j.jar jars/derby.jar jars/derbyclient.jar"/>
+			</manifest>
+		</jar>
+	</target>
+
+</project>

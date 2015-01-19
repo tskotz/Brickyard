@@ -1,0 +1,634 @@
+<html>
+<head>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <style>
+  #QueueTestsList { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+  #QueueTestsList li span { position: absolute; margin-left: -1.3em; }
+  </style>
+  
+  <SCRIPT TYPE="text/javascript">
+  	var gdependency_form_btn;
+  	var gdependency_form_strQueuedTestID;
+    $(  function() {
+            $( "#QueueTestsList" ).sortable();
+            $( "#QueueTestsList" ).disableSelection();
+        }
+    );
+
+	$(	function() {
+		var dialog, form ;
+
+	    function addDependency() {
+	    	dialog.dialog( "close" );
+	    	var strBtnColor= "#cccccc" //grey
+	    	var strDepndcy= "";
+	    			
+	    	if( document.getElementById( "dependencySelection" ).value != "--None--" ) {
+	    		strDepndcy= document.getElementById( "dependencySelection" ).value;
+	    		strBtnColor= "#ff0000"; //red
+    		}
+		   	
+			document.getElementById( gdependency_form_strQueuedTestID ).setAttribute( "dependency", strDepndcy );
+		    gdependency_form_btn.style.color= strBtnColor	    	
+		}
+
+	    dialog = $( "#dependency-form" ).dialog({
+	        autoOpen: false,
+	        height: 240,
+	        width: 500,
+	        modal: true,
+	        buttons: {
+	          "OK": addDependency,
+	          Cancel: function() { dialog.dialog( "close" ); }
+	        }
+	      });	      
+		}
+	);
+	
+    function EditTestbedMenuSelection()
+    {
+    	var testbedsMenu= document.getElementById( "Testbeds" );
+    	var strTestbed= testbedsMenu.options[testbedsMenu.selectedIndex].text
+    	EditTestbedWindow = window.open('', 'Testbed Editor', 'toolbar=0,location=0,menubar=0,status=0,width=400,height=150');
+    	EditTestbedWindow.document.write( '<htlm><title>Testbed Editor</title>' + 
+    				'<body>Enter new testbed name or IP:<br>' +
+    				'<input type="text" id="newTestbedName" size="50" value="' + strTestbed + '" >' +
+					'<br><button type="button" onclick="window.close()">Cancel</button>&nbsp&nbsp&nbsp' +
+    				'<button TYPE="submit" onclick="window.opener.UpdateTestbed(\'save\')">Save</button>' +
+    				'<button TYPE="submit" onclick="window.opener.UpdateTestbed(\'remove\')">Remove</button>' +
+    			  '</body></html>' );
+    }
+         
+    function UpdateTestbed( strSaveOrRemove )
+    {
+    	EditTestbedWindow.window.close();
+    	
+    	var testbedsMenu= document.getElementById( "Testbeds" );
+    	var strTestbedToUpdated= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+    	var strNewTestbed= EditTestbedWindow.document.getElementById( "newTestbedName" ).value;
+    	if( strNewTestbed != null && strNewTestbed != "" )
+    	{
+   			document.getElementById( "testbedStatus" ).innerHTML= "";
+   			if( strSaveOrRemove == "save" )
+   			{
+	   			if( testbedsMenu.namedItem(strNewTestbed) != null )
+	   			{
+	   				alert( "The testbed \"" + strNewTestbed + "\" already exists!"  );
+	   			}
+	   			else if( testbedsMenu.namedItem(strTestbedToUpdated) != null )
+	   			{
+	   				testbedsMenu.remove(testbedsMenu.selectedIndex);
+	    			var option = document.createElement("option");
+	               	option.text = strNewTestbed;
+	               	option.value = strNewTestbed;
+	               	option.id = strNewTestbed;
+	               	testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
+					testbedsMenu.value = strNewTestbed;
+					//Update the database first
+    				var Url = GetURLMachineAndPort() + "/AutoManager/UpdateTestbed?name=" + strTestbedToUpdated + "&newname=" + option.text + "&value=" + option.value + "&type=testbed";
+        			var strStatus= RunURL( Url );
+        			if( strStatus.toLowerCase() == "success" )
+        			{
+        				// Insert it above the New Testbed and New Group options
+                		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
+                		CheckTestbedStatus();
+        			}
+        			else
+        				alert( "Failed to add save testbed '" + option.text + "'");					
+	            }
+	        }
+	        else //remove
+	        {
+	        	if( confirm('Are you sure you want to remove "' + strTestbedToUpdated + '"') == true )
+	        	{
+	        	   	var Url = GetURLMachineAndPort() + "/AutoManager/DeleteTestbed?name=" + strTestbedToUpdated;
+    				
+        			var strStatus= RunURL( Url );
+        			if( strStatus.toLowerCase() == "success" )
+        			{
+		       			testbedsMenu.remove(testbedsMenu.selectedIndex);
+		       			if( testbedsMenu.value == "--Select--" )
+		       				document.getElementById( "EditTestbedButton" ).disabled= true;	
+        			}
+        			else
+        				alert( "Failed to add remove testbed '" + option.text + "'");					
+		       	}
+	        }
+    	}    	
+    }
+    
+    function SetQueuedTestbed( strQueuedTestID )
+    {
+	    if( document.getElementById( "Testbeds" ).value == "--Select--" )
+	    	alert( "You must select a testbed first" );
+	    else {
+	    	var strTestbed= document.getElementById( "Testbeds" ).options[document.getElementById( "Testbeds" ).selectedIndex].text;
+	    	document.getElementById( "label_" + strQueuedTestID ).innerHTML= strTestbed;
+	    	document.getElementById( strQueuedTestID ).setAttribute( "testbed", strTestbed );
+	    }	
+    }
+
+    function SetParallelizedAttr( strQueuedTestID, cb )
+    {
+	   	document.getElementById( strQueuedTestID ).setAttribute( "parallelize", cb.checked );
+    }
+    
+	function ShowDependencyModalDialog( strQueuedTestID, btn )
+    {
+		// Get current queued tests and populate test menu
+		var strOptions= "<option id=\"--select--\">--None--</option>\n";
+        var tests= document.getElementById( "QueueTestsList" ).getElementsByTagName('li');
+        for( i=0; i<tests.length; i++ ) {
+        	// Filter out this row's queued test id
+        	if( tests[i].id != strQueuedTestID ) {
+    			var strOption= tests[i].id + " : " + tests[i].getAttribute( "testbed" );
+        		strOptions+= "<option id=\"" + strOption + "\" value=\"" + strOption + "\">" + strOption + "</option>\n";
+        	}
+    	}
+        document.getElementById( "dependencySelection" ).innerHTML= strOptions;
+
+		var strCurDepndcy= document.getElementById( strQueuedTestID ).getAttribute( "dependency" );
+		if( strCurDepndcy != "" ) {
+	    	if( document.getElementById( "dependencySelection" ).namedItem(strCurDepndcy) != null )
+				document.getElementById( "dependencySelection" ).value= strCurDepndcy;
+	    	else
+	    		alert("Could not find dependency: " + strCurDepndcy );
+		}
+
+		gdependency_form_btn= btn;
+        gdependency_form_strQueuedTestID= strQueuedTestID;
+		$( "#dependency-form" ).dialog( "open" );
+    }
+
+    function CheckTestbedStatus()
+    {
+    	var bConnect= true;
+    	var testbedsMenu= document.getElementById( "Testbeds" );
+    	var strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+    	if( strSelection == "New Testbed")
+    	{
+    		var strNewTestbed= window.prompt("Enter name or IP of testbed:", "127.0.0.1");
+    		if( strNewTestbed != null && strNewTestbed != "" )
+    		{
+    			document.getElementById("testbedStatus").innerHTML= "";
+				// Make sure it doesn't exist already
+    			if( testbedsMenu.namedItem(strNewTestbed) == null )
+    			{        
+    				var option = document.createElement("option");
+                	option.text = strNewTestbed;
+                	option.value = strNewTestbed;
+                	option.id = strNewTestbed;
+
+    				//Add it to the database first
+    				var Url = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + "&type=testbed";
+        			var strStatus= RunURL( Url );
+        			if( strStatus.toLowerCase() == "success" )
+        			{
+        				// Insert it above the New Testbed and New Group options
+                		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
+        			}
+        			else
+        				alert( "Failed to add new testbed '" + option.text + "'");
+            	}
+                testbedsMenu.value = strNewTestbed;
+    		}
+    		else
+    			bConnect= false;  		
+    	}
+    	else if( strSelection == "New Group")
+    	{
+    		var strNewTestbed= window.prompt("Enter name of new group:", "New Group");
+    		if( strNewTestbed != null && strNewTestbed != "" )
+    		{
+    			document.getElementById("testbedStatus").innerHTML= "";
+
+   				var strNewGroupTestbeds= window.prompt( "Enter testbeds and groups for:  " + strNewTestbed, "127.0.0.1, ");
+    			if( strNewGroupTestbeds != null && strNewGroupTestbeds != "" )
+    			{
+					// Make sure it doesn't exist already
+	    			if( testbedsMenu.namedItem(strNewTestbed) == null )
+	    			{
+	    				var option = document.createElement("option");
+	                	option.text = strNewTestbed;
+	                	option.value = strNewGroupTestbeds;
+	                	option.id = strNewTestbed;
+	                	
+	    				//Add it to the database first
+	    				var Url = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + "&type=group";
+	        			var strStatus= RunURL( Url );
+	        			if( strStatus.toLowerCase() == "success" )
+	        			{
+	        				// Insert it above the New Testbed and New Group options
+	                		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
+	        			}
+	        			else
+	        				alert( "Failed to add new testbed '" + option.text + "'");
+	            	}
+	                testbedsMenu.value = strNewGroupTestbeds;
+	            }
+    		}
+    	}
+    	
+		if( bConnect )
+    	{
+		    var strStatus= "Error";
+
+    	   	// Check to see if it is a group.  Value != text
+    		if( testbedsMenu.options[testbedsMenu.selectedIndex].value != testbedsMenu.options[testbedsMenu.selectedIndex].text )
+ 	        	strStatus= "<font color=\"gray\">Testbeds: " + testbedsMenu.value + "</font>";	
+    		else
+    		{
+		        document.getElementById( "testbedStatus" ).innerHTML= " ...connecting: " + testbedsMenu.value;
+		        
+		        strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text
+		        try {
+		            strStatus= "Connected: " + RunURL( "http://" + strSelection + ":" + window.location.port + "/AutoManager/GetToolboxStatus" );
+		        } catch(err) {
+		            strStatus= "<font color=\"red\">Could not connect to the Testbed's Automation Toolbox: " + err.message + "</font>";
+		        }	
+    		}
+    		
+	        document.getElementById( "testbedStatus" ).innerHTML= " " + strStatus;
+	    }
+	    
+	    document.getElementById( "EditTestbedButton" ).disabled= false;
+    }
+
+    function RunJob( strType ) 
+    {
+    	if( document.getElementById( "QueueTestsList" ).getElementsByTagName('li').length == 0 ) {
+    		alert( "Please add tests to the queue" );
+    		return;
+    	} 	
+    	if( document.getElementById( "jobname" ).value == "" ) {
+    		alert( "Please enter a job name" );
+    		return;
+    	}
+    	if( document.getElementById( "jobusername" ).value == "" ) {
+    		alert( "Please enter a user name" );
+    		return;
+    	}
+    		
+    	var strURL= GetURLMachineAndPort();
+    	if( strType == "SaveJob" )
+    		strURL+= "/AutoManager/SaveJob";
+    	else
+    		strURL+= "/AutoManager/RunJob";
+	        
+    	strURL+= "?jobname=" + document.getElementById( "jobname" ).value;
+    	strURL+= "&user=" + document.getElementById( "jobusername" ).value;
+    	
+    	if( document.getElementById( "jobclasspath" ).value != "" )
+	    	strURL+= "&classpath=" + document.getElementById( "jobclasspath" ).value;
+	    	
+	    if( document.getElementById( "joboptargs" ).value != "" )
+    		strURL+= "&commandlineargs=" + document.getElementById( "joboptargs" ).value;
+    		    	
+        var tests= document.getElementById( "QueueTestsList" ).getElementsByTagName('li')
+        for( i=0; i<tests.length; i++ ) {
+    		strURL+= "&dataparamfile=" + tests[i].id;
+    		strURL+= ";" + tests[i].getAttribute( "testbed" );
+    		strURL+= ";" + tests[i].getAttribute( "dependency" );
+    		strURL+= ";" + tests[i].getAttribute( "parallelize" );
+    	}
+        
+        if( strType == "REST" )
+	        alert( "Job REST Request URL:\n\n" + strURL );
+	    else {
+	        var strReply= RunURL( strURL );
+	        if( strReply.toLowerCase() != "success" ) {
+	        	if( strType == "SaveJob" ) {
+	        		// Check to see if it failed because it already exists
+	        		if( strReply.indexOf("already exists") != -1 ) {
+	        			// Ask if they want to overwrite the current saved job
+	        			if( window.confirm( "Do you want to overwrite the existing saved job?") ) {
+	        				// Delete existing job
+	        			    var strDelURL= GetURLMachineAndPort() + "/AutoManager/DeleteJob?";
+	        			    strDelURL+= "user=" + document.getElementById( "UsersMenu" ).value + "&job=" + document.getElementById( "JobsMenu" ).value;
+	        		        var strDelStatus= RunURL( strDelURL ); 
+	        				if( strDelStatus.toLowerCase() != "success" )
+	        		        	alert( strStatus );
+	        				else {
+	        					// Finally resave the job
+	        					strReply= RunURL( strURL );
+	        					if( strReply.toLowerCase() != "success" )
+	    			        		alert( "Failed to save job: " + strReply );	
+	        				}
+	        			}
+	        		}
+	        		else
+			        	alert( "Failed to save job: " + strReply );	        	
+	        	}
+	        	else // runJob
+		        	alert( "Failed to start job: " + strReply );	        	
+	        }
+		    else if( strType == "RunJob" ) {
+		        var strStatusURL = GetURLMachineAndPort() + "/AutoManager/Status";
+        		window.location= strStatusURL;  	
+		    }
+	    }
+    }
+
+    function RunURL( aUrl ) 
+    {
+        xmlHttp = new XMLHttpRequest(); 
+        xmlHttp.open( "GET", aUrl, false );
+        xmlHttp.setRequestHeader('Content-type', 'text/plain');
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+    
+    function RemoveTest( elementID )
+    {
+        var queuedTestsDiv= document.getElementById( "QueueTestsList" );
+        queuedTestsDiv.removeChild( document.getElementById( elementID ) );
+    }
+    
+    function EditDataparameter( strDataParameter )
+    {
+    	var strUrl = GetURLMachineAndPort() + "/AutoManager/DataparamEditor?dataparam=/" + strDataParameter;
+        window.open( strUrl );  	
+     }
+
+    function QueueTest( strTestPath )
+    {
+        var strNewElementID= strTestPath;        
+        var pos =strTestPath.lastIndexOf( "/");
+        var strTestbed= document.getElementById( "Testbeds" ).options[document.getElementById( "Testbeds" ).selectedIndex].text;
+        //TODO: Warning Warning Major code duplication!!
+        var newElement = document.createElement("li");
+        newElement.setAttribute( "id", strNewElementID );
+        newElement.setAttribute( "testbed", strTestbed );
+        newElement.setAttribute( "parallelize", "false" );
+		newElement.setAttribute( "dependency", "" );
+        newElement.innerHTML= "<button onclick=\"RemoveTest('" + strNewElementID + "')\">-</button>" +
+        					  "<button onclick=\"EditDataparameter('" + strTestPath + "')\">E</button> " + 
+        					  strTestPath.substring(0,pos+1) + "<b>" + strTestPath.substring(pos+1) + "</b>" + " " + 
+							  "<div style=\"display:block;float:right;\">" +
+							  "<label id=\"label_" + strNewElementID + "\">" + strTestbed + "</label>" +
+							  "<button onclick=\"SetQueuedTestbed('" + strNewElementID + "')\">Use Selected Testbed</button>&nbsp&nbsp" +
+							  "<button onclick=\"ShowDependencyModalDialog('" + strNewElementID + "', this)\" style=\"color:#CCCCCC;\"><i>D</i></button>&nbsp&nbsp" +
+							  "<input type=\"checkbox\" onclick=\"SetParallelizedAttr('" + strNewElementID + "', this)\">Parallelize" +
+							  "</div>";     				  
+        document.getElementById( "QueueTestsList" ).appendChild( newElement );      
+    }
+    
+    function GetURLMachineAndPort() 
+    {
+        return window.location.protocol + "//" + window.location.host;
+    }
+
+    function ApplyTestSelection( params )
+    {                
+        var root=document.getElementById( params.id );
+        
+        if( root.value == "--Select--" )
+        	return;
+        
+        var dirs= RunURL( GetURLMachineAndPort() + "/AutoManager/GetDirs?" + root.value );
+        var files= RunURL( GetURLMachineAndPort() + "/AutoManager/GetFiles?" + root.value );       
+        var rootElementID= "SelectTestMenu";
+        var counter= 1;
+        
+        if( params.id.search( rootElementID ) != -1 ) {
+            counter= Number( params.id.replace( rootElementID, "" ) );
+            counter++;
+        }
+                
+        var strElementID= rootElementID + counter;
+        var strNewElementID= rootElementID + counter;
+
+        //Delete selects after current select element
+        while( document.getElementById( rootElementID + counter ) ) {
+            var elementToRemove= document.getElementById( rootElementID + counter );
+            document.getElementById( 'TestCategoryDiv' ).removeChild( elementToRemove );
+            ++counter;
+        }
+
+        if( dirs != "" )
+        {            
+            if( root.value!="--Select--" ) 
+            {
+                if( root.options[0].text=="--Select--" )
+                    root.remove(0);
+                
+                var selEl = document.createElement("select");
+                selEl.setAttribute( "id", strNewElementID );
+                selEl.setAttribute( "onchange", "ApplyTestSelection({id:'" + strNewElementID + "'})" );
+                
+                var option = document.createElement("option");
+                option.text = "--Select--";
+                option.value = "--Select--";
+                selEl.add(option);
+
+                var items= dirs.split('\n');
+                for( i=0; i<items.length; i++)
+                {
+                    var option = document.createElement("option");
+                    option.text = items[i];
+                    option.value = root.value + "/" + items[i];
+                    selEl.add(option);
+                }
+                document.getElementById( "TestCategoryDiv" ).appendChild( selEl );
+            }
+        }
+
+        document.getElementById( "AvailableTestsDiv" ).innerHTML="";
+        
+        if( files == "" )
+        {
+            var selEl = document.createElement("label");
+            selEl.setAttribute( "id", "none" );
+            selEl.innerHTML= "No Tests Found in: <i>" + root.value + "</i><br>";
+            document.getElementById( "AvailableTestsDiv" ).appendChild( selEl );
+        }
+        else
+        {   
+            var availTestsDiv= document.getElementById( "AvailableTestsDiv" );
+            var items= files.split('\n');
+            for( i=0; i<items.length; i++)
+            {
+                if( items[i] != "" ) 
+                {
+                    strNewElementID= "File" + i;
+                    var newElement = document.createElement("button");
+                    newElement.setAttribute( "id", strNewElementID );
+                    newElement.appendChild( document.createTextNode("+") );
+                    newElement.setAttribute( "onclick", "QueueTest('" + root.value + "/" + items[i] + "')" );
+                    availTestsDiv.appendChild( newElement );
+                    
+                    newElement = document.createElement("button");
+                    newElement.setAttribute( "id", strNewElementID );
+                    newElement.appendChild( document.createTextNode("E") );
+                    newElement.setAttribute( "onclick", "EditDataparameter('" + root.value + "/" + items[i] + "')" );
+                    availTestsDiv.appendChild( newElement );
+                    
+                    newElement = document.createElement("label");
+                    newElement.setAttribute( "id", strNewElementID + "Label" );
+                    newElement.innerHTML= " " + items[i] + "<br>";
+                    availTestsDiv.appendChild( newElement );
+                }
+            }
+        }
+    }
+	   
+	function UserSelected()
+	{
+		document.getElementById( "LoadJobButton" ).disabled= true;
+		document.getElementById( "DeleteJobButton" ).disabled= true;
+		document.getElementById( "JobsMenu" ).disabled= false;
+		var strURL= GetURLMachineAndPort() + "/AutoManager/GetUserJobs?user=" + document.getElementById( "UsersMenu" ).value;
+		document.getElementById( "JobsMenu" ).innerHTML= RunURL( strURL );
+	}
+
+	function JobSelected()
+	{
+		document.getElementById( "LoadJobButton" ).disabled= false;
+		document.getElementById( "DeleteJobButton" ).disabled= false;
+	}
+
+	function DeleteJob()
+	{
+		var strUser= document.getElementById( "UsersMenu" ).value;
+		var strJob= document.getElementById( "JobsMenu" ).value;
+	    var strURL= GetURLMachineAndPort() + "/AutoManager/DeleteJob?";
+	    
+    	var r= window.confirm( "Are you sure you want to delete job:\n\n" + strUser + "\n" + strJob );
+		if( r ) {
+	    	strURL+= "user=" + strUser + "&job=" + strJob;
+        	var strStatus= RunURL( strURL ); 
+			if( strStatus.toLowerCase() != "success" )
+        		alert( strStatus );
+			else
+				document.getElementById( "JobsMenu" ).remove( document.getElementById( "JobsMenu" ).selectedIndex );			
+		}
+	}
+
+	function LoadJob()
+	{
+	    var strURL= GetURLMachineAndPort() + "/AutoManager/GetJobInfo?";
+	    strURL+= "user=" + document.getElementById( "UsersMenu" ).value + "&job=" + document.getElementById( "JobsMenu" ).value;
+        var strInfo= RunURL( strURL );
+        
+        if( strInfo.indexOf("not found!") != -1 )
+        	alert( "Load Failed: " + strInfo );
+        else
+        {
+	        document.getElementById( "jobname" ).value= document.getElementById( "JobsMenu" ).value;
+	        document.getElementById( "jobusername" ).value= document.getElementById( "UsersMenu" ).value;
+			document.getElementById( "QueueTestsList" ).innerHTML= "";
+	        var strTestbed= document.getElementById( "Testbeds" ).options[document.getElementById( "Testbeds" ).selectedIndex].text;
+	        var items= strInfo.split("&");
+	        for( i=0; i<items.length; i++ ) {
+				if( items[i].indexOf( "Classpath=" ) == 0 )
+					document.getElementById( "jobclasspath" ).value= items[i].substr(10); 
+				else if( items[i].indexOf( "OptArgs=" ) == 0 )
+					document.getElementById( "joboptargs" ).value= items[i].substr(8); 
+				else if( items[i].indexOf( "Dataparams=" ) == 0 ) {
+					var strData= items[i].substr(11);
+					var testList= strData.split("\n");
+					for( x=0; x<testList.length; ++x ) {
+						//                       Test				 ;Testbed  ;		Dependency					 ;Parallel
+						// ex: Products/RX3/RX3FileLoadingTestMac.xml;127.0.0.1;Products/RX3/Dependency.xml:127.0.0.1;false
+						var strTestData= testList[x].split(";");
+	   					var strTestPath= strTestData[0];
+						var strMachine= strTestData[1];
+						var strDependency= strTestData[2];
+						var bParallelChecked= strTestData[3]=="true";
+						if( strMachine != "" )
+							strTestbed= strMachine;
+	   					var namePos= strTestPath.lastIndexOf( "/");
+	        			var strNewElementID= strTestPath;
+		        		var newElement = document.createElement("li");
+		        		var strDependencyColor= strDependency?"#FF0000":"#CCCCCC";
+		        		newElement.setAttribute( "id", strNewElementID );
+        				newElement.setAttribute( "testbed", strTestbed );
+        				newElement.setAttribute( "parallelize", bParallelChecked );
+        				newElement.setAttribute( "dependency", strDependency );
+		        		newElement.innerHTML= "<button onclick=\"RemoveTest('" + strNewElementID + "')\">-</button>" +
+		        							  "<button onclick=\"EditDataparameter('" + strTestPath + "')\">E</button> " + 
+		        							  strTestPath.substring(0,namePos+1) + "<b>" + strTestPath.substring(namePos+1) + "</b>" + " " + 
+		        							  "<div style=\"display:block;float:right;\">" +
+		        							  "<label id=\"label_" + strNewElementID + "\">" + strTestbed + "</label>" +
+		        							  "<button onclick=\"SetQueuedTestbed('" + strNewElementID + "')\">Use Selected Testbed</button>&nbsp&nbsp" +
+		        							  "<button onclick=\"ShowDependencyModalDialog('" + strNewElementID + "', this)\" style=\"color:" + strDependencyColor + ";\"><i>D</i></button>&nbsp&nbsp" +
+		        							  "<input type=\"checkbox\" onclick=\"SetParallelizedAttr('" + strNewElementID + "', this)\" " + (bParallelChecked?"checked":"") + ">Parallelize" +
+		        							  "</div>";     				  
+	        			document.getElementById( "QueueTestsList" ).appendChild( newElement );      
+					}
+				}
+			}
+		}
+    }    
+
+</SCRIPT>
+</head>
+<body>
+
+<!-- Insert Header -->
+
+<div id="dependency-form" title="Add Dependency On">
+  <p>Run only upon successful execution of:
+  <form>
+		<select id="dependencySelection" >
+		</select>
+  </form>
+</div>
+
+<div id="SelectTestsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	<b>Select Testbed:</b> 
+	<select id="Testbeds" onchange="CheckTestbedStatus()" >
+	  <option value="New Testbed">New Testbed</option>
+	  <option value="New Group">New Group</option>
+	</select>
+	<button type="button" id="EditTestbedButton" disabled onclick="EditTestbedMenuSelection()">Edit</button>
+	<label id="testbedStatus"></label>
+</div>
+
+<div id="SelectTestsPanelDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	<div id="TestCategoryDiv" >
+		<b>Choose Tests:</b>
+		<select id="TestsRoot" onchange="ApplyTestSelection({id:'TestsRoot'})" >
+		</select>
+	</div>
+	
+	<div id="AvailableTestsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	</div>
+</div>
+
+<div id="QueuedTests" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	<label id="QueuedTests"><b>Queued Tests:</b></label><br>
+	<div id="QueuedTestsListDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+		<ul id="QueueTestsList" style="width:100%;">
+		</ul>
+	</div>
+</div>
+
+<div id="ButtonsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	<div id="JobTemplatesDiv" style="padding:5px; color: black; background-color: d0d0d0; border: black 0px solid" >
+		<b>Select Job:</b> 
+		<select id="UsersMenu" onchange="UserSelected()" >
+		</select>
+		<select id="JobsMenu" disabled onchange="JobSelected()" >
+		</select>
+		<button type="button" id="LoadJobButton" disabled onclick="LoadJob()">Load</button>
+		<button type="button" id="DeleteJobButton" disabled onclick="DeleteJob()">Delete</button>
+	</div>
+	
+	<table style="padding:0px;border-collapse: collapse;text-align: right;table-layout:fixed;width:100%">
+		<tr><td style="width:80">Job Name:</td><td><input type="text" id="jobname" style="width:100%;"></td></tr>
+		<tr><td>User:</td><td><input type="text" id="jobusername" style="width:100%;"></td></tr>
+		<tr><td>Opt Args:</td><td><input type="text" id="joboptargs" style="width:100%;"></td></tr>
+		<tr><td>Classpath:</td><td><input type="text" id="jobclasspath" style="width:100%;"></td></tr>
+	</table>
+	<br>
+	<button type="button" onclick="RunJob('RunJob')">Run</button>
+	<button type="button" onclick="RunJob('SaveJob')">Save</button>
+	<button type="button" onclick="RunJob('REST')">View REST</button><br>
+</div>
+
+</body>
+</html>

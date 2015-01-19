@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dataparameter 2</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+  <style>
+    body { font-size: 62.5%; }
+    label, input { display:block; }
+    input.text { margin-bottom:12px; width:95%; padding: .4em; }
+    fieldset { padding:0; border:0; margin-top:25px; }
+    h1 { font-size: 2.2em; margin: .6em 0; }
+    div#users-contain { width: 350px; margin: 20px 0; }
+    div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+    div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+    .ui-dialog .ui-state-error { padding: .3em; }
+    .validateTips { border: 1px solid transparent; padding: 0.3em; }
+  </style>
+  <script>
+  $(function() {
+    var dialog, form,
+ 
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+      pname = $( "#pname" ),
+      ptype = $( "#ptype" ),
+      pvalue = $( "#pvalue" ),
+      pdesc = $( "#pdesc" ),
+      pAsList = $( "#asListcb" ),
+      allFields = $( [] ).add( pname ).add( ptype ).add( pvalue ),
+      tips = $( ".validateTips" );
+    $( document ).tooltip();
+      $( "#ParametersTable" ).sortable();
+      $( "#ParametersTable" ).resizable();
+      //$( "#QueueTestsList" ).disableSelection();
+ 
+    function updateTips( t ) {
+      tips
+        .text( t )
+        .addClass( "ui-state-highlight" );
+      setTimeout(function() {
+        tips.removeClass( "ui-state-highlight", 1500 );
+      }, 500 );
+    }
+ 
+    function checkLength( o, n, min, max ) {
+      if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+          min + " and " + max + "." );
+        return false;
+      } else {
+        return true;
+      }
+    }
+ 
+    function checkRegexp( o, regexp, n ) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+ 
+	function addUser() {
+		var valid = true;
+		allFields.removeClass( "ui-state-error" );
+ 
+		if ( valid ) {
+		   	var strValue= "<input type=\"text\" id=\"paramvalue\" style=\"display:table-cell; width:400\" value=\"" + pvalue.val() + "\">";
+		   	
+		   	if( ptype.val() == "Boolean" ) {
+		   		if( pvalue.val().toLowerCase() == "true" )
+		   			strValue= "<select><option selected>True</option><option disabled>False</option></select>";
+		   		else
+		   			strValue= "<select><option disabled>True</option><option selected>False</option></select>";
+			}
+		   	else if( pAsList.is(':checked') ) {
+				strValue= "<select>";
+				var strList= pvalue.val().split(",");
+		   		for( var i in strList )
+		   			strValue+= "<option>" + strList[i].trim() + "</option>\n";
+		   		strValue+= "</select>";
+		   	}
+    	  
+			$( "#ParametersTable tbody" ).append( "<tr>" +
+				"<td><select id=\"dp_" + pname.val() + "\"><option selected>Active</option><option>Inactive</option><option>Edit</option><option>Remove</option></select></td>" +
+				"<td title=\"Description: " + pdesc.val() + "\">" + pname.val() + "</td>" +
+				"<td>" + ptype.val() + "</td>" +
+				"<td>" + strValue +"</td>" +
+				"</tr>" );
+			dialog.dialog( "close" );
+		}
+		return valid;
+	}
+ 
+    dialog = $( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 340,
+      width: 350,
+      modal: true,
+      buttons: {
+        "Save": addUser,
+        Cancel: function() {
+          dialog.dialog( "close" );
+        }
+      },
+      close: function() {
+        form[ 0 ].reset();
+        allFields.removeClass( "ui-state-error" );
+      }
+    });
+ 
+    form = dialog.find( "form" ).on( "submit", function( event ) {
+      event.preventDefault();
+      addUser();
+    });
+ 
+    $( "#create-user" ).button().on( "click", function() {
+      dialog.dialog( "open" );
+    });
+  });
+  </script>
+</head>
+<body>
+
+<!-- Insert Header -->
+ 
+<div id="dialog-form" title="Create New Parameter"> 
+  <form>
+    <fieldset>
+      <label for="pname">Name</label>
+      <input type="text" name="pname" id="pname" value="New Parameter" class="text ui-widget-content ui-corner-all">
+      <label for="ptype">Type</label>
+      <select id="ptype" style="float:left;" onclick="configureParamType()"><option selected>String</option><option>Boolean</option><option>Float</option><option>Double</option><option>Int</option></select>
+      <input type="checkbox" id="asListcb" name="ltype" value="listtype" style="float:left;"> As List<br><br><br>
+      <label id="pValueLabel" for="pvalue">Default Value</label>
+      <input type="text" name="pvalue" id="pvalue" value="" class="text ui-widget-content ui-corner-all">
+      <label for="pdesc">Description</label>
+      <textarea name="pdesc" id="pdesc" value="Description of paramter" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+ 
+  <h1 id="DataparamTitle"></h1>
+  <table id="dpInfo">
+	<tr>
+		<td title="this is the auther">Author:</td>
+		<td id="Author"></td>
+	</tr>
+	<tr>
+		<td style="vertical-align:top">Description:</td>
+		<td><input type="text" name="Description" id="Description" style="width:405px;height:50px;vertical-align:top" value="" class="text ui-widget-content ui-corner-all"></td>
+	</tr>
+  </table>
+
+  <table id="ParametersTable" class="ui-widget ui-widget-content">
+  </table>
+<button id="create-user">Create new data parameter</button>
+<button id="Save">Save</button>
+<button id="SaveAs">Save As</button>
+<button id="Cancel" onclick="window.close()">Cancel</button>
+ 
+</body>
+</html>

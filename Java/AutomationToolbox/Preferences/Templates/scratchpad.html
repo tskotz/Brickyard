@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dataparam 1</title>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <style>
+    body { font-size: 62.5%; }
+    label, input { display:block; }
+    input.text { margin-bottom:12px; width:95%; padding: .4em; }
+    fieldset { padding:0; border:0; margin-top:25px; }
+    h1 { font-size: 1.2em; margin: .6em 0; }
+    div#users-contain { width: 350px; margin: 20px 0; }
+    div#dpInfo table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+    div#dpInfo table td, div#users-contain table th { border: 0px solid #eee; padding: .6em 0px; text-align: left; }
+    div#users table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+    div#users table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+    .ui-dialog .ui-state-error { padding: .3em; }
+    .validateTips { border: 1px solid transparent; padding: 0.3em; }
+  </style>
+  <script>
+  $(function() {
+    var dialog, form,
+ 
+      // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
+      emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+      pname = $( "#pname" ),
+      ptype = $( "#ptype" ),
+      pvalue = $( "#pvalue" ),
+      allFields = $( [] ).add( pname ).add( ptype ).add( pvalue ),
+      tips = $( ".validateTips" );
+ 
+    function updateTips( t ) {
+      tips
+        .text( t )
+        .addClass( "ui-state-highlight" );
+      setTimeout(function() {
+        tips.removeClass( "ui-state-highlight", 1500 );
+      }, 500 );
+    }
+ 
+    function checkLength( o, n, min, max ) {
+      if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+          min + " and " + max + "." );
+        return false;
+      } else {
+        return true;
+      }
+    }
+ 
+    function checkRegexp( o, regexp, n ) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+ 
+    function addDataParameter() {
+      var valid = true;
+      allFields.removeClass( "ui-state-error" );
+ 
+      //valid = valid && checkLength( name, "username", 3, 16 );
+      //valid = valid && checkLength( email, "email", 6, 80 );
+      //valid = valid && checkLength( password, "password", 5, 16 );
+ 
+      //valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+      //valid = valid && checkRegexp( email, emailRegex, "eg. ui@jquery.com" );
+      //valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+ 
+      if ( valid ) {
+        $( "#users tbody" ).append( "<tr>" +
+          "<td>" + pname.val() + "</td>" +
+          "<td>" + ptype.val() + "</td>" +
+          "<td>" + pvalue.val() + "</td>" +
+        "</tr>" );
+        dialog.dialog( "close" );
+      }
+      return valid;
+    }
+
+    dialog = $( "#dialog-form" ).dialog({
+      autoOpen: false,
+      height: 340,
+      width: 350,
+      modal: true,
+      buttons: {
+        "Create data parameter": addDataParameter,
+        Cancel: function() {
+          dialog.dialog( "close" );
+        }
+      },
+      close: function() {
+        form[ 0 ].reset();
+        allFields.removeClass( "ui-state-error" );
+      }
+    });
+ 
+    form = dialog.find( "form" ).on( "submit", function( event ) {
+      event.preventDefault();
+      addUser();
+    });
+ 
+    $( "#create-user" ).button().on( "click", function() {
+      dialog.dialog( "open" );
+    });
+    $( "#Save" ).button().on( "click", function() {
+        dialog.dialog( "open" );
+      });
+    $( "#SaveAs" ).button().on( "click", function() {
+        dialog.dialog( "open" );
+      });
+    $( "#Run" ).button().on( "click", function() {
+        dialog.dialog( "open" );
+      });
+  });
+  
+  function configureParamType( ) {
+	  
+	  if( $("#ptype").val() == "Boolean" ) {}
+      	$("#pValueLabel").text("Default Value: true or false");
+  	  else if( $("#asListcb").attr('checked') )
+  	    $("#pValueLabel").text("Default Value: comma separated list");
+	  else
+		 $("#pValueLabel").text("Default Value:");
+    }
+
+  </script>
+</head>
+<body>
+ 
+<div id="dialog-form" title="Create New Parameter"> 
+  <form>
+    <fieldset>
+      <label for="pname">Name</label>
+      <input type="text" name="pname" id="pname" value="New Parameter" class="text ui-widget-content ui-corner-all">
+      <label for="ptype">Type</label>
+      <select id="ptype" style="float:left;" onclick="configureParamType()"><option selected>String</option><option>Boolean</option><option>Float</option><option>Double</option><option>Int</option></select>
+      <input type="checkbox" id="asListcb" name="ltype" value="listtype" style="float:left;"> As List<br><br><br>
+      <label id="pValueLabel" for="pvalue">Default Value</label>
+      <input type="text" name="pvalue" id="pvalue" value="" class="text ui-widget-content ui-corner-all">
+      <label for="pvalue">Description</label>
+      <textarea name="pdesc" id="pdesc" value="Description of paramter" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+ 
+ 
+<div id="users-contain" class="ui-widget">
+  <h1>Scratch Pad</h1>
+  <table id="dpInfo">
+	<tr>
+		<td>Author:</td>
+		<td>Terry Skotz</td>
+	</tr>
+	<tr>
+		<td style="vertical-align:top">Description:</td>
+		<td><input type="text" name="description" id="description" style="width:400px;height:50px;vertical-align:top" value="" class="text ui-widget-content ui-corner-all"></td>
+	</tr>
+  </table>
+  <table id="users" class="ui-widget ui-widget-content">
+    <thead>
+      <tr class="ui-widget-header ">
+        <th></th>
+        <th>Name</th>
+        <th>Type</th>
+        <th><input type="checkbox" id="EnableTestase_id" style="float:left;"><label for="EnableTestase_id" style="float:left;"> Testcase 1</label></th>
+        <th><input type="checkbox" id="EnableTestase_id" style="float:left;"><label for="EnableTestase_id" style="float:left;"> Testcase 2</label></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><select id="dp_testcase"><option selected>Active</option><option>Inactive</option><option>Edit</option><option>Remove</option></select></td>
+        <td>testcase</td>
+        <td>String</td>
+        <td><input type="text" id="paramvalue" style="display:table-cell; width:400" value="testcase 1"></td>
+        <td><input type="text" id="paramvalue" style="display:table-cell; width:400" value="testcase 2"></td>
+      </tr>
+      <tr>
+        <td><select id="dp_app"><option selected>Active</option><option>Inactive</option><option>Edit</option><option>Remove</option></select></td>
+        <td>app</td>
+        <td>String</td>
+        <td><input type="text" id="paramvalue" style="display:table-cell; width:400" value="/TestAutomation/Projects/Alloy2/SA/iZAlloy2SAHook.app"></td>
+        <td><input type="text" id="paramvalue" style="display:table-cell; width:400" value="/TestAutomation/Projects/Alloy2/SA/iZOzone6SAHook.app"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<button id="create-user">Create new data parameter</button>
+<button id="Save">Save</button>
+<button id="SaveAs">Save As</button>
+<button id="Run">Run</button>
+
+</body>
+</html>

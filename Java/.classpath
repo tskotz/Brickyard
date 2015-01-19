@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="Jars/jfreechart/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="Jars/jfreechart/jfreechart-1.0.14.jar"/>
+	<classpathentry kind="lib" path="Jars/sigar/log4j.jar"/>
+	<classpathentry kind="lib" path="Jars/sigar/sigar.jar"/>
+	<classpathentry kind="lib" path="Jars/SSH/ganymed-ssh2-build210.jar"/>
+	<classpathentry kind="lib" path="Jars/iZomateRemoteServer.jar"/>
+	<classpathentry kind="lib" path="Jars/jdom.jar"/>
+	<classpathentry kind="lib" path="Jars/mail.jar"/>
+	<classpathentry kind="lib" path="/Users/terryskotz/TestAutomation/Java/AutomationToolbox/db-derby-10.1.2.1-bin/lib/derby.jar"/>
+	<classpathentry kind="lib" path="/Users/terryskotz/TestAutomation/Java/AutomationToolbox/db-derby-10.1.2.1-bin/lib/derbyclient.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
