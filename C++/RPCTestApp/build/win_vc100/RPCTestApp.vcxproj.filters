@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\iZBase\src\iZBase\common\common.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\RPCManager.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\RPCTestApp.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="targetver.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\iZBase\src\iZBase\common\common.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCManager.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="_Sources">
+      <UniqueIdentifier>{242a1a11-2ce8-40c7-bb1d-08d48a03092d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

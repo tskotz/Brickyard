@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\RPCReply.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\RPCRequest.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\RPCMethods.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\RPCServer.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\RPCChunk.cpp">
+      <Filter>_Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\RPCReply.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCRequest.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCMethods.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCChunk.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCServer.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCServerInterfaces.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\RPCServerTypes.h">
+      <Filter>_Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="_Sources">
+      <UniqueIdentifier>{54254265-526c-4a61-9421-720a7a0f3066}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+</Project>

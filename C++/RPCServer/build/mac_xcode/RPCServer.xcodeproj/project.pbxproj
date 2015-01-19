@@ -1,0 +1,387 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7D3C48571533440900A44FAE /* iZTestAutomation.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DDE24D4152A29B700FE3BC2 /* iZTestAutomation.bundle */; };
+		7DCF13F8152B263E008B7D3B /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF13F0152B2600008B7D3B /* Accelerate.framework */; };
+		7DCF13F9152B2671008B7D3B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF127B152B1EC3008B7D3B /* Carbon.framework */; };
+		7DCF13FA152B2671008B7D3B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF127D152B1ECA008B7D3B /* Cocoa.framework */; };
+		7DCF13FD152B2780008B7D3B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF13FB152B2780008B7D3B /* Carbon.framework */; };
+		7DCF13FE152B2780008B7D3B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF13FC152B2780008B7D3B /* Cocoa.framework */; };
+		7DCF1400152B2790008B7D3B /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF13FF152B2790008B7D3B /* Accelerate.framework */; };
+		7DD13EDA152A32E000ECC6D2 /* RPCChunk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ECC152A32E000ECC6D2 /* RPCChunk.cpp */; };
+		7DD13EDB152A32E000ECC6D2 /* RPCChunk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ECC152A32E000ECC6D2 /* RPCChunk.cpp */; };
+		7DD13EDC152A32E000ECC6D2 /* RPCMethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ECE152A32E000ECC6D2 /* RPCMethods.cpp */; };
+		7DD13EDD152A32E000ECC6D2 /* RPCMethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ECE152A32E000ECC6D2 /* RPCMethods.cpp */; };
+		7DD13EDE152A32E000ECC6D2 /* RPCReply.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED0152A32E000ECC6D2 /* RPCReply.cpp */; };
+		7DD13EDF152A32E000ECC6D2 /* RPCReply.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED0152A32E000ECC6D2 /* RPCReply.cpp */; };
+		7DD13EE0152A32E000ECC6D2 /* RPCRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED2152A32E000ECC6D2 /* RPCRequest.cpp */; };
+		7DD13EE1152A32E000ECC6D2 /* RPCRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED2152A32E000ECC6D2 /* RPCRequest.cpp */; };
+		7DD13EE2152A32E000ECC6D2 /* RPCServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED4152A32E000ECC6D2 /* RPCServer.cpp */; };
+		7DD13EE3152A32E000ECC6D2 /* RPCServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED4152A32E000ECC6D2 /* RPCServer.cpp */; };
+		7DD321661533532F00CEBE4B /* iZTestAutomationD.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DF14CB4152A28D8005ABBB4 /* iZTestAutomationD.bundle */; };
+		7DDE24CE152A29B700FE3BC2 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */; };
+		7DF14CB8152A28D8005ABBB4 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7D3C4856153343FD00A44FAE /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "/Library/Application Support/iZotope/TestAutomation";
+			dstSubfolderSpec = 0;
+			files = (
+				7D3C48571533440900A44FAE /* iZTestAutomation.bundle in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DD321651533531600CEBE4B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "/Library/Application Support/iZotope/TestAutomation";
+			dstSubfolderSpec = 0;
+			files = (
+				7DD321661533532F00CEBE4B /* iZTestAutomationD.bundle in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		7DCF127B152B1EC3008B7D3B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		7DCF127D152B1ECA008B7D3B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		7DCF13F0152B2600008B7D3B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		7DCF13F1152B2600008B7D3B /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = System/Library/Frameworks/AGL.framework; sourceTree = SDKROOT; };
+		7DCF13F2152B2600008B7D3B /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		7DCF13F3152B2600008B7D3B /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		7DCF13FB152B2780008B7D3B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Carbon.framework; sourceTree = DEVELOPER_DIR; };
+		7DCF13FC152B2780008B7D3B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		7DCF13FF152B2790008B7D3B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Accelerate.framework; sourceTree = DEVELOPER_DIR; };
+		7DD13ECC152A32E000ECC6D2 /* RPCChunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RPCChunk.cpp; path = ../../src/RPCChunk.cpp; sourceTree = "<group>"; };
+		7DD13ECD152A32E000ECC6D2 /* RPCChunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCChunk.h; path = ../../src/RPCChunk.h; sourceTree = "<group>"; };
+		7DD13ECE152A32E000ECC6D2 /* RPCMethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RPCMethods.cpp; path = ../../src/RPCMethods.cpp; sourceTree = "<group>"; };
+		7DD13ECF152A32E000ECC6D2 /* RPCMethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCMethods.h; path = ../../src/RPCMethods.h; sourceTree = "<group>"; };
+		7DD13ED0152A32E000ECC6D2 /* RPCReply.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RPCReply.cpp; path = ../../src/RPCReply.cpp; sourceTree = "<group>"; };
+		7DD13ED1152A32E000ECC6D2 /* RPCReply.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCReply.h; path = ../../src/RPCReply.h; sourceTree = "<group>"; };
+		7DD13ED2152A32E000ECC6D2 /* RPCRequest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RPCRequest.cpp; path = ../../src/RPCRequest.cpp; sourceTree = "<group>"; };
+		7DD13ED3152A32E000ECC6D2 /* RPCRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCRequest.h; path = ../../src/RPCRequest.h; sourceTree = "<group>"; };
+		7DD13ED4152A32E000ECC6D2 /* RPCServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RPCServer.cpp; path = ../../src/RPCServer.cpp; sourceTree = "<group>"; };
+		7DD13ED5152A32E000ECC6D2 /* RPCServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCServer.h; path = ../../src/RPCServer.h; sourceTree = "<group>"; };
+		7DD13ED6152A32E000ECC6D2 /* RPCServerInterfaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCServerInterfaces.h; path = ../../src/RPCServerInterfaces.h; sourceTree = "<group>"; };
+		7DD13ED7152A32E000ECC6D2 /* RPCServerTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RPCServerTypes.h; path = ../../src/RPCServerTypes.h; sourceTree = "<group>"; };
+		7DDE24D4152A29B700FE3BC2 /* iZTestAutomation.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iZTestAutomation.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DDE24D6152A2A3500FE3BC2 /* RPCServer-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "RPCServer-Info.plist"; path = "../Resources/RPCServer-Info.plist"; sourceTree = "<group>"; };
+		7DF14CB4152A28D8005ABBB4 /* iZTestAutomationD.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iZTestAutomationD.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7DDE24CD152A29B700FE3BC2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DCF13F9152B2671008B7D3B /* Carbon.framework in Frameworks */,
+				7DCF13FA152B2671008B7D3B /* Cocoa.framework in Frameworks */,
+				7DCF13F8152B263E008B7D3B /* Accelerate.framework in Frameworks */,
+				7DDE24CE152A29B700FE3BC2 /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DF14CB1152A28D8005ABBB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DCF1400152B2790008B7D3B /* Accelerate.framework in Frameworks */,
+				7DCF13FD152B2780008B7D3B /* Carbon.framework in Frameworks */,
+				7DCF13FE152B2780008B7D3B /* Cocoa.framework in Frameworks */,
+				7DF14CB8152A28D8005ABBB4 /* CoreFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7DD13ECA152A323E00ECC6D2 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				7DD13ECC152A32E000ECC6D2 /* RPCChunk.cpp */,
+				7DD13ECE152A32E000ECC6D2 /* RPCMethods.cpp */,
+				7DD13ED0152A32E000ECC6D2 /* RPCReply.cpp */,
+				7DD13ED2152A32E000ECC6D2 /* RPCRequest.cpp */,
+				7DD13ED4152A32E000ECC6D2 /* RPCServer.cpp */,
+				7DD13ECB152A325D00ECC6D2 /* Headers */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		7DD13ECB152A325D00ECC6D2 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				7DD13ECD152A32E000ECC6D2 /* RPCChunk.h */,
+				7DD13ECF152A32E000ECC6D2 /* RPCMethods.h */,
+				7DD13ED1152A32E000ECC6D2 /* RPCReply.h */,
+				7DD13ED3152A32E000ECC6D2 /* RPCRequest.h */,
+				7DD13ED5152A32E000ECC6D2 /* RPCServer.h */,
+				7DD13ED6152A32E000ECC6D2 /* RPCServerInterfaces.h */,
+				7DD13ED7152A32E000ECC6D2 /* RPCServerTypes.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
+		7DDE24E3152A2C9700FE3BC2 /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Dependencies;
+			sourceTree = "<group>";
+		};
+		7DF14CA9152A28D8005ABBB4 = {
+			isa = PBXGroup;
+			children = (
+				7DCF13FF152B2790008B7D3B /* Accelerate.framework */,
+				7DCF13FB152B2780008B7D3B /* Carbon.framework */,
+				7DCF13FC152B2780008B7D3B /* Cocoa.framework */,
+				7DCF13F0152B2600008B7D3B /* Accelerate.framework */,
+				7DCF13F1152B2600008B7D3B /* AGL.framework */,
+				7DCF13F2152B2600008B7D3B /* AudioToolbox.framework */,
+				7DCF13F3152B2600008B7D3B /* AudioUnit.framework */,
+				7DCF127D152B1ECA008B7D3B /* Cocoa.framework */,
+				7DCF127B152B1EC3008B7D3B /* Carbon.framework */,
+				7DD13ECA152A323E00ECC6D2 /* Sources */,
+				7DF14CC5152A28F9005ABBB4 /* Configurations */,
+				7DDE24E3152A2C9700FE3BC2 /* Dependencies */,
+				7DF14CB9152A28D8005ABBB4 /* RPCServer */,
+				7DF14CB6152A28D8005ABBB4 /* Frameworks */,
+				7DF14CB5152A28D8005ABBB4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7DF14CB5152A28D8005ABBB4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7DF14CB4152A28D8005ABBB4 /* iZTestAutomationD.bundle */,
+				7DDE24D4152A29B700FE3BC2 /* iZTestAutomation.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7DF14CB6152A28D8005ABBB4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7DF14CB9152A28D8005ABBB4 /* RPCServer */ = {
+			isa = PBXGroup;
+			children = (
+				7DF14CBA152A28D8005ABBB4 /* Supporting Files */,
+			);
+			path = RPCServer;
+			sourceTree = "<group>";
+		};
+		7DF14CBA152A28D8005ABBB4 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				7DDE24D6152A2A3500FE3BC2 /* RPCServer-Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		7DF14CC5152A28F9005ABBB4 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Configurations;
+			path = ../../../../../iZBase/build/mac_xcode;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7DDE24CB152A29B700FE3BC2 /* RPCServer Release */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7DDE24D1152A29B700FE3BC2 /* Build configuration list for PBXNativeTarget "RPCServer Release" */;
+			buildPhases = (
+				7DDE24CC152A29B700FE3BC2 /* Sources */,
+				7DDE24CD152A29B700FE3BC2 /* Frameworks */,
+				7DDE24CF152A29B700FE3BC2 /* Resources */,
+				7D3C4856153343FD00A44FAE /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RPCServer Release";
+			productName = RPCServer;
+			productReference = 7DDE24D4152A29B700FE3BC2 /* iZTestAutomation.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+		7DF14CB3152A28D8005ABBB4 /* RPCServer Debug */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7DF14CC2152A28D8005ABBB4 /* Build configuration list for PBXNativeTarget "RPCServer Debug" */;
+			buildPhases = (
+				7DF14CB0152A28D8005ABBB4 /* Sources */,
+				7DF14CB1152A28D8005ABBB4 /* Frameworks */,
+				7DF14CB2152A28D8005ABBB4 /* Resources */,
+				7DD321651533531600CEBE4B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "RPCServer Debug";
+			productName = RPCServer;
+			productReference = 7DF14CB4152A28D8005ABBB4 /* iZTestAutomationD.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7DF14CAB152A28D8005ABBB4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+			};
+			buildConfigurationList = 7DF14CAE152A28D8005ABBB4 /* Build configuration list for PBXProject "RPCServer" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7DF14CA9152A28D8005ABBB4;
+			productRefGroup = 7DF14CB5152A28D8005ABBB4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7DF14CB3152A28D8005ABBB4 /* RPCServer Debug */,
+				7DDE24CB152A29B700FE3BC2 /* RPCServer Release */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7DDE24CF152A29B700FE3BC2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DF14CB2152A28D8005ABBB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7DDE24CC152A29B700FE3BC2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DD13EDB152A32E000ECC6D2 /* RPCChunk.cpp in Sources */,
+				7DD13EDD152A32E000ECC6D2 /* RPCMethods.cpp in Sources */,
+				7DD13EDF152A32E000ECC6D2 /* RPCReply.cpp in Sources */,
+				7DD13EE1152A32E000ECC6D2 /* RPCRequest.cpp in Sources */,
+				7DD13EE3152A32E000ECC6D2 /* RPCServer.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DF14CB0152A28D8005ABBB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DD13EDA152A32E000ECC6D2 /* RPCChunk.cpp in Sources */,
+				7DD13EDC152A32E000ECC6D2 /* RPCMethods.cpp in Sources */,
+				7DD13EDE152A32E000ECC6D2 /* RPCReply.cpp in Sources */,
+				7DD13EE0152A32E000ECC6D2 /* RPCRequest.cpp in Sources */,
+				7DD13EE2152A32E000ECC6D2 /* RPCServer.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7DDE24D3152A29B700FE3BC2 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = "";
+				INFOPLIST_FILE = "Resources/RPCServer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = iZTestAutomation;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "";
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Default;
+		};
+		7DF14CC1152A28D8005ABBB4 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CURRENT_PROJECT_VERSION = 0004;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(value)",
+					RPCSERVER_LIB_EXPORTS,
+				);
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = ../../../../Submodules/iZBase/src;
+			};
+			name = Default;
+		};
+		7DF14CC4152A28D8005ABBB4 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = "";
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = "Resources/RPCServer-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = iZTestAutomationD;
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Default;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7DDE24D1152A29B700FE3BC2 /* Build configuration list for PBXNativeTarget "RPCServer Release" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7DDE24D3152A29B700FE3BC2 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+		7DF14CAE152A28D8005ABBB4 /* Build configuration list for PBXProject "RPCServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7DF14CC1152A28D8005ABBB4 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+		7DF14CC2152A28D8005ABBB4 /* Build configuration list for PBXNativeTarget "RPCServer Debug" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7DF14CC4152A28D8005ABBB4 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7DF14CAB152A28D8005ABBB4 /* Project object */;
+}
