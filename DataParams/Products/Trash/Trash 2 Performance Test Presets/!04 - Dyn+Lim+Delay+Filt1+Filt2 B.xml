@@ -1,0 +1,55 @@
+<?xml version="1.0" standalone="yes" ?>
+<Trash PresetVer="1" PluginVer="2030" PluginBuild="290" LastUsed="1374771578" LastModified="1347997928">
+    <BoxModeler Enabled="1" />
+    <Delay Enabled="1">
+        <Param ElementID="Delay" ParamID="Distortion Mode" Value="4" />
+        <Param ElementID="Delay" ParamID="Trash" Value="0.49132949" />
+    </Delay>
+    <Distortion Enabled="1">
+        <Param ElementID="Distortion" ParamID="Module Bypass" Value="1" />
+        <Param ElementID="Distortion" ParamID="Multiband Band 1 Algorithm 1" Value="29" />
+    </Distortion>
+    <Dynamics Enabled="1">
+        <Param ElementID="Dynamics" ParamID="Single-band Comp Ratio" Value="2.50508666" />
+        <Param ElementID="Dynamics" ParamID="Single-band Comp Threshold" Value="-14.89715958" />
+        <Param ElementID="Dynamics" ParamID="Single-band Gate Ratio" Value="1.60989285" />
+        <Param ElementID="Dynamics" ParamID="Single-band Gate Threshold" Value="-56.37020111" />
+    </Dynamics>
+    <Filter Enabled="1">
+        <Param ElementID="Primary Filter" ParamID="Filter Freq: Filter 3" Value="3802.31225586" />
+        <Param ElementID="Primary Filter" ParamID="Filter Freq: Filter 4" Value="6759.18603516" />
+        <Param ElementID="Primary Filter" ParamID="Filter Freq: Filter 5" Value="20000.00000000" />
+        <Param ElementID="Primary Filter" ParamID="Filter Freq: Filter 6" Value="20000.00000000" />
+        <Param ElementID="Primary Filter" ParamID="Filter Gain: Filter 4" Value="-0.48387095" />
+        <Param ElementID="Primary Filter" ParamID="Filter Gain: Filter 5" Value="0.24193548" />
+        <Param ElementID="Primary Filter" ParamID="Filter Q: Filter 4" Value="0.56137502" />
+        <Param ElementID="Primary Filter" ParamID="Filter Q: Filter 6" Value="0.56137502" />
+        <Param ElementID="Primary Filter" ParamID="Filter Type: Filter 3" Value="22" />
+        <Param ElementID="Secondary Filter" ParamID="Enabled: Filter 3" Value="0" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Freq: Filter 1" Value="39.85481644" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Freq: Filter 2" Value="227.11599731" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Freq: Filter 3" Value="4805.62792969" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Freq: Filter 4" Value="8706.51562500" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Freq: Filter 5" Value="20000.00000000" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Freq: Filter 6" Value="16070.27734375" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Gain: Filter 2" Value="2.33870959" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Gain: Filter 4" Value="0.24193548" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Gain: Filter 5" Value="8.05271244" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Q: Filter 4" Value="0.56137502" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Type: Filter 1" Value="12" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Type: Filter 3" Value="22" />
+        <Param ElementID="Secondary Filter" ParamID="Filter Type: Filter 6" Value="18" />
+    </Filter>
+    <Global Enabled="1">
+        <Param ElementID="Gain" ParamID="Gain Input Left" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Input Locked" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Input Right" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Output Left" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Output Locked" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Output Right" Value="0.10000000" />
+        <Param ElementID="Global" ParamID="Process Parallel Filters" Value="1" />
+        <ExtraBytes ElementID="Global" Data="BAAAAAEAAAACAAAAAAAAAAMAAAAFAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" />
+    </Global>
+    <Limiter Enabled="1" />
+    <Meters Enabled="1" />
+</Trash>

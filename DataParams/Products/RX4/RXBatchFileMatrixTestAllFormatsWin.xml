@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ParamsRoot>
+	<Parameter name="mainClass"                 type="String"       value="iZomateCore.iZTests.RX.RXBatchFileMatrixTest" />
+	<Parameter name="testbed"                   type="String"       value="test-auto-pc01" />
+	<!-- NOTE: logDir will be overridden when running from ToolboxManager -->
+	<Parameter name="logDir"                    type="String"       value="D:/TestAutomation/Tools/Projects/RX4/log/AutomationResultsWin" />
+	<!-- Graphing params -->
+	<Parameter name="dataDir"                   type="String"       value="Projects/RX4/GraphData" />
+	<Parameter name="plugin"                    type="String"       value="" />
+	<Parameter name="echo"                      type="Boolean"      value="true" />
+	<Parameter name="hideAllWinAtStart"         type="Boolean"      value="false" />
+	<Parameter name="submitCrashReport"         type="Boolean"      value="true" />
+	<Parameter name="quitWhenComplete"          type="Boolean"      value="true" />
+	<Parameter name="testDuration"              type="Int"          value="120" />
+	<Parameter name="presetPlayTime"            type="Int"          value="5" />
+	<Parameter name="app"                       type="String"       value="C:/TestAutomation/Projects/RX4/SA/iZotope RX 4.exe" />
+    
+	<Parameter name="outputFileDir"  	    type="String"       value="C:\TestAutomation\TestAudio\Batch Test Files\Batch Output"/>
+    <Parameter name="audioFileDir"     	    type="String"       value="C:\TestAutomation\TestAudio\Batch Test Files" />
+
+	 <!-- Optional if you need to override their defaults -->    
+    <Parameter name="//defaultTimeout"          type="Int"          value="500" />
+	
+	
+<!-- ///////////////////////////////////// WAVE files ///////////////////////////////////// -->  
+    <Testcase> <!-- from original file-none.wav -->
+        <!-- Testcase settings -->
+        <Parameter name="testcaseName"      type="String"       value="from original file-none.wav" />
+        <Parameter name="allowFailures"     type="Boolean"  	value="true"/>
+        <Parameter name="batchTimeout"      type="Int"      	value="5" />    <!-- timeout in seconds. -->
+
+        <!-- Batch Processor settings -->
+        <Parameter name="audioFileType"     type="String"	value="WAVE" />
+        <Parameter name="outputOptions"     type="String"	value="from original file,None (truncate),true" />
+        <Parameter name="addKind"           type="String"	value="text" /> <!-- set to "text" or "date" only -->
+        <Parameter name="addLocation"       type="String"	value="before name"/> <!-- set to "before name" or "after name" only -->
+        <Parameter name="addText"           type="String"	value="from original file-none-"/>
+    </Testcase>
+</ParamsRoot>

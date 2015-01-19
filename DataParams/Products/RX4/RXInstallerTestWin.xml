@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ParamsRoot>
+    <Parameter name="mainClass"                 type="String"       value="iZomateCore.iZTests.InstallerTest" />
+    <Parameter name="testbed"                   type="String"       value="test-auto-pc01" />
+    <!-- NOTE: logDir willbe overridden when running from ToolboxManager -->
+    <Parameter name="logDir"                    type="String"       value="~/TestAutomation/Projects/RX4/AutomationResultsWin" />
+    <!-- Graphing params -->
+    <Parameter name="dataDir"                   type="String"       value="Projects/RX4/GraphData" />
+    <Parameter name="plugin"                    type="String"       value="" />
+    <Parameter name="echo"                      type="Boolean"      value="true" />
+    <Parameter name="hideAllWinAtStart"         type="Boolean"      value="false" />
+    <Parameter name="submitCrashReport"         type="Boolean"      value="true" />
+    <Parameter name="quitWhenComplete"          type="Boolean"      value="true" />
+    <!-- Optional if you need to override their defaults -->    
+    <Parameter name="emailRecipients"           type="String"       value="nlapenn@izotope.com" />  <!-- comma separated list -->
+    <Parameter name="emailSender"               type="String"       value="RX4InstallerTest" />
+	<Parameter name="sendPassedEmails"          type="Boolean"      value="false" />
+    <Parameter name="resultsLink"               type="String"       value="https://buildarchive.izotope.int/archive/Restoration/Build-full-%BuildNumber%-master/AutomationResultsWin/RX4InstallerTest_ResultLog.html" />
+    <Parameter name="sshUser@Host"              type="String"       value="iztestauto@buildarchive.izotope.int -i iztestauto_id_rsa" />
+    <Parameter name="sshRemoteArchiveDir"       type="String"       value="/build_archive/Restoration/Build-full-%BuildNumber%-master" />
+    <Parameter name="password"                  type="String"       value="iziztestauto203$" />
+  
+    <Testcase>
+        <Parameter name="testcaseName"          type="String"       value="RX 4 Advanced Gold Installer" /> <!-- Product Installto test -->
+		<Parameter name="appName"               type="String"       value="RX 4" /> <!-- The products app name -->
+		<Parameter name="vst32Folder"           type="String"       value="C:/Program Files/Vstplugins" /> <!-- Windows 32-bit VST folder -->
+		<Parameter name="vst64Folder"           type="String"       value="C:/Program Files/Vstplugins" /> <!-- Windows 64-bit VST folder -->
+		<Parameter name="installerFolder"		type="String"		value="/build_archive/Restoration/Build-full-812-RX4/" /> <!-- Buildarchive location for product installer -->
+		<Parameter name="installerWin"			type="String"		value="iZotope RX4 Advanced 3.02_(Build_812).exe" /> <!-- Installer Filename - Windows -->
+		<Parameter name="installerMac"			type="String"		value="iZotope RX 4 Advanced Web Image 3.02_(Build_812).dmg" /> <!-- Installer Filename - OSX -->
+		<Parameter name="macMountedInstaller"	type="String"		value="/Volumes/iZotope RX4 Advanced/Double-Click to Install RX 4 Advanced.pkg" /> <!-- PKG file inside the installer -->
+		<Parameter name="installerLogWin"		type="String"		value="" /> <!-- Windows Gold Log File -->
+		<Parameter name="installerLogMac"		type="String"		value="" /> <!-- OSX Gold Log File -->
+		<Parameter name="checkForUpdates"       type="Boolean"      value="false" /> <!-- Check for Updates flag -->
+		<Parameter name="verifyInventory"		type="Boolean"		value="false" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="checkExtraFiles"		type="Boolean"		value="false" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="runUninstaller"        type="Boolean"		value="true" /> <!-- Run the uninstaller -->
+		<Parameter name="goldLog"               type="Boolean"		value="true" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="isContentInstaller"	type="Boolean"		value="false" /> <!-- Is this a content installer? -->
+    </Testcase>   
+
+    <Testcase>
+        <Parameter name="testcaseName"          type="String"	value="RX 4 Advanced Latest Installer" /> <!-- Product Installto test -->
+		<Parameter name="appName"               type="String"   value="RX 4" /> <!-- The products app name -->
+		<Parameter name="vst32Folder"           type="String"   value="C:/Program Files (x86)/Vstplugins" /> <!-- Windows 32-bit VST folder -->
+		<Parameter name="vst64Folder"           type="String"   value="C:/Program Files/Vstplugins" /> <!-- Windows 64-bit VST folder -->
+		<Parameter name="installerFolder"       type="String"	value="/build_archive/Restoration/Build-full-*-master" /> <!-- Buildarchive location for product installer -->
+		<Parameter name="installerWin"          type="String"	value="iZotope RX4 Advanced 3.02_(Build_*).exe" /> <!-- Installer Filename - Windows -->
+		<Parameter name="installerMac"          type="String"	value="iZotope RX 4 Advanced Web Image 3.02_(Build_*).dmg" /> <!-- Installer Filename - OSX -->
+		<Parameter name="macMountedInstaller"   type="String"	value="/Volumes/iZotope RX4 Advanced/Double-Click to Install RX 4 Advanced.pkg" /> <!-- PKG file inside the installer -->
+		<Parameter name="installerLogWin"       type="String"	value="" /> <!-- Windows Gold Log File - ADD THIS IN WHEN WE HAVE IT -->
+		<Parameter name="installerLogMac"       type="String"	value="" /> <!-- OSX Gold Log File - ADD THIS IN WHEN WE HAVE IT -->
+		<Parameter name="checkForUpdates"       type="Boolean"  value="false" /> <!-- Check for Updates flag -->
+		<Parameter name="runUninstaller"        type="Boolean"	value="true" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="verifyInventory"       type="Boolean"	value="false" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="checkExtraFiles"       type="Boolean"	value="true" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="goldLog"               type="Boolean"	value="false" /> <!-- Check the installed product against the gold inventory -->
+		<Parameter name="isContentInstaller"	type="Boolean"	value="false" /> <!-- Is this a content installer? -->
+    </Testcase>  
+ </ParamsRoot>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ParamsRoot>
+    <Parameter name="mainClass"                 type="String"       value="iZomateCore.iZTests.InstallerTest" />
+    <!-- NOTE: testbed will be overridden when running from ToolboxManager -->
+    <Parameter name="testbed"                   type="String"       value="test-auto-macpro01" />
+    <!-- NOTE: logDir will be overridden when running from ToolboxManager -->
+    <Parameter name="logDir"                    type="String"       value="~/TestAutomation/Projects/Iris/AutomationResults" />
+    <!-- Graphing params -->
+    <Parameter name="dataDir"                   type="String"       value="Projects/Iris/GraphData" />
+    <Parameter name="plugin"                    type="String"       value="" />
+    <Parameter name="echo"                      type="Boolean"      value="true" />
+    <Parameter name="hideAllWinAtStart"         type="Boolean"      value="false" />
+    <Parameter name="submitCrashReport"         type="Boolean"      value="true" />
+    <Parameter name="quitWhenComplete"          type="Boolean"      value="true" />
+    <!-- Optional if you need to override their defaults -->    
+    <Parameter name="emailRecipients"           type="String"       value="nlapenn@izotope.com, sbernardo@izotope.com" />  <!-- comma separated list of email addresses -->
+    <Parameter name="emailSender"               type="String"       value="Iris2InstallerTest" /> <!-- This is who the email will come from for results -->
+    <Parameter name="resultsLinkMac"            type="String"       value="http://buildarchive.izotope.int/archive/Iris/Build-full-%BuildNumber%-master/AutomationResultsMac/InstallerTest_ResultLog.html" /> <!-- This is where results will be posted on buildarchive -->
+    <Parameter name="resultsLinkWin"            type="String"       value="http://buildarchive.izotope.int/archive/Iris/Build-full-%BuildNumber%-master/AutomationResultsWin/InstallerTest_ResultLog.html" /> <!-- This is where results will be posted on buildarchive -->
+    <Parameter name="sshUser@Host"              type="String"       value="iztestauto@buildarchive.izotope.int -i iztestauto_id_rsa" />
+    <Parameter name="sshRemoteArchiveDir"       type="String"       value="/build_archive/Iris/Build-full-%BuildNumber%-master" />
+    <Parameter name="password"                  type="String"       value="iziztestauto203$" />
+    
+    <!-- When we have a useful gold log for comparison uncomment this and fill it in.  For now we'll skip the gold installer compare. -->
+    
+    <Testcase> <!-- Most recent build.  This testcase will compare what the new build installs to the last known Gold specified above -->
+        <Parameter name="testcaseName"          type="String"       value="Iris 2 Installer" /> <!-- This is the name of the testcase -->
+		<Parameter name="appName"               type="String"       value="Iris 2" /> <!-- The products app name -->
+		<Parameter name="vst32Folder"           type="String"       value="C:/Program Files (x86)/Steinberg/Vstplugins" /> <!-- Windows 32-bit VST folder -->
+		<Parameter name="vst64Folder"           type="String"       value="C:/Program Files/Steinberg/Vstplugins" /> <!-- Windows 64-bit VST folder -->
+		<Parameter name="installerFolder"       type="String"       value="/build_archive/Iris/Build-full-*-master" /> <!-- Buildarchive location for product installer -->
+		<Parameter name="installerWin"          type="String"       value="iZotope Iris 2.00_(Build_*).exe" /> <!-- Installer Filename - Windows -->
+		<Parameter name="installerMac"          type="String"       value="iZotope Iris 2 Web Image 2.00_(Build_*).dmg" /> <!-- Installer Filename - OSX -->
+		<Parameter name="macMountedInstaller"   type="String"       value="/Volumes/iZotope Iris 2/Double-Click to Install Iris 2.pkg" /> <!-- PKG file inside the installer -->
+		<Parameter name="installerLogWin"       type="String"       value="\\\\munchkin/Development/TestAutomation/SharedFiles/GoldInventoryFiles/Iris2/Iris_2.00_Win_Inventory.txt" /> <!-- Windows Gold Log File -->
+		<Parameter name="installerLogMac"       type="String"       value="\\\\munchkin/Development/TestAutomation/SharedFiles/GoldInventoryFiles/Iris2/Iris_2.00_Mac_Inventory.txt" /> <!-- OSX Gold Log File -->
+		<Parameter name="checkForUpdates"       type="Boolean"      value="true" /> <!-- Check for Updates flag -->
+		<Parameter name="verifyInventory"       type="Boolean"      value="true" /> <!-- Check the installed product against the gold inventory - Leave false for Gold Testcase -->
+		<Parameter name="checkExtraFiles"       type="Boolean"      value="false" /> <!-- Checks for extra files compared to the Gold.  Leave false in the Gold Testcase-->
+		<Parameter name="runUninstaller"        type="Boolean"      value="true" /> <!-- If true, uninstalls when done.  -->
+		<Parameter name="goldLog"               type="Boolean"      value="false" /> <!-- False for this testcase -->
+		<Parameter name="isContentInstaller"	type="Boolean"		value="false" /> <!-- Content installers work differently than regular installers.  Mark true for those. -->
+    </Testcase>  
+ </ParamsRoot>

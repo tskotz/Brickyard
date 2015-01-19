@@ -1,0 +1,35 @@
+<?xml version="1.0" standalone="yes" ?>
+<Alloy PresetVer="2" PluginVer="2000" PluginBuild="277" LastUsed="1339518513">
+    <DeEsser Enabled="1" />
+    <Dynamics Enabled="1">
+        <Param ElementID="Dynamics 1" ParamID="Single-band Comp Ratio" Value="0.79999995" />
+    </Dynamics>
+    <Dynamics2 Enabled="1" />
+    <EQ Enabled="1">
+        <Param ElementID="Equalizer" ParamID="Band 1 Q" Value="12.00000000" />
+        <Param ElementID="Equalizer" ParamID="Band 4 Frequency" Value="803.96838379" />
+        <Param ElementID="Equalizer" ParamID="Band 4 Gain" Value="2.58064508" />
+        <Param ElementID="Equalizer" ParamID="Band 4 Q" Value="0.93750000" />
+        <Param ElementID="Equalizer" ParamID="Band 8 Q" Value="12.00000000" />
+    </EQ>
+    <Exciter Enabled="1">
+        <Param ElementID="Exciter" ParamID="Filter Freq" Value="7638.19921875" />
+        <Param ElementID="Exciter" ParamID="Filter Gain" Value="-4.16665602" />
+        <Param ElementID="Exciter" ParamID="Meter View" Value="1" />
+        <Param ElementID="Exciter" ParamID="Singleband Amount" Value="3.34337378" />
+        <Param ElementID="Exciter" ParamID="Singleband Mix Percent" Value="75.00000000" />
+    </Exciter>
+    <Global Enabled="1">
+        <ExtraBytes ElementID="Data Mux Source" Data="QWxsb3kgMQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI4QTU1RjY5LTEyOEUtRTExMS1BRDY0LTAwMjcwRTEyMTU4OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" />
+    </Global>
+    <Limiter Enabled="1">
+        <Param ElementID="Maximizer" ParamID="Stereo Link" Value="0" />
+    </Limiter>
+    <Meters Enabled="1" />
+    <TransientShaper Enabled="1">
+        <Param ElementID="Transient Shaper" ParamID="Bypass" Value="0" />
+        <Param ElementID="Transient Shaper" ParamID="Sustain Gain" Value="-1.74846458" />
+        <Param ElementID="Transient Shaper" ParamID="Transient Gain" Value="3.77300644" />
+        <Param ElementID="Transient Shaper" ParamID="Zero Latency" Value="1" />
+    </TransientShaper>
+</Alloy>

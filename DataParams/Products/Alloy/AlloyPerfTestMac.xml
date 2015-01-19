@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ParamsRoot>
+    <Parameter name="author"                 	type="string"       value="Terry Skotz" />
+    <Parameter name="description"               type="string"       value="This is a test script description" />
+    <Parameter name="mainClass"                 type="string"       value="iZomateCore.iZTests.Performance.PluginPerfTest" />
+    <Parameter name="team"                      type="String"       value="Alloy" />
+    <Parameter name="isDev"                     type="Boolean"      value="false" />
+
+    <Parameter name="testbed"                   type="String"       value="test-auto-macpro01" />
+    <!-- NOTE: logDir will be overridden when running from ToolboxManager -->
+    <Parameter name="logDir"                    type="String"       value="/TestAutomation/Projects/Alloy/AutomationResultsMac" />
+    <!-- Graphing params -->
+    <Parameter name="dataDir"                   type="String"       value="Projects/Alloy/GraphData" />
+    <Parameter name="plugin"                    type="String"       value="" />
+    <Parameter name="echo"                      type="Boolean"      value="true" />
+    <Parameter name="hideAllWinAtStart"         type="Boolean"      value="false" />
+    <Parameter name="submitCrashReport"         type="Boolean"      value="true" />
+    <Parameter name="quitWhenComplete"          type="Boolean"      value="true" />
+    <Parameter name="testDuration"              type="Int"          value="120" />
+    <Parameter name="presetPlayTime"            type="Int"          value="5" />
+    <Parameter name="audioFile"                 type="String"       value="/TestAutomation/TestAudio/03 Clifton's Gold.wav" />
+    <!-- Optional if you need to override their defaults -->    
+    <Parameter name="xemailRecipients"           type="String"       value="tskotz@izotope.com" /> <!-- comma separated list -->
+    <Parameter name="xemailSender"               type="String"       value="AlloyTestAuto" />
+    <Parameter name="xsendPassedEmails"          type="Boolean"      value="true" /> 
+    <Parameter name="xresultsLink"               type="String"       value="http://buildarchive.izotope.int/archive/Alloy/Build-full-%BuildNumber%/AutomationResultsMac/PluginPerfTest_ResultLog.html" />
+    <Parameter name="xsshUser@Host"              type="String"       value="iztestauto@buildarchive.izotope.int -i iztestauto_id_rsa" />
+    <Parameter name="xsshRemoteArchiveDir"       type="String"       value="/build_archive/Alloy/Build-full-%BuildNumber%" />
+    
+    <Testcase>
+        <Parameter name="testcaseName"              type="String"       value="iZAlloy2SAHook" />
+        <Parameter name="app"                       type="String"       value="/TestAutomation/Projects/Alloy2/SA/iZAlloy2SAHook.app" />
+        <Parameter name="presetPlayTime"            type="String"       value="10" />
+    </Testcase>
+    <Testcase>
+        <Parameter name="testcaseName"              type="String"       value="iZAlloy2SAHook 2" />
+        <Parameter name="app"                       type="String"       value="/TestAutomation/Projects/Alloy2/SA/iZAlloy2SAHook2.app" />
+        <Parameter name="presetPlayTime"            type="String"       value="5" />
+    </Testcase>
+    <Testcase>
+        <Parameter name="testcaseName"              type="String"       value="iZAlloy2SAHook 3" />
+        <Parameter name="app"                       type="String"       value="/TestAutomation/Projects/Alloy2/SA/iZAlloy2SAHook3.app" />
+        <Parameter name="presetPlayTime"            type="String"       value="125" />
+    </Testcase>
+</ParamsRoot>

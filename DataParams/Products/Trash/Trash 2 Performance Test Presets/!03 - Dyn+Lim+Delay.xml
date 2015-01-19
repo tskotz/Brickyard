@@ -1,0 +1,29 @@
+<?xml version="1.0" standalone="yes" ?>
+<Trash PresetVer="1" PluginVer="2030" PluginBuild="290" LastUsed="1374771558" LastModified="1347989073">
+    <BoxModeler Enabled="1" />
+    <Delay Enabled="1">
+        <Param ElementID="Delay" ParamID="Distortion Mode" Value="4" />
+        <Param ElementID="Delay" ParamID="Trash" Value="0.49132949" />
+    </Delay>
+    <Distortion Enabled="1">
+        <Param ElementID="Distortion" ParamID="Module Bypass" Value="1" />
+        <Param ElementID="Distortion" ParamID="Multiband Band 1 Algorithm 1" Value="29" />
+    </Distortion>
+    <Dynamics Enabled="1">
+        <Param ElementID="Dynamics" ParamID="Single-band Comp Ratio" Value="2.50508666" />
+        <Param ElementID="Dynamics" ParamID="Single-band Comp Threshold" Value="-14.89715958" />
+        <Param ElementID="Dynamics" ParamID="Single-band Gate Ratio" Value="1.60989285" />
+        <Param ElementID="Dynamics" ParamID="Single-band Gate Threshold" Value="-56.37020111" />
+    </Dynamics>
+    <Filter Enabled="1" />
+    <Global Enabled="1">
+        <Param ElementID="Gain" ParamID="Gain Input Left" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Input Locked" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Input Right" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Output Left" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Output Locked" Value="0.10000000" />
+        <Param ElementID="Gain" ParamID="Gain Output Right" Value="0.10000000" />
+    </Global>
+    <Limiter Enabled="1" />
+    <Meters Enabled="1" />
+</Trash>

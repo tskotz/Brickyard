@@ -1,0 +1,53 @@
+<?xml version="1.0" standalone="yes" ?>
+<Alloy PresetVer="2" PluginVer="2000" PluginBuild="277" LastUsed="1339518376">
+    <DeEsser Enabled="1">
+        <Param ElementID="De-esser" ParamID="Attack" Value="2.72975755" />
+        <Param ElementID="De-esser" ParamID="Bypass" Value="0" />
+        <Param ElementID="De-esser" ParamID="Crossover High Cutoff" Value="8650.16601563" />
+        <Param ElementID="De-esser" ParamID="Crossover Low Cutoff" Value="4442.99560547" />
+        <Param ElementID="De-esser" ParamID="Release" Value="76.04524231" />
+        <Param ElementID="De-esser" ParamID="Threshold" Value="-24.65598297" />
+    </DeEsser>
+    <Dynamics Enabled="1">
+        <Param ElementID="Dynamics 1" ParamID="Single-band Comp Ratio" Value="0.79999995" />
+    </Dynamics>
+    <Dynamics2 Enabled="1">
+        <Param ElementID="Dynamics 2" ParamID="Bypass" Value="0" />
+        <Param ElementID="Dynamics 2" ParamID="Global Mix" Value="49.54441833" />
+        <Param ElementID="Dynamics 2" ParamID="Single-band Comp Ratio" Value="2.39331079" />
+        <Param ElementID="Dynamics 2" ParamID="Single-band Comp Threshold" Value="-19.51793671" />
+        <Param ElementID="Dynamics 2" ParamID="Single-band Gate Ratio" Value="30.00000000" />
+        <Param ElementID="Dynamics 2" ParamID="Single-band Gate Release" Value="18.20564079" />
+        <Param ElementID="Dynamics 2" ParamID="Single-band Gate Threshold" Value="-25.51527786" />
+    </Dynamics2>
+    <EQ Enabled="1">
+        <Param ElementID="Equalizer" ParamID="Band 1 Q" Value="12.00000000" />
+        <Param ElementID="Equalizer" ParamID="Band 4 Frequency" Value="803.96838379" />
+        <Param ElementID="Equalizer" ParamID="Band 4 Gain" Value="2.58064508" />
+        <Param ElementID="Equalizer" ParamID="Band 4 Q" Value="0.93750000" />
+        <Param ElementID="Equalizer" ParamID="Band 8 Q" Value="12.00000000" />
+    </EQ>
+    <Exciter Enabled="1">
+        <Param ElementID="Exciter" ParamID="Bypass" Value="0" />
+        <Param ElementID="Exciter" ParamID="Filter Freq" Value="7638.19921875" />
+        <Param ElementID="Exciter" ParamID="Filter Gain" Value="-4.16665602" />
+        <Param ElementID="Exciter" ParamID="Singleband Amount" Value="1.98795187" />
+        <Param ElementID="Exciter" ParamID="Singleband Mix Percent" Value="60.00000000" />
+        <Param ElementID="Exciter" ParamID="Singleband Width" Value="15.00000000" />
+        <Param ElementID="Exciter" ParamID="Singleband X" Value="0.27403846" />
+        <Param ElementID="Exciter" ParamID="Singleband Y" Value="0.29807693" />
+    </Exciter>
+    <Global Enabled="1">
+        <ExtraBytes ElementID="Data Mux Source" Data="QWxsb3kgMQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI4QTU1RjY5LTEyOEUtRTExMS1BRDY0LTAwMjcwRTEyMTU4OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" />
+    </Global>
+    <Limiter Enabled="1">
+        <Param ElementID="Maximizer" ParamID="Stereo Link" Value="0" />
+    </Limiter>
+    <Meters Enabled="1" />
+    <TransientShaper Enabled="1">
+        <Param ElementID="Transient Shaper" ParamID="Bypass" Value="0" />
+        <Param ElementID="Transient Shaper" ParamID="Sustain Gain" Value="-1.74846458" />
+        <Param ElementID="Transient Shaper" ParamID="Transient Gain" Value="3.77300644" />
+        <Param ElementID="Transient Shaper" ParamID="Zero Latency" Value="1" />
+    </TransientShaper>
+</Alloy>
