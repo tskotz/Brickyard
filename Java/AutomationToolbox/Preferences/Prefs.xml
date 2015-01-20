@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root>
     <!-- DataparamsRootDir: Root dir of the published dataparams -->
-    <DataparamsRootDir>/Users/terryskotz/TestAutomation/DataParams</DataparamsRootDir>
+    <DataparamsRootDir>../DataParams</DataparamsRootDir>
     <!-- DefaultJars: Toolbox will use this as the root for the classpath if no classpath is specified in job.xml -->
-    <DefaultJars>/Users/terryskotz/TestAutomation/Java/Jars</DefaultJars>
+    <DefaultJars>./Jars</DefaultJars>
     <!-- StagingDir: This will override the default staging dir location -->
     <StagingDir></StagingDir>
     <!-- Number of jobs to appear in the TestManager Jobs list -->

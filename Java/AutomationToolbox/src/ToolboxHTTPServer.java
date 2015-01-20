@@ -40,6 +40,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	private String 	mstrTemplateDir= this.mstrWorkingDir + "/AutomationToolbox/Preferences/Templates/";
 	private String 	mstrDataParamDir= null;
 	private String  mstrPort= null;
+	private String  mstrWebServerURL= null;
 	
 	static  int		sRequestCounter= 0;
 	static final String STATUS_SUCCESS= "success";
@@ -65,7 +66,12 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strDataParam
 	 */
 	public void _SetDataParamDir( String strDataParamDir ) {
-		this.mstrDataParamDir= strDataParamDir;
+		try {
+			File fDataParamsDir= new File( strDataParamDir );
+			this.mstrDataParamDir= fDataParamsDir.getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -82,8 +88,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 		System.out.println( "Query: " + exchange.getRequestURI().getQuery() );
 		System.out.println( "Protocol: " + exchange.getProtocol() );
 		System.out.println( "Method: " + exchange.getRequestMethod() );
-		System.out.println( "Remote Adr: " + exchange.getRemoteAddress().getHostName() );		
-		
+		System.out.println( "Remote Adr: " + exchange.getRemoteAddress().getHostName() );	
+
+		this.mstrWebServerURL= "http:/" + exchange.getLocalAddress().toString();
+
 	    if (requestMethod.equalsIgnoreCase("GET")) {
 	    	String strStatus= "Ooops!";
 	    	byte[] bufJPEG= null;
@@ -230,7 +238,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		return
 		"<table style=\"width:100%;padding:0px;border:0px solid black;xbackground-color:#eeeeee;\">\n" +
 		"	<tr>\n" +
-		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\"http://outside.home:8380/AutoManager/GetImage?holiday-spirit-anastasiya-malakhova.jpg\" style=\"width:100\"></td>\n" +
+		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\""+ mstrWebServerURL + "/AutoManager/GetImage?holiday-spirit-anastasiya-malakhova.jpg\" style=\"width:100\"></td>\n" +
 		"		<td style=\"padding:10px;border:0px solid black\"><h1>" + strText + "</h1>" + 
 		"											<a href=\"/AutoManager/JobEditor\"><button style=\"color:#0000ff;\">Create Job</button></a>\n" +
 		"											<a href=\"/AutoManager/Status\"><button style=\"color:#0000ff;\">Status Page</button></a>" + 
@@ -271,16 +279,20 @@ public class ToolboxHTTPServer implements HttpHandler {
 						else if( aElementInfo[0].equals( "commandlineargs" ))
 							eJob.addContent( new Element( JobTags.CommandLineArgs.name() ).setText( aElementInfo[1].trim() ) );
 						else if( aElementInfo[0].equals( "dataparamfile" )) {
-							// i.e. dataparamfile=Products/RX3/RX3FileLoadingTestMac.xml;Bank1
+							// i.e. dataparamfile=Products/RX3/RX3FileLoadingTestMac.xml;Bank1;dependacyxml;false
 							String[] aTestInfo= aElementInfo[1].trim().split(";");
-							String strRealTestbedValue= DatabaseMgr._Testbeds()._GetTestbedValue( aTestInfo[1] );
+							String strDataparamFile= aTestInfo[0];
+							String strTestbedOrGroup= aTestInfo[1].trim();
+							String strTestbedLookupValue= DatabaseMgr._Testbeds()._GetTestbedValue( strTestbedOrGroup );
+							String strDependency= aTestInfo[2];
+							boolean bParallelize= aTestInfo[3].equals("true");
 							// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
-							for( String strThisTestbed : strRealTestbedValue.split(",")) {
+							for( String strThisTestbed : strTestbedLookupValue.split(",")) {
 								Element aElement= new Element( JobTags.DataParamFile.name() );
-								aElement.setText( this.mstrDataParamDir + "/" + aTestInfo[0] );
+								aElement.setText( this.mstrDataParamDir + "/" + strDataparamFile );
 								aElement.setAttribute( "testbed", strThisTestbed.trim() );
-								if( strRealTestbedValue != strThisTestbed )
-									aElement.setAttribute( "group", aTestInfo[1].trim() );
+								if( strTestbedLookupValue != strThisTestbed )
+									aElement.setAttribute( "group", strTestbedOrGroup );
 								eJob.addContent( aElement );
 							}
 						}
@@ -339,8 +351,6 @@ public class ToolboxHTTPServer implements HttpHandler {
 		Preferences._GetPref( Preferences.TYPES.DefaultJars, null);
 		
 		String 	strTemplateFile= this.mstrTemplateDir + "/JobEditor.html";
-		// Read these in from database
-		//String[] strTestbeds= new String[]{"tskotz-mac-wifi", "tskotz-mac-wifi.local", "tskotz-pc", "10.211.55.4", "Outside.local", "127.0.0.1"};
 		String[] strTestbeds= DatabaseMgr._Testbeds()._GetTestbeds();
         StringBuilder sb = new StringBuilder();
 		
@@ -373,9 +383,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            }
 	            else if( line.contains( "id=\"TestsRoot\"" )) {
             		sb.append( "  <option value=\"--Select--\">--Select--</option>\n" );
-	            	for( File fFile : (new File(this.mstrDataParamDir)).listFiles() )
-	            		if( fFile.isDirectory() )
-	            			sb.append( "  <option value=\"" + fFile.getName() + "\">" + fFile.getName() + "</option>\n" );
+            		File fDataParamsDir= new File(this.mstrDataParamDir);
+            		if( fDataParamsDir.exists() ) {
+		            	for( File fFile : fDataParamsDir.listFiles() )
+		            		if( fFile.isDirectory() )
+		            			sb.append( "  <option value=\"" + fFile.getName() + "\">" + fFile.getName() + "</option>\n" );
+            		}
+            		else
+            			System.out.println( "Could not find DataParameters directory: " + this.mstrDataParamDir );
 	            }
 	            		
 	            line = br.readLine();
