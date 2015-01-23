@@ -62,10 +62,12 @@ public class DatabaseMgr
 	private final String mstrProtocol= 	"jdbc:derby:";
 	private final String mstrDBName=	"dbAutoToolbox";
 	
+	private final String mstrTableVersionsName= "TableVersions";
 	private final String mstrTestbedTableName= "TestbedTable3";
 	private final String mstrJobsTableName= "JobsTable";
 	private final String mstrUsersTableName= "UsersTable";
 
+	private TableVersionsWrapper mTableVersionsTable= null;
 	private TestbedsTableWrapper mTestbedsTable= null;
 	private JobsTableWrapper mJobsTable= null;
 	private UsersTableWrapper mUsersTable= null;
@@ -134,6 +136,19 @@ public class DatabaseMgr
 		return DatabaseMgr._GetInstance().mConnection.createStatement();
 	}
 	
+	/**
+	 * Table Versions Table Accessor
+	 * @return
+	 */
+	public static TableVersionsWrapper _Versions()
+	{
+		// Create the testbeds table if it does not exist
+		if( DatabaseMgr._GetInstance().mTableVersionsTable == null )
+			DatabaseMgr._GetInstance().mTableVersionsTable= DatabaseMgr._GetInstance().new TableVersionsWrapper();
+		
+		return DatabaseMgr._GetInstance().mTableVersionsTable;
+	}
+
 	/**
 	 * Testbeds Table Accessor
 	 * @return
@@ -259,6 +274,95 @@ public class DatabaseMgr
 	 * @author terryskotz
 	 *
 	 */
+	public class TableVersionsWrapper
+	{	
+		private final String TABLENAME_COL=  "tablename";
+		private final int	 TABLENAME_COL_MAX_SIZE= 100;
+		private final String TABLEVERSION_COL=  "tableversion";
+		private final int	 TABLEVERSION_COL_MAX_SIZE= 100;
+		
+		private String mstrMyTable= null;
+		
+		public TableVersionsWrapper()
+		{
+			this.mstrMyTable= DatabaseMgr._GetInstance().mstrTableVersionsName;
+			try
+			{
+				// Add the table to the master db
+		        Statement s = DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "CREATE TABLE %s ( %s varchar(%d), %s varchar(%d))", 
+		        		 this.mstrMyTable, TABLENAME_COL, TABLENAME_COL_MAX_SIZE, TABLEVERSION_COL, TABLEVERSION_COL_MAX_SIZE);
+		        //System.out.println( strQuery );
+		        s.execute( strQuery );
+			}
+		    catch (Throwable e)
+		    {
+		        if( e.getMessage().contains( "already exists in Schema") )
+		        	;// this is ok
+		        else 
+		        {
+			        System.out.println("exception thrown:");
+		        	if (e instanceof SQLException)
+		        		DatabaseMgr._GetInstance().printSQLError((SQLException) e);
+		        	else
+		        		e.printStackTrace();
+		        }
+		    }
+		}
+		
+		public boolean _SetVersion( String strTableName, String strVersion )
+		{
+			try 
+			{
+				Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+				String strQuery;
+				if( this._GetVersion(strTableName) == null )
+					strQuery= String.format( "INSERT INTO %s VALUES ('%s','%s')", 
+						this.mstrMyTable, strTableName, strVersion );
+				else
+					strQuery= String.format( "UPDATE %s SET %s='%s',%s='%s' WHERE %s='%s'", 
+							this.mstrMyTable, 
+							this.TABLENAME_COL, strTableName, this.TABLEVERSION_COL, strVersion, this.TABLENAME_COL, strTableName );					
+				s.execute( strQuery );
+				s.close();
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+				return false;
+			}
+			
+	        return true;
+		}
+		
+		public String _GetVersion( String strTableName )
+		{
+			String strVersion= null;
+			try 
+			{
+				Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "SELECT * FROM %s WHERE %s='%s'", this.mstrMyTable, this.TABLENAME_COL, strTableName );
+				ResultSet rs= s.executeQuery( strQuery );
+
+				if( rs.next() )
+					strVersion= rs.getString(this.TABLENAME_COL);
+				rs.close();
+				s.close();
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+			}
+			
+	        return strVersion;
+		}
+	}
+
+	/**
+	 * 
+	 * @author terryskotz
+	 *
+	 */
 	public class UsersTableWrapper
 	{	
 		private final String USER_COL=  "username";
@@ -291,6 +395,7 @@ public class DatabaseMgr
 		        		e.printStackTrace();
 		        }
 		    }
+			DatabaseMgr._Versions()._SetVersion(this.mstrMyTable, "1.0");
 		}
 		
 		public String _AddUser( String strUser )
@@ -411,6 +516,7 @@ public class DatabaseMgr
 		        		e.printStackTrace();
 		        }
 		    }
+			DatabaseMgr._Versions()._SetVersion(this.mstrMyTable, "1.0");
 		}
 		
 		public String _AddJob( JobDescriptor pJobDescr )
@@ -573,6 +679,7 @@ public class DatabaseMgr
 		        		e.printStackTrace();
 		        }
 		    }
+			DatabaseMgr._Versions()._SetVersion(this.mstrMyTable, "1.0");
 		}
 		
 		/**
