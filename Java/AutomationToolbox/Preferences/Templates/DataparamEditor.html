@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Dataparameter 2</title>
+  <title>Data Parameter Editor</title>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
   <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
@@ -128,8 +128,6 @@
   </script>
 </head>
 <body>
-
-<!-- Insert Header -->
  
 <div id="dialog-form" title="Create New Parameter"> 
   <form>
@@ -142,12 +140,14 @@
       <label id="pValueLabel" for="pvalue">Default Value</label>
       <input type="text" name="pvalue" id="pvalue" value="" class="text ui-widget-content ui-corner-all">
       <label for="pdesc">Description</label>
-      <textarea name="pdesc" id="pdesc" value="Description of paramter" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+      <textarea name="pdesc" id="pdesc" value="Description of parameter" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
     </fieldset>
   </form>
 </div>
+
+<!-- Insert Header -->
  
   <h1 id="DataparamTitle"></h1>
   <table id="dpInfo">

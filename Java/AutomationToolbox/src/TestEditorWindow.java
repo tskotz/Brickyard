@@ -334,7 +334,7 @@ public class TestEditorWindow extends JFrame {
 		// Close the List item
 		strRowData+="</tr>\n";
 
-		//TODO: Hacky
+		//TODO: Hacky way to get the desired ordering
 		LinkedHashMap<String, String> hmNewMap= (LinkedHashMap<String, String>)hmParams.clone();
 		hmParams.clear();
 		hmParams.put( strParamName, strRowData );

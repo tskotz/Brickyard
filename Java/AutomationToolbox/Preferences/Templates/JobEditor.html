@@ -5,13 +5,17 @@
   <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
   <link rel="stylesheet" href="/resources/demos/style.css">
   <style>
-  #QueueTestsList { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-  #QueueTestsList li span { position: absolute; margin-left: -1.3em; }
+	#QueueTestsList { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+	#QueueTestsList li span { position: absolute; margin-left: -1.3em; }
+    input.text { margin-bottom:12px; width:95%; padding: .4em; }
+	fieldset { padding:0; border:0; margin-top:15px;}
+	.ui-button-text { font-size: 10px; padding: 0px 0px 1px 1px; }
+	.ui-dialog-title{ font-size: 15px; }
+	.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix{ border:none; }
+    .validateTips { border: 1px solid transparent; padding: 0.3em; }
   </style>
   
-  <SCRIPT TYPE="text/javascript">
-  	var gdependency_form_btn;
-  	var gdependency_form_strQueuedTestID;
+  <SCRIPT TYPE="text/javascript">  	
     $(  function() {
             $( "#QueueTestsList" ).sortable();
             $( "#QueueTestsList" ).disableSelection();
@@ -19,10 +23,242 @@
     );
 
 	$(	function() {
-		var dialog, form ;
+		var addTestbedDialog, bUpdate ;
+
+	    function saveTestbed() {
+	    	var strNewTestbed= $("#testbedName").val();
+	    	
+    		if( strNewTestbed == null || strNewTestbed == "" )
+    			alert( "Please specify a testbed name" )
+    		else
+    		{
+    			var testbedsMenu= document.getElementById( "Testbeds" );
+				var strCurTestbed= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+				
+    			// Make sure it doesn't exist already      
+    			if( testbedsMenu.namedItem(strNewTestbed) != null ) {
+    				alert( "A testbed with that name already exists.  Please choose a different name." );
+    				return; // return keeping the dialog open
+    			}
+
+    			addTestbedDialog.dialog( 'close' );
+    			document.getElementById("testbedStatus").innerHTML= "";
+    			var bSave= (strCurTestbed == "New Testbed")
+    			
+    			var option = document.createElement("option");
+               	option.id = strNewTestbed;
+               	option.text = strNewTestbed;
+               	option.value = strNewTestbed;
+               	option.setAttribute( "type", "testbed" );
+               	option.setAttribute( "runmode", "Serialize" );
+               	option.setAttribute( "descr", $("#testbedDescription").val() );
+
+   				//Add it to the database first
+   				var strURL;
+   				if( bSave )
+   					strURL = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + 
+   											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
+   				else
+   					strURL = GetURLMachineAndPort() + "/AutoManager/UpdateTestbed?oldname=" + strCurTestbed + "&name=" + option.text + "&value=" + option.value + 
+											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
+   					
+   				var strStatus= RunURL( strURL );
+       			if( strStatus.toLowerCase() == "success" )
+       			{
+       				if( !bSave ) //updated.  Remove current entry because we are replacing it
+    	   				testbedsMenu.remove( testbedsMenu.selectedIndex );
+
+       				// Insert it above the New Testbed and New Group options
+               		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);       				
+             		testbedsMenu.value = option.value;
+                    GetToolboxStatus();
+       			}
+       			else
+       				alert( "Failed to " + (bSave?"save":"update") + " testbed '" + option.text + "'");
+           	}
+		}
+
+	    function removeTestbed() {
+	    	addTestbedDialog.dialog( "close" );
+	    	RemoveSelectedTestbed()
+		}
+
+	    addTestbedDialog = $( "#TestbedEditorDialog" ).dialog({
+	        autoOpen: false,
+	        height: 288,
+	        width: 500,
+	        modal: true,
+	        buttons: {
+	          "Save": saveTestbed,
+	          "Remove": removeTestbed,
+	          Cancel: function() { addTestbedDialog.dialog( 'close' ); }
+	        },
+	    	open : function (event, ui) {
+	    		var strTestbedSelection= document.getElementById("Testbeds").options[document.getElementById("Testbeds").selectedIndex].text;
+            	if( strTestbedSelection != "New Testbed" ) {
+               		var strInfo= RunURL( GetURLMachineAndPort() + "/AutoManager/GetTestbedValue?" + strTestbedSelection );
+            		// strTestbed; strValue; strType; strRunMode; strDescription
+            		var listItems= strInfo.split(";");
+	    			$("#testbedName").val( strTestbedSelection );
+               		$("#testbedDescription").val( listItems[4] );
+	    		}
+            	else {
+	    			$("#testbedName").val( "127.0.0.1" );
+               		$("#testbedDescription").val( "Description of this testbed" );            		
+            	}
+			}
+	    	});	      
+		}
+	);
+
+	$(	function() {
+		var addGroupDialog, bUpdate ;
+
+	    function saveGroup() {
+	    	var strNewGroup= $("#groupName").val();
+	    	
+    		if( strNewGroup == null || strNewGroup == "" )
+    			alert( "Please specify a group name" )
+    		else
+    		{
+    			var testbedsMenu= document.getElementById( "Testbeds" );
+				var strCurTestbed= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+				
+    			// Make sure it doesn't exist already      
+    			if( testbedsMenu.namedItem(strNewGroup) != null ) {
+    				alert( "A group with that name already exists.  Please choose a different name." );
+    				return; // return keeping the dialog open
+    			}
+
+    			addGroupDialog.dialog( 'close' );
+    			document.getElementById("testbedStatus").innerHTML= "";
+    			var bSave= (strCurTestbed == "New Group")
+
+    			// create the new element
+               	var option = document.createElement("option");
+               	option.id = strNewGroup;
+               	option.text = strNewGroup;
+               	option.value = $("#testbedsList").val();
+                option.setAttribute( "type", "group" );
+               	option.setAttribute( "runmode", $("#RunMode").val() );
+               	option.setAttribute( "descr", $("#groupDescription").val() );        	
+
+   				//Add it to the database first
+   				var strURL;
+   				if( bSave )
+   					strURL = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + 
+   											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
+   				else
+   					strURL = GetURLMachineAndPort() + "/AutoManager/UpdateTestbed?oldname=" + strCurTestbed + "&name=" + option.text + "&value=" + option.value + 
+											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
+   					
+   				var strStatus= RunURL( strURL );
+       			if( strStatus.toLowerCase() == "success" )
+       			{
+       				if( !bSave ) //updated.  Remove current entry because we are replacing it
+    	   				testbedsMenu.remove( testbedsMenu.selectedIndex );
+
+       				// Insert it above the New Testbed and New Group options
+               		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);       				
+             		testbedsMenu.value = option.value;
+                    GetToolboxStatus();
+       			}
+       			else
+       				alert( "Failed to " + (bSave?"save":"update") + " group '" + option.text + "'");
+    		}
+    	}
+
+	    function removeGroup() {
+	    	addGroupDialog.dialog( 'close' );
+	    	RemoveSelectedTestbed();
+		}
+
+	    addGroupDialog = $( "#GroupEditorDialog" ).dialog({
+	        autoOpen: false,
+	        height: 384,
+	        width: 500,
+	        modal: true,
+	        buttons: {
+	          "Save": saveGroup,
+	          "Remove": removeGroup,
+	          Cancel: function() { addGroupDialog.dialog( 'close' ); }
+	        },
+	    	open : function (event, ui) {
+	    		var strTestbedSelection= document.getElementById("Testbeds").options[document.getElementById("Testbeds").selectedIndex].text;
+	    		if( strTestbedSelection != "New Group" ) {
+            		var strInfo= RunURL( GetURLMachineAndPort() + "/AutoManager/GetTestbedValue?" + strTestbedSelection );
+            		// strTestbed; strValue; strType; strRunMode; strDescription
+            		var listItems= strInfo.split(";");
+            		$("#groupName").val( strTestbedSelection );
+               		$("#testbedsList").val( listItems[1] );
+               		$("#RunMode").val( listItems[3] )
+               		$("#groupDescription").val( listItems[4] );      
+            	}
+            	else {
+            		$("#groupName").val( "New Group Name" );
+               		$("#testbedsList").val( "testbed1, testbed2, testbed3..." );      
+               		$("#RunMode option")[0].selected= true;
+               		$("#groupDescription").val( "Description of testbed group" );      
+            	}	
+            }
+	      });	      
+		}
+	);
+	
+	function EditTestbedButtonHandler()
+	{
+		var testbedsMenu= document.getElementById( "Testbeds" );
+		var strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+		if( testbedsMenu.options[testbedsMenu.selectedIndex].getAttribute( "type" ) == "group" )
+			$( '#GroupEditorDialog' ).dialog({ title: "Group Editor: " + strSelection}).dialog( 'open' );
+		else
+			$( '#TestbedEditorDialog' ).dialog({ title: "Testbed Editor: " +strSelection}).dialog( 'open' );
+	}
+
+	function GetToolboxStatus()
+	{
+	    var strStatus= "Error";
+		var testbedsMenu= document.getElementById( "Testbeds" );
+
+   	   	// Check to see if it is a group.  Value != text
+   		if( testbedsMenu.options[testbedsMenu.selectedIndex].getAttribute( "type" ) == "group" )
+	        strStatus= "<font color=\"gray\">Testbeds: " + testbedsMenu.value + "</font>";	
+   		else
+   		{
+	        document.getElementById( "testbedStatus" ).innerHTML= " ...connecting: " + testbedsMenu.value;
+	        
+	        strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text
+	        try {
+	            strStatus= "Connected: " + RunURL( "http://" + strSelection + ":" + window.location.port + "/AutoManager/GetToolboxStatus" );
+	        } catch(err) {
+	            strStatus= "<font color=\"red\">Could not connect to the Testbed's Automation Toolbox: " + err.message + "</font>";
+	        }	
+   		}
+   		
+        document.getElementById( "testbedStatus" ).innerHTML= " " + strStatus;
+	    document.getElementById( "EditTestbedButton" ).disabled= false;
+	}
+	
+    function CheckTestbedStatus()
+    {
+    	var bConnect= true;
+    	var testbedsMenu= document.getElementById( "Testbeds" );
+    	var strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+    	if( strSelection == "New Testbed")
+    		$( '#TestbedEditorDialog' ).dialog({ title: strSelection}).dialog( 'open' );   		
+    	else if( strSelection == "New Group")
+    		$( '#GroupEditorDialog' ).dialog({ title: strSelection}).dialog( 'open' );
+    	else {
+    		GetToolboxStatus();    		
+    	    document.getElementById( "EditTestbedButton" ).disabled= false;
+    	}    		    
+    }
+
+	$(	function() {
+		var dependencyDialog ;
 
 	    function addDependency() {
-	    	dialog.dialog( "close" );
+	    	dependencyDialog.dialog( "close" );
 	    	var strBtnColor= "#cccccc" //grey
 	    	var strDepndcy= "";
 	    			
@@ -31,93 +267,41 @@
 	    		strBtnColor= "#ff0000"; //red
     		}
 		   	
-			document.getElementById( gdependency_form_strQueuedTestID ).setAttribute( "dependency", strDepndcy );
-		    gdependency_form_btn.style.color= strBtnColor	    	
+			document.getElementById( $(this).data('strQueuedTestID') ).setAttribute( "dependency", strDepndcy );
+			$(this).data('btn').style.color= strBtnColor	    	
 		}
 
-	    dialog = $( "#dependency-form" ).dialog({
+	    dependencyDialog = $( "#DependencyEditorDialog" ).dialog({
 	        autoOpen: false,
-	        height: 240,
+	        height: 180,
 	        width: 500,
 	        modal: true,
 	        buttons: {
 	          "OK": addDependency,
-	          Cancel: function() { dialog.dialog( "close" ); }
+	          Cancel: function() { dependencyDialog.dialog( "close" ); }
 	        }
 	      });	      
 		}
 	);
-	
-    function EditTestbedMenuSelection()
-    {
-    	var testbedsMenu= document.getElementById( "Testbeds" );
-    	var strTestbed= testbedsMenu.options[testbedsMenu.selectedIndex].text
-    	EditTestbedWindow = window.open('', 'Testbed Editor', 'toolbar=0,location=0,menubar=0,status=0,width=400,height=150');
-    	EditTestbedWindow.document.write( '<htlm><title>Testbed Editor</title>' + 
-    				'<body>Enter new testbed name or IP:<br>' +
-    				'<input type="text" id="newTestbedName" size="50" value="' + strTestbed + '" >' +
-					'<br><button type="button" onclick="window.close()">Cancel</button>&nbsp&nbsp&nbsp' +
-    				'<button TYPE="submit" onclick="window.opener.UpdateTestbed(\'save\')">Save</button>' +
-    				'<button TYPE="submit" onclick="window.opener.UpdateTestbed(\'remove\')">Remove</button>' +
-    			  '</body></html>' );
-    }
          
-    function UpdateTestbed( strSaveOrRemove )
-    {
-    	EditTestbedWindow.window.close();
-    	
+    function RemoveSelectedTestbed( )
+    {    	
     	var testbedsMenu= document.getElementById( "Testbeds" );
-    	var strTestbedToUpdated= testbedsMenu.options[testbedsMenu.selectedIndex].text;
-    	var strNewTestbed= EditTestbedWindow.document.getElementById( "newTestbedName" ).value;
-    	if( strNewTestbed != null && strNewTestbed != "" )
-    	{
-   			document.getElementById( "testbedStatus" ).innerHTML= "";
-   			if( strSaveOrRemove == "save" )
-   			{
-	   			if( testbedsMenu.namedItem(strNewTestbed) != null )
-	   			{
-	   				alert( "The testbed \"" + strNewTestbed + "\" already exists!"  );
-	   			}
-	   			else if( testbedsMenu.namedItem(strTestbedToUpdated) != null )
-	   			{
-	   				testbedsMenu.remove(testbedsMenu.selectedIndex);
-	    			var option = document.createElement("option");
-	               	option.text = strNewTestbed;
-	               	option.value = strNewTestbed;
-	               	option.id = strNewTestbed;
-	               	testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
-					testbedsMenu.value = strNewTestbed;
-					//Update the database first
-    				var Url = GetURLMachineAndPort() + "/AutoManager/UpdateTestbed?name=" + strTestbedToUpdated + "&newname=" + option.text + "&value=" + option.value + "&type=testbed";
-        			var strStatus= RunURL( Url );
-        			if( strStatus.toLowerCase() == "success" )
-        			{
-        				// Insert it above the New Testbed and New Group options
-                		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
-                		CheckTestbedStatus();
-        			}
-        			else
-        				alert( "Failed to add save testbed '" + option.text + "'");					
-	            }
-	        }
-	        else //remove
-	        {
-	        	if( confirm('Are you sure you want to remove "' + strTestbedToUpdated + '"') == true )
-	        	{
-	        	   	var Url = GetURLMachineAndPort() + "/AutoManager/DeleteTestbed?name=" + strTestbedToUpdated;
-    				
-        			var strStatus= RunURL( Url );
-        			if( strStatus.toLowerCase() == "success" )
-        			{
-		       			testbedsMenu.remove(testbedsMenu.selectedIndex);
-		       			if( testbedsMenu.value == "--Select--" )
-		       				document.getElementById( "EditTestbedButton" ).disabled= true;	
-        			}
-        			else
-        				alert( "Failed to add remove testbed '" + option.text + "'");					
-		       	}
-	        }
-    	}    	
+    	var strTestbed= testbedsMenu.options[testbedsMenu.selectedIndex].text;
+
+  		document.getElementById( "testbedStatus" ).innerHTML= "";
+       	if( confirm('Are you sure you want to remove\n"' + strTestbed + '"') == true )
+       	{   				
+      			var strStatus= RunURL( GetURLMachineAndPort() + "/AutoManager/DeleteTestbed?name=" + strTestbed );
+      			if( strStatus.toLowerCase() == "success" )
+      			{
+       			testbedsMenu.remove(testbedsMenu.selectedIndex);
+       			if( testbedsMenu.value == "--Select--" )
+       				document.getElementById( "EditTestbedButton" ).disabled= true;	
+      			}
+      			else
+      				alert( "Failed to remove '" + strTestbed + "'");					
+       	}
     }
     
     function SetQueuedTestbed( strQueuedTestID )
@@ -158,103 +342,7 @@
 	    		alert("Could not find dependency: " + strCurDepndcy );
 		}
 
-		gdependency_form_btn= btn;
-        gdependency_form_strQueuedTestID= strQueuedTestID;
-		$( "#dependency-form" ).dialog( "open" );
-    }
-
-    function CheckTestbedStatus()
-    {
-    	var bConnect= true;
-    	var testbedsMenu= document.getElementById( "Testbeds" );
-    	var strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text;
-    	if( strSelection == "New Testbed")
-    	{
-    		var strNewTestbed= window.prompt("Enter name or IP of testbed:", "127.0.0.1");
-    		if( strNewTestbed != null && strNewTestbed != "" )
-    		{
-    			document.getElementById("testbedStatus").innerHTML= "";
-				// Make sure it doesn't exist already
-    			if( testbedsMenu.namedItem(strNewTestbed) == null )
-    			{        
-    				var option = document.createElement("option");
-                	option.text = strNewTestbed;
-                	option.value = strNewTestbed;
-                	option.id = strNewTestbed;
-
-    				//Add it to the database first
-    				var Url = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + "&type=testbed";
-        			var strStatus= RunURL( Url );
-        			if( strStatus.toLowerCase() == "success" )
-        			{
-        				// Insert it above the New Testbed and New Group options
-                		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
-        			}
-        			else
-        				alert( "Failed to add new testbed '" + option.text + "'");
-            	}
-                testbedsMenu.value = strNewTestbed;
-    		}
-    		else
-    			bConnect= false;  		
-    	}
-    	else if( strSelection == "New Group")
-    	{
-    		var strNewTestbed= window.prompt("Enter name of new group:", "New Group");
-    		if( strNewTestbed != null && strNewTestbed != "" )
-    		{
-    			document.getElementById("testbedStatus").innerHTML= "";
-
-   				var strNewGroupTestbeds= window.prompt( "Enter testbeds and groups for:  " + strNewTestbed, "127.0.0.1, ");
-    			if( strNewGroupTestbeds != null && strNewGroupTestbeds != "" )
-    			{
-					// Make sure it doesn't exist already
-	    			if( testbedsMenu.namedItem(strNewTestbed) == null )
-	    			{
-	    				var option = document.createElement("option");
-	                	option.text = strNewTestbed;
-	                	option.value = strNewGroupTestbeds;
-	                	option.id = strNewTestbed;
-	                	
-	    				//Add it to the database first
-	    				var Url = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + "&type=group";
-	        			var strStatus= RunURL( Url );
-	        			if( strStatus.toLowerCase() == "success" )
-	        			{
-	        				// Insert it above the New Testbed and New Group options
-	                		testbedsMenu.add(option, testbedsMenu[testbedsMenu.length-2]);
-	        			}
-	        			else
-	        				alert( "Failed to add new testbed '" + option.text + "'");
-	            	}
-	                testbedsMenu.value = strNewGroupTestbeds;
-	            }
-    		}
-    	}
-    	
-		if( bConnect )
-    	{
-		    var strStatus= "Error";
-
-    	   	// Check to see if it is a group.  Value != text
-    		if( testbedsMenu.options[testbedsMenu.selectedIndex].value != testbedsMenu.options[testbedsMenu.selectedIndex].text )
- 	        	strStatus= "<font color=\"gray\">Testbeds: " + testbedsMenu.value + "</font>";	
-    		else
-    		{
-		        document.getElementById( "testbedStatus" ).innerHTML= " ...connecting: " + testbedsMenu.value;
-		        
-		        strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text
-		        try {
-		            strStatus= "Connected: " + RunURL( "http://" + strSelection + ":" + window.location.port + "/AutoManager/GetToolboxStatus" );
-		        } catch(err) {
-		            strStatus= "<font color=\"red\">Could not connect to the Testbed's Automation Toolbox: " + err.message + "</font>";
-		        }	
-    		}
-    		
-	        document.getElementById( "testbedStatus" ).innerHTML= " " + strStatus;
-	    }
-	    
-	    document.getElementById( "EditTestbedButton" ).disabled= false;
+		$( "#DependencyEditorDialog" ).data("strQueuedTestID", strQueuedTestID).data("btn", btn).dialog( "open" );
     }
 
     function RunJob( strType ) 
@@ -570,12 +658,38 @@
 
 <!-- Insert Header -->
 
-<div id="dependency-form" title="Add Dependency On">
-  <p>Run only upon successful execution of:
-  <form>
+<div id="TestbedEditorDialog" title="Testbed Editor" style="font-size:62.5%;">
+	<form><fieldset>
+		<h4>Testbed Name or IP:</h4>
+      	<textarea name="tesbedName" id="testbedName" style="height:22px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+  		<h4>Description:</h4>
+      	<textarea name="testbedDescription" id="testbedDescription" style="resize:both;height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+	</fieldset></form>
+</div>
+
+<div id="GroupEditorDialog" title="Group Editor" style="font-size:62.5%;">
+	<form><fieldset>
+		<h4>Group Name:</h4>
+      	<textarea name="groupName" id="groupName" style="height:22px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+		<h4>List of testbeds and other groups:</h4>
+      	<textarea name="testbedsList" id="testbedsList" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+  		<br><b>Group Run-time Mode:</b>
+		<select id="RunMode" >
+			<option>Serialize</option>
+			<option>Parallelize</option>
+			<option>First Available</option>
+		</select>
+  		<h4>Description:</h4>
+      	<textarea name="groupDescription" id="groupDescription" style="resize:both;height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+	</fieldset></form>
+</div>
+
+<div id="DependencyEditorDialog" title="Add Dependency" style="font-size:62.5%;">
+  <form><fieldset>
+  	<h3>Run only upon successful execution of:</h3>
 		<select id="dependencySelection" >
 		</select>
-  </form>
+  </fieldset></form>
 </div>
 
 <div id="SelectTestsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
@@ -584,7 +698,7 @@
 	  <option value="New Testbed">New Testbed</option>
 	  <option value="New Group">New Group</option>
 	</select>
-	<button type="button" id="EditTestbedButton" disabled onclick="EditTestbedMenuSelection()">Edit</button>
+	<button type="button" id="EditTestbedButton" disabled onclick="EditTestbedButtonHandler()">Edit</button>
 	<label id="testbedStatus"></label>
 </div>
 

@@ -315,7 +315,7 @@ public class JobRunner {
 							 " jobid=" + this.m_strJobID + 
 							 " -paramsFile \"" + pTestInfo._Dataparam().getAbsolutePath().replace("\\", "/") + "\"" +
 							 " -logDir \"" + this.m_fJobDir.getAbsolutePath().replace("\\", "/") + "/" + strResultsDirName + "\"" +
-							 " -testbed \"" + pTestInfo._Testbed() + "\"" +
+							 " -testbed \"" + pTestInfo._Testbed() + "\" " +
 							 this.m_strOptCmdLineArgs + "\n";
 				fRunFile.writeBytes( test );
 			}

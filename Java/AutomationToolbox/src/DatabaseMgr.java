@@ -62,7 +62,7 @@ public class DatabaseMgr
 	private final String mstrProtocol= 	"jdbc:derby:";
 	private final String mstrDBName=	"dbAutoToolbox";
 	
-	private final String mstrTestbedTableName= "TestbedTable";
+	private final String mstrTestbedTableName= "TestbedTable3";
 	private final String mstrJobsTableName= "JobsTable";
 	private final String mstrUsersTableName= "UsersTable";
 
@@ -80,23 +80,23 @@ public class DatabaseMgr
 	{
 		DatabaseMgr._Testbeds()._DeleteTestbed( "testbedname5" );
 		DatabaseMgr._Testbeds()._DeleteTestbed( "testbedname5" );
-		DatabaseMgr._Testbeds()._AddTestbed( "testbedname3", "testbedvalue3", "testbedtype3" );
+		DatabaseMgr._Testbeds()._AddTestbed( "testbedname3", "testbedvalue3", "testbedtype3", "testbedRunMode3", "testbedDescription3" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
-		DatabaseMgr._Testbeds()._AddTestbed( "testbedname4", "testbedvalue4", "testbedtype4" );
+		DatabaseMgr._Testbeds()._AddTestbed( "testbedname4", "testbedvalue4", "testbedtype4", "testbedRunMode4", "testbedDescription4" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
 		DatabaseMgr._Testbeds()._DeleteTestbed( "testbedname4" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
-		DatabaseMgr._Testbeds()._AddTestbed( "testbedname5", "testbedvalue5", "testbedtype5" );
+		DatabaseMgr._Testbeds()._AddTestbed( "testbedname5", "testbedvalue5", "testbedtype5", "testbedRunMode5", "testbedDescription5" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
-		DatabaseMgr._Testbeds()._AddTestbed( "testbedname3", "testbedvalue3", "testbedtype3" );
+		DatabaseMgr._Testbeds()._AddTestbed( "testbedname3", "testbedvalue3", "testbedtype3", "testbedRunMode3", "testbedDescription3" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
-		DatabaseMgr._Testbeds()._UpdateTestbed( "testbedname3", "testbedname6", "testbedvalue6", "testbedtype6" );
+		DatabaseMgr._Testbeds()._UpdateTestbed( "testbedname3", "testbedname6", "testbedvalue6", "testbedtype6", "testbedRunMode6", "testbedDescription6" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
 		DatabaseMgr._Testbeds()._DeleteTestbed( "testbedname5" );
 		DatabaseMgr._Testbeds()._GetTestbeds();
 		
 		String[] tbs= DatabaseMgr._Testbeds()._GetTestbeds();
-		String tbsv= DatabaseMgr._Testbeds()._GetTestbedValue( "testbedname3" );
+		TestbedDescriptor tbsv= DatabaseMgr._Testbeds()._GetTestbedDescriptor( "testbedname3" );
 
 		System.out.println( tbs.toString() );
 		System.out.println( tbsv );
@@ -227,6 +227,7 @@ public class DatabaseMgr
 	/**
 	 * 
 	 */
+	@SuppressWarnings("unused")
 	private void _Close()
 	{
         try 
@@ -534,12 +535,16 @@ public class DatabaseMgr
 	 */
 	public class TestbedsTableWrapper
 	{	
-		private final String NAME_COL=  "name";
+		private final String NAME_COL=  "name"; // the testbed or group name
 		private final int	 NAME_COL_MAX_SIZE= 100;
-		private final String VALUE_COL= "value";
+		private final String VALUE_COL= "value"; // the testbed or list of testbeds in group
 		private final int	 VALUE_COL_MAX_SIZE= 32672; //MAX varchar
-		private final String TYPE_COL=  "type";
+		private final String TYPE_COL=  "type"; // "testbed" or "group"
 		private final int	 TYPE_COL_MAX_SIZE= 20;
+		private final String RUN_MODE_COL=  "RunMode"; // Serialize, Parallelize, First Available
+		private final int	 RUN_MODE_COL_MAX_SIZE= 20;
+		private final String DESCRIPTION_COL=  "descr"; // a description of the testbed or group
+		private final int	 DESCRIPTION_COL_MAX_SIZE= 500;
 		
 		private String mstrMyTable= null;
 		
@@ -551,8 +556,8 @@ public class DatabaseMgr
 			{
 				// Add the table to the master db
 		        Statement s = DatabaseMgr._GetInstance()._CreateStatement();
-		        String strQuery= String.format( "CREATE TABLE %s ( %s varchar(%d), %s varchar(%d), %s varchar(%d))", 
-		        		this.mstrMyTable, NAME_COL, NAME_COL_MAX_SIZE, VALUE_COL, VALUE_COL_MAX_SIZE, TYPE_COL, TYPE_COL_MAX_SIZE );
+		        String strQuery= String.format( "CREATE TABLE %s ( %s varchar(%d), %s varchar(%d), %s varchar(%d), %s varchar(%d), %s varchar(%d))", 
+		        		this.mstrMyTable, NAME_COL, NAME_COL_MAX_SIZE, VALUE_COL, VALUE_COL_MAX_SIZE, TYPE_COL, TYPE_COL_MAX_SIZE, RUN_MODE_COL, RUN_MODE_COL_MAX_SIZE, DESCRIPTION_COL, DESCRIPTION_COL_MAX_SIZE );
 		        s.execute( strQuery );
 			}
 		    catch (Throwable e)
@@ -581,7 +586,9 @@ public class DatabaseMgr
 			try 
 			{
 		        Statement s = DatabaseMgr._GetInstance()._CreateStatement();
-		        String strQuery= String.format( "SELECT %s, %s, %s FROM %s ORDER BY %s", NAME_COL, VALUE_COL, TYPE_COL, this.mstrMyTable, NAME_COL );
+		        String strQuery= String.format( "SELECT %s, %s, %s, %s, %s FROM %s ORDER BY %s", 
+		        								 NAME_COL, VALUE_COL, TYPE_COL, RUN_MODE_COL, DESCRIPTION_COL, 
+		        								 this.mstrMyTable, NAME_COL );
 				ResultSet rs= s.executeQuery( strQuery );
 
 				System.out.println( "****************" );
@@ -591,6 +598,8 @@ public class DatabaseMgr
 					System.out.println( rs.getString(NAME_COL) );
 					System.out.println( rs.getString(VALUE_COL) );
 					System.out.println( rs.getString(TYPE_COL) );
+					System.out.println( rs.getString(RUN_MODE_COL) );
+					System.out.println( rs.getString(DESCRIPTION_COL) );
 				}
 				
 				rs.close();
@@ -609,9 +618,9 @@ public class DatabaseMgr
 		 * @param strTestbedName
 		 * @return
 		 */
-		public String _GetTestbedValue( String strTestbedName  )
+		public TestbedDescriptor _GetTestbedDescriptor( String strTestbedName  )
 		{
-			String strData= null;
+			TestbedDescriptor pTBDescr= null;
 			try 
 			{
 				Statement s= DatabaseMgr._GetInstance()._CreateStatement();
@@ -619,8 +628,8 @@ public class DatabaseMgr
 				ResultSet rs= s.executeQuery( strQuery );
 
 				if( rs.next() )
-					strData= rs.getString(VALUE_COL);
-				
+					pTBDescr= new TestbedDescriptor( rs.getString(NAME_COL), rs.getString(VALUE_COL), rs.getString(TYPE_COL),
+							 						 rs.getString(RUN_MODE_COL), rs.getString(DESCRIPTION_COL));
 				rs.close();
 				s.close();
 			} 
@@ -629,7 +638,7 @@ public class DatabaseMgr
 				DatabaseMgr._GetInstance().printSQLError( e );
 			}
 			
-			return strData;
+			return pTBDescr;
 		}
 		
 		/**
@@ -639,14 +648,15 @@ public class DatabaseMgr
 		 * @param strType
 		 * @return
 		 */
-		public boolean _AddTestbed( String strTestbed, String strValue, String strType )
+		public boolean _AddTestbed( String strTestbed, String strValue, String strType, String strRunMode, String strDescription )
 		{			
 			try 
 			{
-				if( this._GetTestbedValue(strTestbed) == null )
+				if( this._GetTestbedDescriptor(strTestbed) == null )
 				{
 					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
-					s.execute( "INSERT INTO " + this.mstrMyTable + " VALUES ('" + strTestbed + "','" + strValue + "','" + strType + "')" );
+					s.execute( "INSERT INTO " + this.mstrMyTable + 
+							   " VALUES ('" + strTestbed + "','" + strValue + "','" + strType + "','" + strRunMode + "','" + strDescription + "')" );
 					s.close();
 				}
 				else
@@ -668,18 +678,19 @@ public class DatabaseMgr
 		 * @param strType
 		 * @return
 		 */
-		public boolean _UpdateTestbed( String strCurTestbed, String strNewTestbed, String strNewValue, String strNewType )
+		public boolean _UpdateTestbed( String strCurTestbed, String strNewTestbed, String strNewValue, String strNewType, String strRunMode, String strDescription )
 		{			
 			try 
 			{
-				if( this._GetTestbedValue(strNewTestbed) != null )
+				if( this._GetTestbedDescriptor(strNewTestbed) != null )
 					System.out.println( "The new testbed/group already exist in the testbeds table: " + strNewTestbed );					
-				else if( this._GetTestbedValue(strCurTestbed) != null )
+				else if( this._GetTestbedDescriptor(strCurTestbed) != null )
 				{
 					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
-					String strQuery= String.format( "UPDATE %s SET %s='%s',%s='%s',%s='%s' WHERE %s='%s'", 
+					String strQuery= String.format( "UPDATE %s SET %s='%s',%s='%s',%s='%s',%s='%s',%s='%s' WHERE %s='%s'", 
 							this.mstrMyTable, 
-							this.NAME_COL, strNewTestbed, this.VALUE_COL, strNewValue, this.TYPE_COL, strNewType, this.NAME_COL, strCurTestbed );
+							this.NAME_COL, strNewTestbed, this.VALUE_COL, strNewValue, this.TYPE_COL, strNewType,
+							this.RUN_MODE_COL, strRunMode, this.DESCRIPTION_COL, strDescription, this.NAME_COL, strCurTestbed );
 					s.execute( strQuery );
 					s.close();
 				}

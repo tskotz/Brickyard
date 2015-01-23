@@ -140,6 +140,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    		strStatus= this._SaveTestbed( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetTestbedValue" )) {
+	    		strStatus= this._GetTestbedValue( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/plain");
+	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/UpdateTestbed" )) {
 	    		strStatus= this._UpdateTestbed( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/plain");
@@ -283,7 +287,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 							String[] aTestInfo= aElementInfo[1].trim().split(";");
 							String strDataparamFile= aTestInfo[0];
 							String strTestbedOrGroup= aTestInfo[1].trim();
-							String strTestbedLookupValue= DatabaseMgr._Testbeds()._GetTestbedValue( strTestbedOrGroup );
+							TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strTestbedOrGroup );
+							String strTestbedLookupValue= pTBDescr.mstrValue;
 							String strDependency= aTestInfo[2];
 							boolean bParallelize= aTestInfo[3].equals("true");
 							// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
@@ -366,8 +371,11 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            	sb.append( this._HeaderGenerator("Job Editor") );
 	            else if( line.contains( "id=\"Testbeds\"" )) {
             		sb.append( "  <option value=\"--Select--\">--Select--</option>\n" );
-	            	for( String strTestbed : strTestbeds )
-	            		sb.append( "  <option id=\"" + strTestbed + "\" value=\"" + DatabaseMgr._Testbeds()._GetTestbedValue(strTestbed) + "\">" + strTestbed + "</option>\n" );
+	            	for( String strTestbed : strTestbeds ) {
+	            		TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor(strTestbed);
+	            		sb.append( "  <option id=\"" + strTestbed + "\" value=\"" + pTBDescr.mstrValue + "\" type=\"" + 
+	            					  pTBDescr.mstrType + "\" descr=\"" + pTBDescr.mstrDescription + "\">" + strTestbed + "</option>\n" );
+	            	}
 	            }
 	            else if( line.contains( "id=\"UsersMenu\"" )) {
             		sb.append( "  <option value=\"--Select--\">--Select--</option>\n" );
@@ -697,7 +705,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @return
 	 */
 	private String _SaveTestbed( String strRequestQuery ) {
-		String[] astrTestbedInfo= new String[3]; // name, value, info
+		String[] astrTestbedInfo= new String[5]; // name, value, info, runMode, description
 		
 		for( String strParam : strRequestQuery.split( "&" ) ) {
 			//System.out.println( strParam );
@@ -709,15 +717,28 @@ public class ToolboxHTTPServer implements HttpHandler {
 					astrTestbedInfo[1]= aTestbedInfo[1];
 				else if( aTestbedInfo[0].equals( "type" ))
 					astrTestbedInfo[2]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "runmode" ))
+					astrTestbedInfo[3]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "descr" ))
+					astrTestbedInfo[4]= aTestbedInfo[1];
 			}
 		}
 		
-		if( DatabaseMgr._Testbeds()._AddTestbed( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2]) )
+		if( DatabaseMgr._Testbeds()._AddTestbed( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2], astrTestbedInfo[3], astrTestbedInfo[4]) )
 			return STATUS_SUCCESS;
         
 		return STATUS_FAILED;
 	}
 	
+	/**
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _GetTestbedValue( String strRequestQuery ) {
+		return DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery /* is TestbedName*/ )._ToRESTReply();
+   	}
+
 	/**
 	 * ex.
 	 * http://tskotz-mac-wifi:8080/AutoManager/Contents?Platforms/BreakTweaker
@@ -726,13 +747,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @return
 	 */
 	private String _UpdateTestbed( String strRequestQuery ) {
-		String[] astrTestbedInfo= new String[4]; // curname, newname, value, info
+		String[] astrTestbedInfo= new String[6]; // curname, newname, value, info, runMode, description
 		
 		for( String strParam : strRequestQuery.split( "&" ) ) {
 			//System.out.println( strParam );
 			String[] aTestbedInfo= strParam.split( "=" );
 			if( aTestbedInfo.length == 2 ) {
-				if( aTestbedInfo[0].equals( "newname" ))
+				if( aTestbedInfo[0].equals( "oldname" ))
 					astrTestbedInfo[0]= aTestbedInfo[1];
 				else if( aTestbedInfo[0].equals( "name" ))
 					astrTestbedInfo[1]= aTestbedInfo[1];
@@ -740,10 +761,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 					astrTestbedInfo[2]= aTestbedInfo[1];
 				else if( aTestbedInfo[0].equals( "type" ))
 					astrTestbedInfo[3]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "runmode" ))
+					astrTestbedInfo[4]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "descr" ))
+					astrTestbedInfo[5]= aTestbedInfo[1];
 			}
 		}
 		
-		if( DatabaseMgr._Testbeds()._UpdateTestbed( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2], astrTestbedInfo[3]) )
+		if( DatabaseMgr._Testbeds()._UpdateTestbed( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2], astrTestbedInfo[3], astrTestbedInfo[4], astrTestbedInfo[5]) )
 			return STATUS_SUCCESS;
         
 		return STATUS_FAILED;
