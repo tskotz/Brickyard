@@ -10,6 +10,7 @@ package AutomationToolbox.src;
 public enum JobTags {
 	Job( "Job" ),
 	JobName( "JobName" ),
+	JobTemplate( "JobTemplate" ),
 	Timestamp( "Timestamp" ),
 	User( "User" ),
 	Platform( "Platform" ), // obsolete

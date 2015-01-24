@@ -278,6 +278,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 							eJob.addContent( new Element( JobTags.JobName.name() ).setText( aElementInfo[1].trim() ) );
 						else if( aElementInfo[0].equals( "user" ))
 							eJob.addContent( new Element( JobTags.User.name() ).setText( aElementInfo[1].trim() ) );
+						else if( aElementInfo[0].equals( "jobtemplate" ))
+							eJob.addContent( new Element( JobTags.JobTemplate.name() ).setText( aElementInfo[1].trim() ) );
 						else if( aElementInfo[0].equals( "classpath" ))
 							eJob.addContent( new Element( JobTags.Classpath.name() ).setText( aElementInfo[1].trim() ) );
 						else if( aElementInfo[0].equals( "commandlineargs" ))
@@ -354,17 +356,16 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @return
 	 */
 	private String _showJobEditorPage( String strRequestQuery ) {	
-		String strJobToPreLoad= null;
-		String strUserToPreLoad= null;
+		String[] astrJobTemplateInfo= null;
 		
 		if( strRequestQuery != null ) {
 			for( String strParam : strRequestQuery.split( "&" ) ) {
 				String[] aElementInfo= strParam.split( "=" );
 				if( aElementInfo.length == 2 ) {
-					if( aElementInfo[0].equals( "preloadjob" ))
-						strJobToPreLoad= aElementInfo[1];
-					else if( aElementInfo[0].equals( "preloaduser" ))
-						strUserToPreLoad= aElementInfo[1];
+					if( aElementInfo[0].equals( "loadtemplate" ))
+						astrJobTemplateInfo= aElementInfo[1].split("/");
+					else
+						System.out.println("Warning: Unknown REST param: " + strParam );
 				}
 			}
 		}
@@ -382,8 +383,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 
 	        while (line != null) {
 	        	// If we are preloading a job then insert the steps to automate what the user would do on the page
-	            if( strJobToPreLoad != null && line.contains( "<body>" ))
-            		line= line.replace("body", "body onload=\"document.getElementById('UsersMenu').value='"+strUserToPreLoad+"';UserSelected();document.getElementById('JobsMenu').value='"+strJobToPreLoad+"';JobSelected();LoadJob();\"");
+	            if( astrJobTemplateInfo != null && line.contains( "<body>" ))
+            		line= line.replace("body", "body onload=\"document.getElementById('UsersMenu').value='"+astrJobTemplateInfo[0]+"';UserSelected();document.getElementById('JobsMenu').value='"+astrJobTemplateInfo[1]+"';JobSelected();LoadJob();\"");
 
 	            sb.append(line+"\n");
 	            //System.out.println( line );
@@ -582,6 +583,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 			if( aElementInfo.length == 2 ) {
 				if( aElementInfo[0].equals( "dataparam" ))
 					strDataParamFile= this.mstrDataParamDir + aElementInfo[1];
+				else
+					System.out.println("Warning: Unknown REST param: " + strParam );
 			}
 		}
 
@@ -690,7 +693,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		}
 		
 		if( jobData != null ) {
-			String strJobEditorLink= "<a href=\"" + mstrWebServerURL + "/AutoManager/JobEditor?preloaduser=" + jobData.m_strUser + "&preloadjob=" + jobData.m_strJobName + "\">" + jobData.m_strUser + "/" + jobData.m_strJobName + "</a>";
+			String strJobEditorLink= "<a href=\"" + mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
 			sb.append( "<tr class=d" + (jobNum % 2) + ">\n" );
 			sb.append( "<td><input type=\"checkbox\"></td>\n" );
 			sb.append( "<td><table style=\"width:100%; border:0px\">\n" );

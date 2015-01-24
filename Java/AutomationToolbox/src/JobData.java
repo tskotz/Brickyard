@@ -14,6 +14,7 @@ public class JobData {
 	private File m_fJobXML= null;
 	public String m_strTimestamp;
 	public String m_strJobName;
+	public String m_strJobTemplate;
 	public String m_strUser;
 	public String m_strCmdLineArgs= "";
 	public	List<String> 		m_strPlatforms= new ArrayList<String>();
@@ -43,6 +44,7 @@ public class JobData {
         this.m_strTimestamp= 	this._getChildText( JobTags.Timestamp.toString(), root, null );
         this.m_strJobName= 		this._getChildText( JobTags.JobName.toString(), root, null );
 	    this.m_strUser= 	 	this._getChildText( JobTags.User.toString(), root, null );
+	    this.m_strJobTemplate= 	this._getChildText( JobTags.JobTemplate.toString(), root, null );
 	        
 		List<?> strItems= root.getChildren( JobTags.CommandLineArgs.toString() );
         for( Object objItem : strItems )

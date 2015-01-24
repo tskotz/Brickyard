@@ -375,6 +375,9 @@
     	strURL+= "?jobname=" + document.getElementById( "jobname" ).value;
     	strURL+= "&user=" + document.getElementById( "jobusername" ).value;
     	
+    	if( strType != "SaveJob" )
+    		strURL+= "&jobtemplate=" + document.getElementById( "UsersMenu" ).value + "/" + document.getElementById( "JobsMenu" ).value;
+    	
     	if( document.getElementById( "jobclasspath" ).value != "" )
 	    	strURL+= "&classpath=" + document.getElementById( "jobclasspath" ).value;
 	    	
