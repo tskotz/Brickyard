@@ -79,8 +79,8 @@
 		}
 
 	    function removeTestbed() {
-	    	addTestbedDialog.dialog( "close" );
-	    	RemoveSelectedTestbed()
+	    	if( RemoveSelectedTestbed() )
+		    	addTestbedDialog.dialog( "close" );
 		}
 
 	    addTestbedDialog = $( "#TestbedEditorDialog" ).dialog({
@@ -101,10 +101,11 @@
             		var listItems= strInfo.split(";");
 	    			$("#testbedName").val( strTestbedSelection );
                		$("#testbedDescription").val( listItems[4] );
-	    		}
+               	}
             	else {
 	    			$("#testbedName").val( "127.0.0.1" );
                		$("#testbedDescription").val( "Description of this testbed" );            		
+               		$(".ui-dialog-buttonpane button:contains('Remove')").hide();
             	}
 			}
 	    	});	      
@@ -169,8 +170,8 @@
     	}
 
 	    function removeGroup() {
-	    	addGroupDialog.dialog( 'close' );
-	    	RemoveSelectedTestbed();
+	    	if( RemoveSelectedTestbed() )
+		    	addGroupDialog.dialog( 'close' );
 		}
 
 	    addGroupDialog = $( "#GroupEditorDialog" ).dialog({
@@ -192,13 +193,14 @@
             		$("#groupName").val( strTestbedSelection );
                		$("#testbedsList").val( listItems[1] );
                		$("#RunMode").val( listItems[3] )
-               		$("#groupDescription").val( listItems[4] );      
+               		$("#groupDescription").val( listItems[4] );    
             	}
             	else {
             		$("#groupName").val( "New Group Name" );
                		$("#testbedsList").val( "testbed1, testbed2, testbed3..." );      
                		$("#RunMode option")[0].selected= true;
                		$("#groupDescription").val( "Description of testbed group" );      
+               		$(".ui-dialog-buttonpane button:contains('Remove')").hide();
             	}	
             }
 	      });	      
@@ -292,16 +294,20 @@
   		document.getElementById( "testbedStatus" ).innerHTML= "";
        	if( confirm('Are you sure you want to remove\n"' + strTestbed + '"') == true )
        	{   				
-      			var strStatus= RunURL( GetURLMachineAndPort() + "/AutoManager/DeleteTestbed?name=" + strTestbed );
-      			if( strStatus.toLowerCase() == "success" )
-      			{
-       			testbedsMenu.remove(testbedsMenu.selectedIndex);
-       			if( testbedsMenu.value == "--Select--" )
-       				document.getElementById( "EditTestbedButton" ).disabled= true;	
-      			}
-      			else
-      				alert( "Failed to remove '" + strTestbed + "'");					
+   			var strStatus= RunURL( GetURLMachineAndPort() + "/AutoManager/DeleteTestbed?name=" + strTestbed );
+   			if( strStatus.toLowerCase() == "success" )
+   			{
+    			testbedsMenu.remove(testbedsMenu.selectedIndex);
+    			if( testbedsMenu.value == "--Select--" )
+    				document.getElementById( "EditTestbedButton" ).disabled= true;	
+   			}
+   			else
+   				alert( "Failed to remove '" + strTestbed + "'");					
        	}
+       	else
+       		return false;
+       	
+       	return true;
     }
     
     function SetQueuedTestbed( strQueuedTestID )
@@ -651,9 +657,10 @@
 			}
 		}
     }    
-
+	
 </SCRIPT>
 </head>
+
 <body>
 
 <!-- Insert Header -->

@@ -348,11 +348,27 @@ public class ToolboxHTTPServer implements HttpHandler {
 	/**
 	 * ex:
 	 * http://tskotz-mac-wifi:8080/AutoManager/JobEditor
+	 * http://outside.home:8380/AutoManager/JobEditor?preloaduser=tskotz&preloadjob=test1
 	 * 
 	 * @param strRequestQuery
 	 * @return
 	 */
 	private String _showJobEditorPage( String strRequestQuery ) {	
+		String strJobToPreLoad= null;
+		String strUserToPreLoad= null;
+		
+		if( strRequestQuery != null ) {
+			for( String strParam : strRequestQuery.split( "&" ) ) {
+				String[] aElementInfo= strParam.split( "=" );
+				if( aElementInfo.length == 2 ) {
+					if( aElementInfo[0].equals( "preloadjob" ))
+						strJobToPreLoad= aElementInfo[1];
+					else if( aElementInfo[0].equals( "preloaduser" ))
+						strUserToPreLoad= aElementInfo[1];
+				}
+			}
+		}
+		
 		Preferences._GetPref( Preferences.TYPES.DefaultJars, null);
 		
 		String 	strTemplateFile= this.mstrTemplateDir + "/JobEditor.html";
@@ -365,8 +381,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 	        String line = br.readLine();
 
 	        while (line != null) {
+	        	// If we are preloading a job then insert the steps to automate what the user would do on the page
+	            if( strJobToPreLoad != null && line.contains( "<body>" ))
+            		line= line.replace("body", "body onload=\"document.getElementById('UsersMenu').value='"+strUserToPreLoad+"';UserSelected();document.getElementById('JobsMenu').value='"+strJobToPreLoad+"';JobSelected();LoadJob();\"");
+
 	            sb.append(line+"\n");
 	            //System.out.println( line );
+	            
 	            if( line.equals( "<!-- Insert Header -->" ))
 	            	sb.append( this._HeaderGenerator("Job Editor") );
 	            else if( line.contains( "id=\"Testbeds\"" )) {
@@ -655,7 +676,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 */
 	private void _InsertJobInfo( File fDir, StringBuilder sb, int jobNum ) {
 		JobData jobData= null;
-		String strJobName= fDir.getName();
+		String strJobID= fDir.getName();
 		for( File f : fDir.listFiles() ) {
 			if( f.getName().endsWith( ".job.xml") ) {
 				try {
@@ -669,10 +690,11 @@ public class ToolboxHTTPServer implements HttpHandler {
 		}
 		
 		if( jobData != null ) {
+			String strJobEditorLink= "<a href=\"" + mstrWebServerURL + "/AutoManager/JobEditor?preloaduser=" + jobData.m_strUser + "&preloadjob=" + jobData.m_strJobName + "\">" + jobData.m_strUser + "/" + jobData.m_strJobName + "</a>";
 			sb.append( "<tr class=d" + (jobNum % 2) + ">\n" );
 			sb.append( "<td><input type=\"checkbox\"></td>\n" );
 			sb.append( "<td><table style=\"width:100%; border:0px\">\n" );
-			sb.append( "	<tr><td>Job: " + strJobName + "<br>User: " + jobData.m_strUser + "<br>" +
+			sb.append( "	<tr><td jobid=\"" + strJobID + "\">Job: " + strJobEditorLink + "<br>User: " + jobData.m_strUser + "<br>" +
 							"Platforms: " + jobData.m_strPlatforms.toString().replace("[", "").replace("]", "") + "</td></tr>" );
 			sb.append( "</table></td>" );
 			sb.append( "<td>" );
