@@ -251,7 +251,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		"											<a href=\"/AutoManager/Scheduler\"><button style=\"color:#0000ff;\">Settings</button></a>" + 
 				"</td>\n" +
 		"	</tr>\n" +
-		"</table>\n";
+		"</table><hr>\n";
 	}
 
 	/**
@@ -288,11 +288,15 @@ public class ToolboxHTTPServer implements HttpHandler {
 							// i.e. dataparamfile=Products/RX3/RX3FileLoadingTestMac.xml;Bank1;dependacyxml;false
 							String[] aTestInfo= aElementInfo[1].trim().split(";");
 							String strDataparamFile= aTestInfo[0];
-							String strTestbedOrGroup= aTestInfo[1].trim();
+							String strTestbedOrGroup= aTestInfo[1].trim();	
+							String strDependency= aTestInfo.length>3 ? aTestInfo[2] : "";
+							boolean bParallelize= aTestInfo.length>3 ? aTestInfo[3].equals("true") : false;
+							
 							TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strTestbedOrGroup );
+							if( pTBDescr == null )
+								throw new Exception(  strTestbedOrGroup + " could not be found!");
 							String strTestbedLookupValue= pTBDescr.mstrValue;
-							String strDependency= aTestInfo[2];
-							boolean bParallelize= aTestInfo[3].equals("true");
+							
 							// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
 							for( String strThisTestbed : strTestbedLookupValue.split(",")) {
 								Element aElement= new Element( JobTags.DataParamFile.name() );
@@ -319,7 +323,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 			} catch( Exception e ) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				strStatus= e.getMessage();
+				strStatus= e.getMessage() != null ? e.getMessage() : "Run Job Failed";
 			}
 	
 		}
