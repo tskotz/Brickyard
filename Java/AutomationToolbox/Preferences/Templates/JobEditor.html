@@ -702,7 +702,7 @@
   </fieldset></form>
 </div>
 
-<div id="SelectTestsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+<div id="SelectTestsDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
 	<b>Select Testbed:</b> 
 	<select id="Testbeds" onchange="CheckTestbedStatus()" >
 	  <option value="New Testbed">New Testbed</option>
@@ -712,27 +712,27 @@
 	<label id="testbedStatus"></label>
 </div>
 
-<div id="SelectTestsPanelDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+<div id="SelectTestsPanelDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
 	<div id="TestCategoryDiv" >
 		<b>Choose Tests:</b>
 		<select id="TestsRoot" onchange="ApplyTestSelection({id:'TestsRoot'})" >
 		</select>
 	</div>
 	
-	<div id="AvailableTestsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	<div id="AvailableTestsDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
 	</div>
 </div>
 
-<div id="QueuedTests" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+<div id="QueuedTests" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
 	<label id="QueuedTests"><b>Queued Tests:</b></label><br>
-	<div id="QueuedTestsListDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
+	<div id="QueuedTestsListDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
 		<ul id="QueueTestsList" style="width:100%;">
 		</ul>
 	</div>
 </div>
 
-<div id="ButtonsDiv" style="padding:10px; color: black; background-color: eeeeee; border: black 1px solid" >
-	<div id="JobTemplatesDiv" style="padding:5px; color: black; background-color: d0d0d0; border: black 0px solid" >
+<div id="ButtonsDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
+	<div id="JobTemplatesDiv" style="padding:5px; color: black; background-color: #d0d0d0; border: black 0px solid" >
 		<b>Select Job:</b> 
 		<select id="UsersMenu" onchange="UserSelected()" >
 		</select>
@@ -743,10 +743,10 @@
 	</div>
 	
 	<table style="padding:0px;border-collapse: collapse;text-align: right;table-layout:fixed;width:100%">
-		<tr><td style="width:80">Job Name:</td><td><input type="text" id="jobname" style="width:100%;"></td></tr>
-		<tr><td>User:</td><td><input type="text" id="jobusername" style="width:100%;"></td></tr>
-		<tr><td>Opt Args:</td><td><input type="text" id="joboptargs" style="width:100%;"></td></tr>
-		<tr><td>Classpath:</td><td><input type="text" id="jobclasspath" style="width:100%;"></td></tr>
+		<tr><td style="width:80"><label for="jobname">Job Name:</label></td><td><input type="text" id="jobname" style="width:100%;"></td></tr>
+		<tr><td><label for="jobusername">User:</label></td><td><input type="text" id="jobusername" style="width:100%;"></td></tr>
+		<tr><td><label for="joboptargs">Opt Args:</label></td><td><input type="text" id="joboptargs" style="width:100%;"></td></tr>
+		<tr><td><label for="jobclasspath">Classpath:</label></td><td><input type="text" id="jobclasspath" style="width:100%;"></td></tr>
 	</table>
 	<br>
 	<button type="button" onclick="RunJob('RunJob')">Run</button>

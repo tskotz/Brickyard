@@ -112,6 +112,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    		strStatus= this._showStatusPage( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/Scheduler" )) {
+	    		strStatus= this._showSchedulerEditor( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/Settings" )) {
+	    		strStatus= this._showSettingsEditor( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetImage" )) {
 	    		bufJPEG= this._getImage( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/jpeg");
@@ -243,12 +251,12 @@ public class ToolboxHTTPServer implements HttpHandler {
 		"<table style=\"width:100%;padding:0px;border:0px solid black;xbackground-color:#eeeeee;\">\n" +
 		"	<tr>\n" +
 		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\""+ mstrWebServerURL + "/AutoManager/GetImage?holiday-spirit-anastasiya-malakhova.jpg\" style=\"width:100\"></td>\n" +
-		"		<td style=\"padding:10px;border:0px solid black\"><h1>" + strText + "</h1>" + 
+		"		<td style=\"padding:10px;border:0px solid black\"><font style=\"font-size:32px;\"><b>" + strText + "</b></font><br>" + 
 		"											<a href=\"/AutoManager/JobEditor\"><button style=\"color:#0000ff;\">Create Job</button></a>\n" +
 		"											<a href=\"/AutoManager/Status\"><button style=\"color:#0000ff;\">Status Page</button></a>" + 
-		"											<a href=\"/AutoManager/DataparamEditor?dataparam=\"\"\"><button style=\"color:#0000ff;\">New Dataparam</button></a>\n" +
 		"											<a href=\"/AutoManager/Scheduler\"><button style=\"color:#0000ff;\">Scheduler</button></a>" + 
-		"											<a href=\"/AutoManager/Scheduler\"><button style=\"color:#0000ff;\">Settings</button></a>" + 
+		"											<a href=\"/AutoManager/DataparamEditor?dataparam=\"\"\"><button style=\"color:#0000ff;\">New Dataparam</button></a>\n" +
+		"											<a href=\"/AutoManager/Settings\"><button style=\"color:#0000ff;\">Settings</button></a>" + 
 				"</td>\n" +
 		"	</tr>\n" +
 		"</table><hr>\n";
@@ -492,6 +500,84 @@ public class ToolboxHTTPServer implements HttpHandler {
 		            	}
 	    			}
 	            }
+
+	            line = br.readLine();
+	        }
+	    } catch( IOException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+	        try {
+				br.close();
+			} catch( IOException e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	    			
+		return sb.toString();
+	}
+
+	/**
+	 * ex:
+	 * http://tskotz-mac-wifi:8080/AutoManager/Status
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _showSchedulerEditor( String strRequestQuery ) {		
+		String 	strTemplateFile= this.mstrTemplateDir + "/Scheduler.html";
+        StringBuilder sb = new StringBuilder();
+		
+		BufferedReader br= null;
+	    try {
+			br= new BufferedReader(new FileReader(strTemplateFile));
+	        String line = br.readLine();
+
+	        while( line != null ) {
+	            sb.append( line+"\n" );	
+
+	            if( line.equals( "<!-- Insert Header -->" ) )
+	            	sb.append( this._HeaderGenerator("Toolbox Scheduler") );
+
+	            line = br.readLine();
+	        }
+	    } catch( IOException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+	        try {
+				br.close();
+			} catch( IOException e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	    			
+		return sb.toString();
+	}
+
+	/**
+	 * ex:
+	 * http://tskotz-mac-wifi:8080/AutoManager/Status
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _showSettingsEditor( String strRequestQuery ) {		
+		String 	strTemplateFile= this.mstrTemplateDir + "/SettingsEditor.html";
+        StringBuilder sb = new StringBuilder();
+		
+		BufferedReader br= null;
+	    try {
+			br= new BufferedReader(new FileReader(strTemplateFile));
+	        String line = br.readLine();
+
+	        while( line != null ) {
+	            sb.append( line+"\n" );	
+
+	            if( line.equals( "<!-- Insert Header -->" ) )
+	            	sb.append( this._HeaderGenerator("Toolbox Settings") );
 
 	            line = br.readLine();
 	        }
