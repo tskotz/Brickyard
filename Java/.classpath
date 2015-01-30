@@ -10,7 +10,7 @@
 	<classpathentry kind="lib" path="Jars/iZomateRemoteServer.jar"/>
 	<classpathentry kind="lib" path="Jars/jdom.jar"/>
 	<classpathentry kind="lib" path="Jars/mail.jar"/>
-	<classpathentry kind="lib" path="/Users/terryskotz/TestAutomation/Java/AutomationToolbox/db-derby-10.1.2.1-bin/lib/derby.jar"/>
-	<classpathentry kind="lib" path="/Users/terryskotz/TestAutomation/Java/AutomationToolbox/db-derby-10.1.2.1-bin/lib/derbyclient.jar"/>
+	<classpathentry kind="lib" path="Jars/derbyclient.jar"/>
+	<classpathentry kind="lib" path="Jars/derby.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
