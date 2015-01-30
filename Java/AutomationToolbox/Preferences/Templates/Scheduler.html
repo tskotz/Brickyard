@@ -2,32 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Scheduler Editor</title>
-
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-  <link rel="stylesheet" href="/resources/demos/style.css">
-  <style>
-	#QueueTestsList { list-style-type: none; margin: 0; padding: 0; width: 60%; }
-	#QueueTestsList li span { position: absolute; margin-left: -1.3em; }
-    input.text { margin-bottom:12px; width:95%; padding: .4em; }
-	fieldset { padding:0; border:0; margin-top:15px;}
-	.ui-button-text { font-size: 10px; padding: 0px 0px 1px 1px; }
-	.ui-dialog-title{ font-size: 15px; }
-	.ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix{ border:none; }
-    .validateTips { border: 1px solid transparent; padding: 0.3em; }
-  </style>
+  <title>Toolbox Event Scheduler Editor</title>
   
- <script type="text/javascript">  	
+ <script type="text/javascript">
  </script> 
 </head>
 <body style="xbackground-color:#eeeeee;">
 <!-- Insert Header -->
+<button>New Event</button>
 <div>
-<table style="width:100%;background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
-	<tr><td style="width:60px;text-align:right;"><input type="checkbox" checked><label for="stagingdir">Name: </label></td>
-		<td><input id="stagingdir" type="text" value="Unnmaed Scheduled Job 1" style="width:100%;"></td></tr>
+<table id="event1" style="width:100%;background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
+	<tr><td style="width:64px;text-align:right;"><input type="checkbox" checked><label for="eventname"> Event:</label></td>
+		<td><input id="eventname" type="text" value="Unnamed Scheduled Job 1" style="width:92%;"><button>Delete</button></td></tr>
 	<tr><td style="text-align:right;"><label for="stagingdir">Run Job: </label></td>
 		<td><select><option>--Select--</option><option>User1</option><option>User2</option></select> 
 			<select><option>--Select--</option><option>Job1</option><option>Job2</option></select></td></tr>
@@ -48,7 +34,9 @@
 			<option>PM</option>
 			</select>
 			<br>
-			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> minutes
+			<input type="checkbox"> Run when Test Manager starts up
+			<br>
+			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> <select><option>minutes</option><option>hours</option><option>weeks</option><option>months</option></select>
 			</select><br>
 			<input type="checkbox"> If the following command returns 0: <br>
 			<input id="script" type="text" value="" style="width:100%;">
@@ -56,9 +44,9 @@
 </table>
 </div>
 <div>
-<table style="width:100%;background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
-	<tr><td style="width:60px;text-align:right;"><input type="checkbox" checked><label for="stagingdir">Name: </label></td>
-		<td><input id="stagingdir" type="text" value="Unnmaed Scheduled Job 2" style="width:100%;"></td></tr>
+<table id="event2" style="width:100%;background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
+	<tr><td style="width:64px;text-align:right;"><input type="checkbox" checked><label for="stagingdir"> Event:</label></td>
+		<td><input id="stagingdir" type="text" value="Unnamed Scheduled Job 2" style="width:92%;"><button>Delete</button></td></tr>
 	<tr><td style="text-align:right;"><label for="stagingdir">Run Job: </label></td>
 		<td><select><option>--Select--</option><option>User1</option><option>User2</option></select> 
 			<select><option>--Select--</option><option>Job1</option><option>Job2</option></select></td></tr>
@@ -79,7 +67,9 @@
 			<option>PM</option>
 			</select>
 			<br>
-			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> minutes
+			<input type="checkbox"> Run when Test Manager starts up
+			<br>
+			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> <select><option>minutes</option><option>hours</option><option>weeks</option><option>months</option></select>
 			</select><br>
 			<input type="checkbox"> If the following command returns 0: <br>
 			<input id="script" type="text" value="" style="width:100%;">

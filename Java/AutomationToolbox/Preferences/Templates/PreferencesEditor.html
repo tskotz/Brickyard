@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Settings Editor</title>
+  
+ <script type="text/javascript">
+	 function GetURLMachineAndPort() 
+	 {
+	     return window.location.protocol + "//" + window.location.host;
+	 }
+	
+    function RunURL( aUrl ) 
+    {
+        xmlHttp = new XMLHttpRequest(); 
+        xmlHttp.open( "GET", aUrl, false );
+        xmlHttp.setRequestHeader('Content-type', 'text/plain');
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+
+	function EnableLoadBalancing() 
+	{
+ 		var bEnabled= document.getElementById( "loadbalancingcb" ).checked;
+ 		document.getElementById( "loadsharingmaster" ).disabled= !bEnabled;
+ 		document.getElementById( "loadsharingmaster" ).style.fontStyle=bEnabled?"normal":"italic";
+ 		document.getElementById( "loadsharingservers" ).disabled= !bEnabled;
+ 		document.getElementById( "loadsharingservers" ).style.fontStyle=bEnabled?"normal":"italic";
+ 	} 
+ 	
+ 	function SaveSettings() 
+ 	{
+ 		if( confirm('Are you sure you want to save the settings?') == false )
+ 			return;
+ 		
+		var strURL= GetURLMachineAndPort() + "/AutoManager/SavePreferences?";
+		strURL+= "stagingdir=" + document.getElementById( "stagingdir" ).value;
+		strURL+= "&dataparamsroot=" + document.getElementById( "dataparamsroot" ).value;
+		strURL+= "&defaultjars=" + document.getElementById( "defaultjars" ).value;
+		strURL+= "&showjobcount=" + document.getElementById( "showjobcount" ).value;
+		strURL+= "&starttestmanagercb=" + document.getElementById( "starttestmanagercb" ).checked;
+		strURL+= "&loadbalancingcb=" + document.getElementById( "loadbalancingcb" ).checked;
+		strURL+= "&loadsharingmaster=" + document.getElementById( "loadsharingmaster" ).value;
+		strURL+= "&loadsharingservers=" + document.getElementById( "loadsharingservers" ).value;
+ 		
+		var strReply= RunURL( strURL );
+		if( strReply.toLowerCase() != "success" )
+			alert( "Failed to save settings: " + strReply );
+ 	}
+ 	
+ 	function CancelSettings() 
+ 	{
+ 		if( confirm('Canceling will revert the settings to the current saved state.  Press OK to revert settings?') == false )
+ 			return;
+ 		
+ 		location.reload();
+ 	}
+
+ </script> 
+</head>
+<body onload="">
+<!-- Insert Header -->
+<div style="background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
+<table style="width:100%;">
+	<tr><td style="text-align:right;"><label style="width:200px" for="stagingdir">Staging Dir: </label></td>
+		<td><input id="stagingdir" type="text" value="" style="width:100%;"></td></tr>
+	<tr><td style="width:200px;text-align:right;"><label for="dataparamsroot">Data Parameters Root: </label></td>
+		<td><input id="dataparamsroot" type="text" value="" style="width:100%;"></td></tr>
+	<tr><td style="text-align:right;"><label for="defaultjars">Default Jars Root Dir: </label></td>
+		<td><input id="defaultjars" type="text" value="" style="width:100%;"></td></tr>
+	<tr><td style="text-align:right;"><label for="showjobcount">Show Job Count: </label></td>
+		<td><input id="showjobcount" type="text" value="" style="width:30px"></td></tr>
+	<tr><td style="text-align:right;"><label for="starttestmanagercb">Start Test Manager on Launch:</label></td>
+		<td><input id="starttestmanagercb" type="checkbox"></td></tr>
+</table>
+<div style="color: black; border: black 1px solid">
+<table style="width:100%;">
+	<tr><td style="text-align:right;"><label for="loadbalancingcb"> Enable Job Load Balancing</label></td>
+		<td><input id="loadbalancingcb" type="checkbox" onclick="EnableLoadBalancing()"></td></tr>
+	<tr><td style="text-align:right;width:200px"><label for="loadsharingmaster">Allow Job Requests From:</label></td>
+		<td><input id="loadsharingmaster" type="text" value="" style="width:99%;font-style:italic;" disabled></td></tr>
+	<tr><td style="text-align:right;"><label for="loadsharingservers">Send Job Requests To:</label></td>
+		<td><input id="loadsharingservers" type="text" value="" style="width:99%;font-style:italic;" disabled></td></tr>
+</table>
+</div>
+<br>
+<button onclick="SaveSettings()">Save</button><button onclick="CancelSettings()">Cancel</button>
+</div>
+</body>
+</html>

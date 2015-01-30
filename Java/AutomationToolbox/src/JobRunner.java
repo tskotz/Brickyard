@@ -136,9 +136,8 @@ public class JobRunner {
     		
     		// Classpath
     		String strFullClassPath="";
-    		Preferences._Refresh();
-    		if( this.m_strClasspath.isEmpty() && !Preferences._GetPref( Preferences.TYPES.DefaultJars, "" ).isEmpty() )
-    			this.m_strClasspath.add( Preferences._GetPref( Preferences.TYPES.DefaultJars ) );
+    		if( this.m_strClasspath.isEmpty() && !DatabaseMgr._Preferences()._GetPref( Preferences.DefaultJars ).isEmpty() )
+    			this.m_strClasspath.add( DatabaseMgr._Preferences()._GetPref( Preferences.DefaultJars ) );
     		
     		for( String strClassPath : this.m_strClasspath )
     			strFullClassPath+= (strFullClassPath.isEmpty() ? "" : this.m_strClassPathSeparator ) + this._getFullClassPath( strClassPath );

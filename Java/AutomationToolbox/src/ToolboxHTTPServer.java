@@ -116,8 +116,12 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    		strStatus= this._showSchedulerEditor( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
-	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/Settings" )) {
-	    		strStatus= this._showSettingsEditor( exchange.getRequestURI().getQuery() );
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/Preferences" )) {
+	    		strStatus= this._showPreferencesEditor( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/SavePreferences" )) {
+	    		strStatus= this._savePreferences( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetImage" )) {
@@ -256,7 +260,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		"											<a href=\"/AutoManager/Status\"><button style=\"color:#0000ff;\">Status Page</button></a>" + 
 		"											<a href=\"/AutoManager/Scheduler\"><button style=\"color:#0000ff;\">Scheduler</button></a>" + 
 		"											<a href=\"/AutoManager/DataparamEditor?dataparam=\"\"\"><button style=\"color:#0000ff;\">New Dataparam</button></a>\n" +
-		"											<a href=\"/AutoManager/Settings\"><button style=\"color:#0000ff;\">Settings</button></a>" + 
+		"											<a href=\"/AutoManager/Preferences\"><button style=\"color:#0000ff;\">Preferences</button></a>" + 
 				"</td>\n" +
 		"	</tr>\n" +
 		"</table><hr>\n";
@@ -381,9 +385,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 				}
 			}
 		}
-		
-		Preferences._GetPref( Preferences.TYPES.DefaultJars, null);
-		
+				
 		String 	strTemplateFile= this.mstrTemplateDir + "/JobEditor.html";
 		String[] strTestbeds= DatabaseMgr._Testbeds()._GetTestbeds();
         StringBuilder sb = new StringBuilder();
@@ -564,8 +566,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strRequestQuery
 	 * @return
 	 */
-	private String _showSettingsEditor( String strRequestQuery ) {		
-		String 	strTemplateFile= this.mstrTemplateDir + "/SettingsEditor.html";
+	private String _showPreferencesEditor( String strRequestQuery ) {		
+		String 	strTemplateFile= this.mstrTemplateDir + "/PreferencesEditor.html";
         StringBuilder sb = new StringBuilder();
 		
 		BufferedReader br= null;
@@ -574,11 +576,30 @@ public class ToolboxHTTPServer implements HttpHandler {
 	        String line = br.readLine();
 
 	        while( line != null ) {
-	            sb.append( line+"\n" );	
-
 	            if( line.equals( "<!-- Insert Header -->" ) )
-	            	sb.append( this._HeaderGenerator("Toolbox Settings") );
-
+	            	line= this._HeaderGenerator("Toolbox Preferences");
+	            else if( line.contains( "id=\"stagingdir\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ) + "\"" );
+	            else if( line.contains( "id=\"dataparamsroot\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + "\"" );
+	            else if( line.contains( "id=\"defaultjars\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.DefaultJars ) + "\"" );
+	            else if( line.contains( "id=\"showjobcount\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.ShowJobCount ) + "\"" );
+	            else if( line.contains( "id=\"loadsharingmaster\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.AllowJobRequestsFrom ) + "\"" );
+	            else if( line.contains( "id=\"loadsharingservers\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.SendJobRequestsTo ) + "\"" );
+	            else if( line.contains( "body onload=\"\"" ) ) {
+	            	String strOnLoadScript= "";
+	            	if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.StartTestManagerOnLaunch ) )
+	            		strOnLoadScript+= "document.getElementById( 'starttestmanagercb' ).checked = true;";
+		            if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.EnableJobLoadBalancing ) )
+		            	strOnLoadScript+= "document.getElementById( 'loadbalancingcb' ).checked = true;EnableLoadBalancing()";
+	            	line= line.replace( "onload=\"\"", "onload=\"" + strOnLoadScript + "\"" );	            	
+	            }
+	            	    			
+	            sb.append( line+"\n" );	
 	            line = br.readLine();
 	        }
 	    } catch( IOException e ) {
@@ -595,6 +616,42 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    			
 		return sb.toString();
 	}
+	
+	/**
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _savePreferences( String strRequestQuery ) {			
+		if( strRequestQuery != null ) {
+			for( String strParam : strRequestQuery.split( "&" ) ) {
+				String[] aElementInfo= strParam.split( "=" );
+				if( aElementInfo.length == 2 ) {
+					if( aElementInfo[0].equals( "stagingdir" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.StagingDir, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "dataparamsroot" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.DataparamsRootDir, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "defaultjars" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.DefaultJars, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "showjobcount" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.ShowJobCount, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "starttestmanagercb" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.StartTestManagerOnLaunch, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "loadbalancingcb" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.EnableJobLoadBalancing, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "loadsharingmaster" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.AllowJobRequestsFrom, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "loadsharingservers" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.SendJobRequestsTo, aElementInfo[1] );
+					else
+						System.out.println("Warning: Unknown REST param: " + strParam );
+				}
+			}
+		}
+				
+		return STATUS_SUCCESS;
+	}
+
 
 	/**
 	 * 

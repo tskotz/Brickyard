@@ -66,11 +66,13 @@ public class DatabaseMgr
 	private final String mstrTestbedTableName= "TestbedTable3";
 	private final String mstrJobsTableName= "JobsTable";
 	private final String mstrUsersTableName= "UsersTable";
+	private final String mstrPreferencesTableName= "PreferencesTable4";
 
 	private TableVersionsWrapper mTableVersionsTable= null;
 	private TestbedsTableWrapper mTestbedsTable= null;
 	private JobsTableWrapper mJobsTable= null;
 	private UsersTableWrapper mUsersTable= null;
+	private PreferencesTableWrapper mPreferencesTable= null;
 	
 	private Connection mConnection = null;
 
@@ -173,6 +175,19 @@ public class DatabaseMgr
 			DatabaseMgr._GetInstance().mJobsTable= DatabaseMgr._GetInstance().new JobsTableWrapper();
 		
 		return DatabaseMgr._GetInstance().mJobsTable;
+	}
+
+	/**
+	 * Preferences Table Accessor
+	 * @return
+	 */
+	public static PreferencesTableWrapper _Preferences()
+	{
+		// Create the testbeds table if it does not exist
+		if( DatabaseMgr._GetInstance().mPreferencesTable == null )
+			DatabaseMgr._GetInstance().mPreferencesTable= DatabaseMgr._GetInstance().new PreferencesTableWrapper();
+		
+		return DatabaseMgr._GetInstance().mPreferencesTable;
 	}
 
 	/**
@@ -837,6 +852,170 @@ public class DatabaseMgr
 			return true;
 		}
 
+	}
+	
+	/**
+	 * 
+	 * @author terryskotz
+	 *
+	 */
+	public class PreferencesTableWrapper
+	{	
+		private final String PREF_NAME_COL=  "name";
+		private final int	 PREF_NAME_COL_MAX_SIZE= 100;
+		private final String PREF_VALUE_COL=  "value";
+		private final int	 PREF_VALUE_COL_MAX_SIZE= 500;
+		
+		private String mstrMyTable= null;
+		
+		/**
+		 * 
+		 */
+		public PreferencesTableWrapper()
+		{
+			this.mstrMyTable= DatabaseMgr._GetInstance().mstrPreferencesTableName;
+			try
+			{
+				// Add the table to the master db
+		        Statement s = DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "CREATE TABLE %s ( %s varchar(%d), %s varchar(%d))", 
+		        		 this.mstrMyTable, PREF_NAME_COL, PREF_NAME_COL_MAX_SIZE, PREF_VALUE_COL, PREF_VALUE_COL_MAX_SIZE);
+		        //System.out.println( strQuery );
+		        s.execute( strQuery );		        
+			}
+		    catch (Throwable e)
+		    {
+		        if( e.getMessage().contains( "already exists in Schema") )
+		        	;// this is ok
+		        else 
+		        {
+			        System.out.println("exception thrown:");
+		        	if (e instanceof SQLException)
+		        		DatabaseMgr._GetInstance().printSQLError((SQLException) e);
+		        	else
+		        		e.printStackTrace();
+		        }
+		    }
+			DatabaseMgr._Versions()._SetVersion(this.mstrMyTable, "1.0");
+			
+	        this._PutPrefImpl( Preferences.StagingDir, "./AutomationToolbox/ManagerStagingDirs", false );
+	        this._PutPrefImpl( Preferences.DataparamsRootDir, "../DataParams", false );
+	        this._PutPrefImpl( Preferences.DefaultJars, "./Jars", false );
+	        this._PutPrefImpl( Preferences.ShowJobCount, "20", false );
+	        this._PutPrefImpl( Preferences.StartTestManagerOnLaunch, "true", false );
+	        this._PutPrefImpl( Preferences.EnableJobLoadBalancing, "false", false );
+	        this._PutPrefImpl( Preferences.AllowJobRequestsFrom, "192.168.1.1:8380, 192.168.1.2:8380", false );
+	        this._PutPrefImpl( Preferences.SendJobRequestsTo, "192.168.1.10:8380, 192.168.1.11:8380, 192.168.1.12:8380", false );
+		}
+		
+		/**
+		 * 
+		 * @param prefType
+		 * @param strValue
+		 */
+		private void _PutPrefImpl( Preferences prefType, String strValue, boolean bUpdateIfExist )
+		{	
+			try 
+			{
+				String strQuery= null;
+
+				if( this._GetPref( prefType ) == null ) 
+					strQuery= String.format( "INSERT INTO %s VALUES ('%s','%s')", this.mstrMyTable, prefType.name(), strValue );
+				else if ( bUpdateIfExist )
+					strQuery= String.format( "UPDATE %s SET %s='%s',%s='%s' WHERE %s='%s'", 
+							this.mstrMyTable, 
+							this.PREF_NAME_COL, prefType.name(), this.PREF_VALUE_COL, strValue, this.PREF_NAME_COL, prefType.name() );
+
+				if( strQuery != null )
+				{
+					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+					s.execute( strQuery );
+					s.close();
+				}
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+			}			
+		}
+		
+		/**
+		 * 
+		 * @param prefType
+		 * @param strValue
+		 */
+		public void _PutPref( Preferences prefType, String strValue )
+		{	
+			this._PutPrefImpl( prefType, strValue, true );
+		}
+
+		
+		/**
+		 * 
+		 * @param prefType
+		 * @param bValue
+		 */
+		public void _PutPrefBool( Preferences prefType, boolean bValue )
+		{
+			this._PutPref( prefType, bValue?"true":"false" );
+		}
+
+		/**
+		 * 
+		 * @param prefType
+		 * @param bValue
+		 */
+		public void _PutPrefInt( Preferences prefType, int iValue )
+		{
+			this._PutPref( prefType, String.valueOf( iValue ) );
+		}
+		
+		/**
+		 * 
+		 * @param prefType
+		 * @return
+		 */
+		public String _GetPref( Preferences prefType  )
+		{
+			String strSettingValue= null;
+			try 
+			{
+				Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "SELECT * FROM %s WHERE %s='%s'", this.mstrMyTable, PREF_NAME_COL, prefType.name() );
+				ResultSet rs= s.executeQuery( strQuery );
+
+				if( rs.next() )
+					strSettingValue= rs.getString( PREF_VALUE_COL );
+				rs.close();
+				s.close();
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+			}
+			
+			return strSettingValue;
+		}
+		
+		/**
+		 * 
+		 * @param prefType
+		 * @return
+		 */
+		public boolean _GetPrefBool( Preferences prefType  )
+		{
+			return this._GetPref( prefType ).equalsIgnoreCase( "true" );
+		}
+
+		/**
+		 * 
+		 * @param prefType
+		 * @return
+		 */
+		public int _GetPrefInt( Preferences prefType  )
+		{
+			return Integer.valueOf( this._GetPref( prefType ) );
+		}
 	}
 
 }

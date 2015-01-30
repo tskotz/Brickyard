@@ -55,7 +55,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	final 	JPanel 			m_TestManagerPanel = new JPanel();
 	private ToolboxHTTPServer	m_ToolboxHTTPServer= null;
 
-	private File	m_fStagingDir= new File( System.getProperty("user.dir") + "/AutomationToolbox/ManagerStagingDirs" ); //default
+	private File	m_fStagingDir;
 	private File 	m_fIncomingDir;
 	private File 	m_fQueuedDir;
 	private File 	m_fRunningDir;
@@ -63,7 +63,6 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	private File 	m_fRetiredDir;
 	
 	private	Map<String, Boolean>	m_ActiveTestbeds= new HashMap<String, Boolean>();
-	private int						m_nShowJobCount= 15; //default
 	private HttpServer 				m_httpserver= null;
 	final 	JPanel 					m_WebServerPanel = new JPanel();
 
@@ -98,7 +97,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	    		this.m_ToolboxHTTPServer= new ToolboxHTTPServer( this.m_txtFldHttpPort.getText() );
 	    	
 	    	this.m_ToolboxHTTPServer._SetPort( this.m_txtFldHttpPort.getText() );
-	    	this._setDataparamsRootDir( Preferences._GetPref( Preferences.TYPES.DataparamsRootDir ) );
+	    	this._setDataparamsRootDir( DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) );
 	    	this.m_txtFldHttpPort.setEnabled( false );
 	    	this.m_btnNewWebJob.setEnabled( true );
 	    	this.m_btnWebStatus.setEnabled( true );
@@ -188,8 +187,10 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		this.m_txtfldStagingDir = new JTextField();
 		this.m_txtfldStagingDir.setEditable(false);
 
-		if( !Preferences._GetPref( Preferences.TYPES.StagingDir, "" ).isEmpty() )
-			this.m_fStagingDir= new File( Preferences._GetPref( Preferences.TYPES.StagingDir ) );
+		if( DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ).isEmpty() )
+			DatabaseMgr._Preferences()._PutPref( Preferences.StagingDir, "./AutomationToolbox/ManagerStagingDirs" );
+		
+		this.m_fStagingDir= new File( DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ).replace( "./", System.getProperty("user.dir") + "/" ) );
 		
 		if( !this.m_fStagingDir.exists() )
 			this.m_fStagingDir.mkdirs();
@@ -551,7 +552,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	 * 
 	 */
 	public void _StartTestManagerOnLaunch() {
-		if( Preferences._GetPref( Preferences.TYPES.StartTestManagerOnLaunch, "1" ).equals("1") )
+		if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.StartTestManagerOnLaunch ) )
 			this._startTestManagerTimer();
 	}
 	
@@ -568,10 +569,6 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		if( !this.m_timerTestManager.isRunning() ) {
 			this._createStagingDirs();
 			
-			Preferences._Refresh();
-			if( Preferences._GetPref( Preferences.TYPES.ShowJobCount ) != null )
-				this.m_nShowJobCount= Integer.valueOf( Preferences._GetPref( Preferences.TYPES.ShowJobCount ) );
-
 			this.m_timerTestManager.start();
 			System.out.println( "The Test Manager started!" );
 		}
@@ -799,6 +796,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
     			int completedCount= 0;
     			int rowNum= 0;
     			int numRows= ((DefaultTableModel)this.m_tableTestManager.getModel()).getRowCount();
+    			int nShowJobCount= DatabaseMgr._Preferences()._GetPrefInt( Preferences.ShowJobCount );
     			JobRunner jobRunner;
 
     			// Folders will be processed in the order they appear in list and that order is very important
@@ -836,8 +834,8 @@ public class ToolboxWindow extends JFrame implements ActionListener
     					// Handle Completed
     					else if( stagingDir.equals( this.m_fCompletedDir ) && fItem.isDirectory() ) {
     						jobRunner= new JobRunner( fItem, this.m_fRunningDir, this.m_fCompletedDir, this.m_fQueuedDir );
-    						if( ++completedCount > this.m_nShowJobCount || jobRunner.m_bErrors )
-    							jobRunner._Retire( this.m_fRetiredDir ); //only show the last 15 completed
+    						if( ++completedCount > nShowJobCount || jobRunner.m_bErrors )
+    							jobRunner._Retire( this.m_fRetiredDir ); //only show the last n completed
     					}
     					// Handle Running
     					else if( stagingDir.equals( this.m_fRunningDir ) && fItem.isDirectory() ) {
