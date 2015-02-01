@@ -16,14 +16,23 @@ public class RemoteServerMain implements Runnable
     private static PrintStream		sLogStream     = null; //optional stream used to print to log file
     public static int				sVersion	   = 12;
     private static String			sServerName    = "iZomateRemoteServer";
+    private int						mPort    	   = 0;
+    
+    public RemoteServerMain( int port ) {
+    	this.mPort= port;
+    }
 
-	/**
+    public RemoteServerMain() {
+    	this( 54320 ); //default port
+    }
+
+    /**
 	 * @param args
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception
-	{
-		int port = 54320;
+	{	
+		int port= Integer.valueOf( args[0] );
 		
 		//Log java version to console
 	    Properties p = System.getProperties();
@@ -40,7 +49,7 @@ public class RemoteServerMain implements Runnable
 	    System.out.println("\n");
 
 	    //Go!
-	    mainLoop(port);
+	    mainLoop( port );
 	}
 
 	/**
@@ -51,7 +60,7 @@ public class RemoteServerMain implements Runnable
 	 *
 	 * @throws Exception
 	 */
-	private static void mainLoop(int port) throws Exception
+	private static void mainLoop( int port ) throws Exception
 	{
 	    ServerSocket master= new ServerSocket(port);
 	    
@@ -103,7 +112,7 @@ public class RemoteServerMain implements Runnable
      *
      * @param s The string to write to the log/sys out
      */
-    protected static void log(String s)
+    protected static void log( String s )
     {
     	if (s != null && !s.equals(""))
     	{
@@ -124,7 +133,7 @@ public class RemoteServerMain implements Runnable
      *
      * @param s The string to write to the log/sys out
      */
-    protected static void logDebug(String s)
+    protected static void logDebug( String s )
     {
         if (sDebug)
         	log(s);
@@ -161,7 +170,7 @@ public class RemoteServerMain implements Runnable
 	@Override
 	public void run() {
 		try {
-			main(null);
+			main( new String[] {String.valueOf( this.mPort )} );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

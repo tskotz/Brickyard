@@ -43,15 +43,14 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	private JPanel 			m_pnlContentPane;
 	private Thread 			m_threadRemoteServer= null;
 	private JButton 		m_btnStartRemoteServer= null;
+	private JTextField 		m_txtFldRemoteServerPort;
 	private Timer			m_timerTestManager= null;
 	private JTable 			m_tableTestManager= null;
 	private JTextField 		m_txtfldStagingDir;
 	private JButton 		m_btnStartManager= null;
 	private JButton 		m_btnStartWebServer= null;
-	private JButton 		m_btnNewWebJob= null;
-	private JButton			m_btnWebStatus= null;
+	private JButton 		m_btnOpenPrefsPage= null;
 	private JTextField 		m_txtFldHttpPort= null;
-	private JTextField		m_txtFldDataparamRootDir= null;
 	final 	JPanel 			m_TestManagerPanel = new JPanel();
 	private ToolboxHTTPServer	m_ToolboxHTTPServer= null;
 
@@ -97,22 +96,22 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	    		this.m_ToolboxHTTPServer= new ToolboxHTTPServer( this.m_txtFldHttpPort.getText() );
 	    	
 	    	this.m_ToolboxHTTPServer._SetPort( this.m_txtFldHttpPort.getText() );
-	    	this._setDataparamsRootDir( DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) );
 	    	this.m_txtFldHttpPort.setEnabled( false );
-	    	this.m_btnNewWebJob.setEnabled( true );
-	    	this.m_btnWebStatus.setEnabled( true );
+	    	this.m_btnOpenPrefsPage.setEnabled( true );
 	    	
 			this.m_httpserver= HttpServer.create( addr, 0 );
 		    this.m_httpserver.createContext( "/", this.m_ToolboxHTTPServer );
 		    this.m_httpserver.setExecutor( Executors.newCachedThreadPool() );
 		    this.m_httpserver.start();
 		    System.out.println( "Web server is listening on port " + this.m_txtFldHttpPort.getText() );
-		    
 			// Set button text to Stop
-			this.m_btnStartWebServer.setText( "Stop Server" );
+			this.m_btnStartWebServer.setText( "Stop Server" );		
+			// Store the port
+			DatabaseMgr._Preferences()._PutPref( Preferences.pvtWebServerPort, this.m_txtFldHttpPort.getText() );
 		} catch (IOException e) {
 		    System.out.println( "Server failed to start:" );
 			e.printStackTrace();
+			this._stopWebServer();
 		}
 	}
 
@@ -121,14 +120,14 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	 * @throws IOException
 	 */
 	private void _stopWebServer() {
-	    this.m_httpserver.stop(2);
+		if( this.m_httpserver != null )
+			this.m_httpserver.stop(2);
 	    System.out.println( "Web server has been stopped" );
 	    
 		// Set button text to Start
 		this.m_btnStartWebServer.setText( "Start Server" );
     	this.m_txtFldHttpPort.setEnabled( true );
-    	this.m_btnNewWebJob.setEnabled( false );
-    	this.m_btnWebStatus.setEnabled( false );
+    	this.m_btnOpenPrefsPage.setEnabled( false );
 	}
 
 	/**
@@ -361,25 +360,40 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		JScrollPane scrollPane = new JScrollPane(textArea);
 				
 		this._redirectSystemStreams( textArea );	
+		
+		m_txtFldRemoteServerPort = new JTextField();
+		m_txtFldRemoteServerPort.setText( DatabaseMgr._Preferences()._GetPref( Preferences.pvtRemoteServerPort ) );
+		m_txtFldRemoteServerPort.setColumns(10);
+		
+		JLabel lblPort_1 = new JLabel("Port:");
 		GroupLayout gl_remoteServerPanel = new GroupLayout(remoteServerPanel);
 		gl_remoteServerPanel.setHorizontalGroup(
 			gl_remoteServerPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_remoteServerPanel.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)
-					.addContainerGap())
-				.addGroup(gl_remoteServerPanel.createSequentialGroup()
-					.addGap(241)
-					.addComponent(this.m_btnStartRemoteServer, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-					.addGap(251))
+					.addGroup(gl_remoteServerPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_remoteServerPanel.createSequentialGroup()
+							.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
+							.addContainerGap())
+						.addGroup(gl_remoteServerPanel.createSequentialGroup()
+							.addGap(17)
+							.addComponent(lblPort_1)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(m_txtFldRemoteServerPort, GroupLayout.PREFERRED_SIZE, 72, GroupLayout.PREFERRED_SIZE)
+							.addGap(79)
+							.addComponent(m_btnStartRemoteServer, GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+							.addGap(251))))
 		);
 		gl_remoteServerPanel.setVerticalGroup(
 			gl_remoteServerPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_remoteServerPanel.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(this.m_btnStartRemoteServer)
+					.addGroup(gl_remoteServerPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(m_btnStartRemoteServer)
+						.addComponent(lblPort_1)
+						.addComponent(m_txtFldRemoteServerPort, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
 		);
 		remoteServerPanel.setLayout(gl_remoteServerPanel);
@@ -398,7 +412,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		JLabel lblPort = new JLabel("Port:");
 		
 		m_txtFldHttpPort = new JTextField();
-		m_txtFldHttpPort.setText("8380");
+		m_txtFldHttpPort.setText( DatabaseMgr._Preferences()._GetPref( Preferences.pvtWebServerPort ) );
 		m_txtFldHttpPort.setColumns(10);
 		
 		m_btnStartWebServer = new JButton("Start Server");
@@ -411,35 +425,10 @@ public class ToolboxWindow extends JFrame implements ActionListener
 			}
 		});
 		
-		m_btnNewWebJob = new JButton("Open New Job Page");
-		m_btnNewWebJob.addActionListener(new ActionListener() {
+		m_btnOpenPrefsPage = new JButton("Open Preferences Page");
+		m_btnOpenPrefsPage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ToolboxWindow.this.m_ToolboxHTTPServer._OpenNewJobPage();
-			}
-		});
-		
-		m_btnWebStatus = new JButton("Open Status Page");
-		m_btnWebStatus.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ToolboxWindow.this.m_ToolboxHTTPServer._OpenStatusPage();
-			}
-		});
-		
-		JButton btnOpenDataparamEditor = new JButton("Open Dataparam Editor");
-		btnOpenDataparamEditor.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				ToolboxWindow.this.m_ToolboxHTTPServer._OpenDataParamEditorPage();
-			}
-		});
-		
-		m_txtFldDataparamRootDir = new JTextField();
-		m_txtFldDataparamRootDir.setEditable(false);
-		m_txtFldDataparamRootDir.setColumns(10);
-		
-		JButton btnDataparamsRootDir = new JButton("Dataparams Root Dir:");
-		btnDataparamsRootDir.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ToolboxWindow.this._setDataparamsRootDir( null );
+				ToolboxWindow.this.m_ToolboxHTTPServer._OpenPreferencesPage();
 			}
 		});
 		
@@ -455,14 +444,8 @@ public class ToolboxWindow extends JFrame implements ActionListener
 							.addComponent(m_txtFldHttpPort, GroupLayout.PREFERRED_SIZE, 65, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(m_btnStartWebServer))
-						.addComponent(m_btnNewWebJob)
-						.addComponent(m_btnWebStatus)
-						.addGroup(gl_m_WebServerPanel.createSequentialGroup()
-							.addComponent(btnDataparamsRootDir)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(m_txtFldDataparamRootDir, GroupLayout.PREFERRED_SIZE, 617, GroupLayout.PREFERRED_SIZE))
-						.addComponent(btnOpenDataparamEditor))
-					.addContainerGap(59, Short.MAX_VALUE))
+						.addComponent(m_btnOpenPrefsPage))
+					.addContainerGap(640, Short.MAX_VALUE))
 		);
 		gl_m_WebServerPanel.setVerticalGroup(
 			gl_m_WebServerPanel.createParallelGroup(Alignment.LEADING)
@@ -472,40 +455,12 @@ public class ToolboxWindow extends JFrame implements ActionListener
 						.addComponent(lblPort)
 						.addComponent(m_txtFldHttpPort, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(m_btnStartWebServer))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_m_WebServerPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnDataparamsRootDir)
-						.addComponent(m_txtFldDataparamRootDir, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(85)
-					.addComponent(m_btnNewWebJob)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(m_btnWebStatus)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(btnOpenDataparamEditor)
-					.addContainerGap(165, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(m_btnOpenPrefsPage)
+					.addContainerGap(344, Short.MAX_VALUE))
 		);
 		m_WebServerPanel.setLayout(gl_m_WebServerPanel);
 
-	}
-	
-	/**
-	 * 
-	 */
-	private void _setDataparamsRootDir( String strDir ) {
-		// If strDir is null then ask user to select one
-		if( strDir == null ) {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-			chooser.setCurrentDirectory( ToolboxWindow.this.m_fStagingDir );
-		    int returnVal = chooser.showOpenDialog( this.m_TestManagerPanel );
-		    if( returnVal == JFileChooser.APPROVE_OPTION )
-		    	strDir= chooser.getSelectedFile().getAbsolutePath();
-		}
-		// If we have one then set it
-		if( strDir != null ) {
-	    	this.m_txtFldDataparamRootDir.setText( strDir );
-	    	this.m_ToolboxHTTPServer._SetDataParamDir( strDir );
-	    }
 	}
 
 	/**
@@ -936,17 +891,24 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	private void _startRemoteServer( ) {
 		if( this.m_threadRemoteServer == null ) {
 			try {
-				this.m_threadRemoteServer = new Thread( new RemoteServerMain(), "RemoteServer");
+				int iPort= Integer.valueOf( this.m_txtFldRemoteServerPort.getText() );
+				this.m_threadRemoteServer = new Thread( new RemoteServerMain( iPort ), "RemoteServer");
 				this.m_threadRemoteServer.start();
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 				this.m_threadRemoteServer= null;
 			}
 		}
 		else
 			System.out.println("Remote Server is already running!");
 		
-		this.m_btnStartRemoteServer.setText( "Stop Remote Server" );
+		if( this.m_threadRemoteServer != null && this.m_threadRemoteServer.isAlive() ) {
+			DatabaseMgr._Preferences()._PutPref( Preferences.pvtRemoteServerPort, this.m_txtFldRemoteServerPort.getText() );
+			this.m_btnStartRemoteServer.setText( "Stop Remote Server" );
+			this.m_txtFldRemoteServerPort.setEnabled( false );
+		}
+		else
+			this.m_threadRemoteServer= null;	
 	}
 
 	/**
@@ -955,9 +917,10 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	private void _stopRemoteServer( ) {
 		if( this.m_threadRemoteServer != null && this.m_threadRemoteServer.isAlive() ) {
 			try {
+				int iPort= DatabaseMgr._Preferences()._GetPrefInt( Preferences.pvtRemoteServerPort );
 				// Connect to Remote Server and send it a stop message
 				Socket socket= new Socket();
-				socket.connect( new InetSocketAddress( "127.0.0.1", 54320), 2000 );
+				socket.connect( new InetSocketAddress( "127.0.0.1", iPort), 2000 );
 				socket.getOutputStream().write( "stop".getBytes() );
 				socket.close();
 				
@@ -970,6 +933,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		
 		this.m_threadRemoteServer= null;
 		this.m_btnStartRemoteServer.setText( "Start Remote Server" );
+		this.m_txtFldRemoteServerPort.setEnabled( true );
 	}
 
 	/**

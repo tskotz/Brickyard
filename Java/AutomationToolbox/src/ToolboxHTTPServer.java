@@ -211,24 +211,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 	/**
 	 * 
 	 */
-	public void _OpenNewJobPage() {
-		this._0penWebPage( "/AutoManager/JobEditor" );
-	}
-
-	/**
-	 * 
-	 */
-	public void _OpenStatusPage() {
-		this._0penWebPage( "/AutoManager/Status" );
+	public void _OpenPreferencesPage() {
+		this._0penWebPage( "/AutoManager/Preferences" );
 	}
 	
-	/**
-	 * 
-	 */
-	public void _OpenDataParamEditorPage() {
-		this._0penWebPage( "/AutoManager/DataparamEditor?dataparam=/Products/Alloy/AlloyPerfTestMac.xml" );
-	}
-
 	/**
 	 * 
 	 * @param URL

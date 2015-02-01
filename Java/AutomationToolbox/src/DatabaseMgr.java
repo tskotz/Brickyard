@@ -897,15 +897,9 @@ public class DatabaseMgr
 		        }
 		    }
 			DatabaseMgr._Versions()._SetVersion(this.mstrMyTable, "1.0");
-			
-	        this._PutPrefImpl( Preferences.StagingDir, "./AutomationToolbox/ManagerStagingDirs", false );
-	        this._PutPrefImpl( Preferences.DataparamsRootDir, "../DataParams", false );
-	        this._PutPrefImpl( Preferences.DefaultJars, "./Jars", false );
-	        this._PutPrefImpl( Preferences.ShowJobCount, "20", false );
-	        this._PutPrefImpl( Preferences.StartTestManagerOnLaunch, "true", false );
-	        this._PutPrefImpl( Preferences.EnableJobLoadBalancing, "false", false );
-	        this._PutPrefImpl( Preferences.AllowJobRequestsFrom, "192.168.1.1:8380, 192.168.1.2:8380", false );
-	        this._PutPrefImpl( Preferences.SendJobRequestsTo, "192.168.1.10:8380, 192.168.1.11:8380, 192.168.1.12:8380", false );
+			// Store default preferences if not already set
+			for( Preferences pref : Preferences.values() )
+		        this._PutPrefImpl( pref, pref._GetDefaultData(), false );
 		}
 		
 		/**
