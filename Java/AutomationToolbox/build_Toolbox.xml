@@ -63,7 +63,7 @@
 				<!-- Who is building this jar? -->
 	            <attribute name="Built-By" value="${user.name}" />
 	            <!-- Information about the program itself -->
-	            <attribute name="Implementation-Vendor" value="iZotope inc." />
+	            <attribute name="Implementation-Vendor" value="Spirit Inc" />
 	            <attribute name="Implementation-Title" value="Automation Toolbox" />
 	            <attribute name="Implementation-Version" value="1.0.0" />
 	            <!-- this tells which class should run when executing your jar -->

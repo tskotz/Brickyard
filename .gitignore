@@ -2,3 +2,5 @@
 *.log
 dbAutoToolbox/
 ManagerStagingDirs/
+
+Java/iZomateRemoteServer/RemoteServerMain.class
