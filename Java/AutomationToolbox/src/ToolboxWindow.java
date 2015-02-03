@@ -54,12 +54,12 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	final 	JPanel 			m_TestManagerPanel = new JPanel();
 	private ToolboxHTTPServer	m_ToolboxHTTPServer= null;
 
-	private File	m_fStagingDir;
-	private File 	m_fIncomingDir;
-	private File 	m_fQueuedDir;
-	private File 	m_fRunningDir;
-	private File 	m_fCompletedDir;
-	private File 	m_fRetiredDir;
+	private static File		m_fStagingDir;
+	private static File 	m_fIncomingDir;
+	private static File 	m_fQueuedDir;
+	private static File 	m_fRunningDir;
+	private static File 	m_fCompletedDir;
+	private static File 	m_fRetiredDir;
 	
 	private	Map<String, Boolean>	m_ActiveTestbeds= new HashMap<String, Boolean>();
 	private HttpServer 				m_httpserver= null;
@@ -985,5 +985,22 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		            break;
 		        }
 		    }
+	}
+	
+	// Static Accessor Methods for the Staging dirs
+	public static File _IncomingDir() {
+		return ToolboxWindow.m_fIncomingDir;
+	}
+	public static File _QueuedDir() {
+		return ToolboxWindow.m_fQueuedDir;
+	}
+	public static File _RunningDir() {
+		return ToolboxWindow.m_fRunningDir;
+	}
+	public static File _CompletedDir() {
+		return ToolboxWindow.m_fCompletedDir;
+	}
+	public static File _RetiredDir() {
+		return ToolboxWindow.m_fRetiredDir;
 	}
 }

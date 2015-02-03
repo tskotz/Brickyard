@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -32,15 +35,10 @@ import com.sun.net.httpserver.HttpHandler;
 public class ToolboxHTTPServer implements HttpHandler {
 	
 	private String  mstrWorkingDir= new File("").getAbsolutePath();
-	//TODO: Get these from the toolbox rather than hardcoding them
-	private String 	mstrIncomingDir= this.mstrWorkingDir + "/AutomationToolbox/ManagerStagingDirs/Incoming";
-	private String 	mstrQueuedDir= this.mstrWorkingDir + "/AutomationToolbox/ManagerStagingDirs/Queued";
-	private String 	mstrRunningDir= this.mstrWorkingDir + "/AutomationToolbox/ManagerStagingDirs/Running";
-	private String 	mstrCompletedDir= this.mstrWorkingDir + "/AutomationToolbox/ManagerStagingDirs/Completed";
 	private String 	mstrTemplateDir= this.mstrWorkingDir + "/AutomationToolbox/Preferences/Templates/";
-	private String 	mstrDataParamDir= null;
 	private String  mstrPort= null;
 	private String  mstrWebServerURL= null;
+	private LoadBalancer mpLoadBalancer= new LoadBalancer();
 	
 	static  int		sRequestCounter= 0;
 	static final String STATUS_SUCCESS= "success";
@@ -63,19 +61,6 @@ public class ToolboxHTTPServer implements HttpHandler {
 	
 	/**
 	 * 
-	 * @param strDataParam
-	 */
-	public void _SetDataParamDir( String strDataParamDir ) {
-		try {
-			File fDataParamsDir= new File( strDataParamDir );
-			this.mstrDataParamDir= fDataParamsDir.getCanonicalPath();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * 
 	 */
 	@Override
 	public void handle( HttpExchange exchange ) throws IOException {
@@ -88,21 +73,22 @@ public class ToolboxHTTPServer implements HttpHandler {
 		System.out.println( "Query: " + exchange.getRequestURI().getQuery() );
 		System.out.println( "Protocol: " + exchange.getProtocol() );
 		System.out.println( "Method: " + exchange.getRequestMethod() );
-		System.out.println( "Remote Adr: " + exchange.getRemoteAddress().getHostName() );	
+		System.out.println( "Remote Adr: " + exchange.getRemoteAddress().getHostName() + ":" + exchange.getRemoteAddress().getPort() );	
+		System.out.println( "Remote Adr: " + exchange.getRequestHeaders().get( "Host" ).get( 0 ) );	
 
-		this.mstrWebServerURL= "http:/" + exchange.getLocalAddress().toString();
+		this.mstrWebServerURL= "http:/" + exchange.getRequestHeaders().get( "Host" ).get( 0 );
 
 	    if (requestMethod.equalsIgnoreCase("GET")) {
 	    	String strStatus= "Ooops!";
 	    	byte[] bufJPEG= null;
 	    	
 	    	if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/RunJob" )) {
-	    		strStatus= this._runJob( exchange.getRequestURI().getQuery() );
+	    		strStatus= this._runJob( exchange.getRequestURI().getQuery(), true );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
-	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/Dashboard" )) {
-	    		strStatus= this._showDashboard( exchange.getRequestURI().getQuery() );
-		    	responseHeaders.set("Content-Type", "text/html");
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/RunLoadBalancedJob" )) {
+	    		strStatus= this._runJob( exchange.getRequestURI().getQuery(), false );
+		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/JobEditor" )) {
 	    		strStatus= this._showJobEditorPage( exchange.getRequestURI().getQuery() );
@@ -180,6 +166,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    		strStatus= this._GetUserJobs( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/LB/GetNumJobs" )) {
+	    		strStatus= this.mpLoadBalancer._GetNumJobsRequest( exchange );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
 	    	else {
 	    		strStatus= "Unknown Request: " + exchange.getRequestURI().getPath();
 	    	    System.out.println( strStatus );	
@@ -193,15 +183,6 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    	else
 	    		responseBody.write( strStatus.getBytes() );
 	    		
-//	    	Headers requestHeaders = exchange.getRequestHeaders();
-//	    	Set<String> keySet = requestHeaders.keySet();
-//	    	Iterator<String> iter = keySet.iterator();
-//	    	while (iter.hasNext()) {
-//	    		String key = iter.next();
-//	    		List values = requestHeaders.get(key);
-//	    		String s = key + " = " + values.toString() + "\n";
-//	    		responseBody.write(s.getBytes());
-//	    	}
 	    	responseBody.close();
 
 			System.out.println( "Done Processing REST Request " + sRequestCounter );
@@ -240,7 +221,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		return
 		"<table style=\"width:100%;padding:0px;border:0px solid black;xbackground-color:#eeeeee;\">\n" +
 		"	<tr>\n" +
-		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\""+ mstrWebServerURL + "/AutoManager/GetImage?holiday-spirit-anastasiya-malakhova.jpg\" style=\"width:100\"></td>\n" +
+		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\""+ this.mstrWebServerURL + "/AutoManager/GetImage?" + DatabaseMgr._Preferences()._GetPref( Preferences.DashboardLogo ) + "\" style=\"width:100\"></td>\n" +
 		"		<td style=\"padding:10px;border:0px solid black\"><font style=\"font-size:32px;\"><b>" + strText + "</b></font><br>" + 
 		"											<a href=\"/AutoManager/JobEditor\"><button style=\"color:#0000ff;\">Create Job</button></a>\n" +
 		"											<a href=\"/AutoManager/Status\"><button style=\"color:#0000ff;\">Status Page</button></a>" + 
@@ -258,11 +239,17 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * 
 	 * @param strRequestQuery
 	 */
-	private String _runJob( String strRequestQuery ) {
-		String strStatus= STATUS_SUCCESS;
+	private String _runJob( String strRequestQuery, boolean bLoadBalance ) {
+		// Try Load Balancer first if this request did not originate from a load balanced request
+		if( bLoadBalance && this.mpLoadBalancer._Distribute( strRequestQuery ) )
+			return ToolboxHTTPServer.STATUS_SUCCESS;
+
+		String strStatus= ToolboxHTTPServer.STATUS_SUCCESS;
 		
-		if( strRequestQuery != null ) {
+		if( strRequestQuery != null ) {				
 			try {
+				String strDataparamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getCanonicalPath();
+
 				// root element
 				Element eJob = new Element("Job");
 
@@ -298,7 +285,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 							// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
 							for( String strThisTestbed : strTestbedLookupValue.split(",")) {
 								Element aElement= new Element( JobTags.DataParamFile.name() );
-								aElement.setText( this.mstrDataParamDir + "/" + strDataparamFile );
+								aElement.setText( strDataparamDir + "/" + strDataparamFile );
 								aElement.setAttribute( "testbed", strThisTestbed.trim() );
 								if( strTestbedLookupValue != strThisTestbed )
 									aElement.setAttribute( "group", strTestbedOrGroup );
@@ -313,7 +300,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 				// write the content into xml file	
 				XMLOutputter xmlOutput = new XMLOutputter();
 				xmlOutput.setFormat(Format.getPrettyFormat());
-				String strFileName= this.mstrIncomingDir + "/" +  eJob.getChild( JobTags.JobName.name() ).getText().replace(" ", "_") + ".job.xml";
+				String strFileName= ToolboxWindow._IncomingDir().getAbsolutePath() + "/" +  eJob.getChild( JobTags.JobName.name() ).getText().replace(" ", "_") + ".job.xml";
 				Document doc= new Document( eJob );
 				xmlOutput.output( doc, new FileWriter( strFileName ) );
 				xmlOutput.output( doc, System.out );
@@ -413,14 +400,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            }
 	            else if( line.contains( "id=\"TestsRoot\"" )) {
             		sb.append( "  <option value=\"--Select--\">--Select--</option>\n" );
-            		File fDataParamsDir= new File(this.mstrDataParamDir);
+            		File fDataParamsDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ));
             		if( fDataParamsDir.exists() ) {
 		            	for( File fFile : fDataParamsDir.listFiles() )
 		            		if( fFile.isDirectory() )
 		            			sb.append( "  <option value=\"" + fFile.getName() + "\">" + fFile.getName() + "</option>\n" );
             		}
             		else
-            			System.out.println( "Could not find DataParameters directory: " + this.mstrDataParamDir );
+            			System.out.println( "Could not find DataParameters directory: " + fDataParamsDir.getAbsolutePath() );
 	            }
 	            		
 	            line = br.readLine();
@@ -471,11 +458,9 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            	}
 	            	sb.append( line+"\n" );
 	            	
-	    			for( String strMgrDir : new String[]{this.mstrRunningDir, this.mstrQueuedDir, this.mstrIncomingDir, this.mstrCompletedDir} ) {
-		            	// Now insert Job Info
-		            	File fF= new File( strMgrDir );
-		            	
-		            	File[] lFiles= fF.listFiles();
+	    			for( File fStagingDir : new File[]{ToolboxWindow._RunningDir(), ToolboxWindow._QueuedDir(), ToolboxWindow._IncomingDir(), ToolboxWindow._CompletedDir()} ) {
+		            	// Now insert Job Info		            	
+		            	File[] lFiles= fStagingDir.listFiles();
 		            	Arrays.sort(lFiles, new Comparator<File>(){
 	    				    public int compare(File f1, File f2) {
 	    				        return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
@@ -567,7 +552,9 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            else if( line.contains( "id=\"stagingdir\"" ) )
 	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ) + "\"" );
 	            else if( line.contains( "id=\"dataparamsroot\"" ) )
-	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + "\"" );
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + "\"" );	            
+	            else if( line.contains( "id=\"dashboardlogo\"" ) )
+	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.DashboardLogo ) + "\"" );
 	            else if( line.contains( "id=\"defaultjars\"" ) )
 	            	line= line.replace( "value=\"\"", "value=\"" + DatabaseMgr._Preferences()._GetPref( Preferences.DefaultJars ) + "\"" );
 	            else if( line.contains( "id=\"showjobcount\"" ) )
@@ -617,6 +604,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 						DatabaseMgr._Preferences()._PutPref( Preferences.StagingDir, aElementInfo[1] );
 					else if( aElementInfo[0].equals( "dataparamsroot" ))
 						DatabaseMgr._Preferences()._PutPref( Preferences.DataparamsRootDir, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "dashboardlogo" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.DashboardLogo, aElementInfo[1] );
 					else if( aElementInfo[0].equals( "defaultjars" ))
 						DatabaseMgr._Preferences()._PutPref( Preferences.DefaultJars, aElementInfo[1] );
 					else if( aElementInfo[0].equals( "showjobcount" ))
@@ -648,7 +637,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		String strResultFile= strRequestQuery;
 	    byte[] fileData = null;
 		try {
-			File file = new File( mstrTemplateDir + "/Images/" + strResultFile);
+			File file = new File( strResultFile );
 		    fileData = new byte[(int) file.length()];
 		    DataInputStream dis = new DataInputStream(new FileInputStream(file));
 		    dis.readFully(fileData);
@@ -709,13 +698,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 		String strTemplateFile= this.mstrTemplateDir + "/DataparamEditor.html";
 		String strDataParamFile= null;
 		File fDataparamterFile= null;
+        String strDataParamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getAbsolutePath();
         StringBuilder sb = new StringBuilder();
         
 		for( String strParam : strRequestQuery.split( "&" ) ) {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 ) {
 				if( aElementInfo[0].equals( "dataparam" ))
-					strDataParamFile= this.mstrDataParamDir + aElementInfo[1];
+					strDataParamFile= strDataParamDir + aElementInfo[1];
 				else
 					System.out.println("Warning: Unknown REST param: " + strParam );
 			}
@@ -767,19 +757,6 @@ public class ToolboxHTTPServer implements HttpHandler {
 	}
 
 	/**
-	 * ex:
-	 * http://tskotz-mac-wifi:8080/AutoManager/Dashboard
-	 * 
-	 * @param strRequestQuery
-	 * @return
-	 */
-	private String _showDashboard( String strRequestQuery ) {			    			
-		StringBuilder sb = new StringBuilder();
-		sb.append("TBD");
-		return sb.toString();
-	}
-
-	/**
 	 * ex.
 	 * http://tskotz-mac-wifi:8080/AutoManager/Contents?Platforms/BreakTweaker
 	 * 
@@ -789,7 +766,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	private String _getDirContents( String strRequestQuery, boolean bDirs ) {
 		
 		StringBuilder sb = new StringBuilder();
-        File fDir= new File( this.mstrDataParamDir + "/" + strRequestQuery );
+        File fDir= new File( DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + "/" + strRequestQuery );
         
         if( fDir.exists() ) {
 	    	for( File fFile : fDir.listFiles() )
@@ -826,7 +803,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		}
 		
 		if( jobData != null ) {
-			String strJobEditorLink= "<a href=\"" + mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
+			String strJobEditorLink= "<a href=\"" + this.mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
 			sb.append( "<tr class=d" + (jobNum % 2) + ">\n" );
 			sb.append( "<td><input type=\"checkbox\"></td>\n" );
 			sb.append( "<td><table style=\"width:100%; border:0px\">\n" );

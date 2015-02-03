@@ -112,8 +112,6 @@ public class JobRunner {
 	
 	/**
 	 * 
-	 * @param fRunningDir
-	 * @param fCompletedDir
 	 */
 	public String _Run() {		
 		try {			

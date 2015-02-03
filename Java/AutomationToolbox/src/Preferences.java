@@ -16,7 +16,8 @@ public enum Preferences {
 	AllowJobRequestsFrom		( "192.168.1.1:8380, 192.168.1.2:8380" ),
 	SendJobRequestsTo			( "192.168.1.11:8380, 192.168.1.12:8380, 192.168.1.13:8380" ),
 	pvtWebServerPort			( "8380" ),
-	pvtRemoteServerPort			( "54320" );
+	pvtRemoteServerPort			( "54320" ),
+	DashboardLogo				( "./AutomationToolbox/Preferences/Templates/Images/holiday-spirit-anastasiya-malakhova.jpg" );
 	
 	private final String mDefaultData;
 	
