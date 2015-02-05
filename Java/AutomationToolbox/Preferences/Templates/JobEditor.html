@@ -103,7 +103,7 @@
                		$("#testbedDescription").val( listItems[4] );
                	}
             	else {
-	    			$("#testbedName").val( "127.0.0.1" );
+	    			$("#testbedName").val( "127.0.0.1:" + window.location.port  );
                		$("#testbedDescription").val( "Description of this testbed" );            		
                		$(".ui-dialog-buttonpane button:contains('Remove')").hide();
             	}
@@ -231,7 +231,7 @@
 	        
 	        strSelection= testbedsMenu.options[testbedsMenu.selectedIndex].text
 	        try {
-	            strStatus= "Connected: " + RunURL( "http://" + strSelection + ":" + window.location.port + "/AutoManager/GetToolboxStatus" );
+	            strStatus= "Connected: " + RunURL( "http://" + strSelection + "/AutoManager/GetToolboxStatus" );
 	        } catch(err) {
 	            strStatus= "<font color=\"red\">Could not connect to the Testbed's Automation Toolbox: " + err.message + "</font>";
 	        }	

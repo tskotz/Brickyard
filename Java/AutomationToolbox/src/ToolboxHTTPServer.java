@@ -18,9 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -73,8 +70,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 		System.out.println( "Query: " + exchange.getRequestURI().getQuery() );
 		System.out.println( "Protocol: " + exchange.getProtocol() );
 		System.out.println( "Method: " + exchange.getRequestMethod() );
-		System.out.println( "Remote Adr: " + exchange.getRemoteAddress().getHostName() + ":" + exchange.getRemoteAddress().getPort() );	
-		System.out.println( "Remote Adr: " + exchange.getRequestHeaders().get( "Host" ).get( 0 ) );	
+		if( exchange.getRequestHeaders().get( "Origin" ) != null )
+			System.out.println( "Remote Adr: " + exchange.getRequestHeaders().get( "Origin" ).get( 0 ).replace( "http://", "" ) );
+		else
+			System.out.println( "Remote Adr: " + exchange.getRequestHeaders().get( "Host" ).get( 0 ) );
 
 		this.mstrWebServerURL= "http:/" + exchange.getRequestHeaders().get( "Host" ).get( 0 );
 
@@ -83,11 +82,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    	byte[] bufJPEG= null;
 	    	
 	    	if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/RunJob" )) {
-	    		strStatus= this._runJob( exchange.getRequestURI().getQuery(), true );
-		    	responseHeaders.set("Content-Type", "text/plain");
-	    	}
-	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/RunLoadBalancedJob" )) {
-	    		strStatus= this._runJob( exchange.getRequestURI().getQuery(), false );
+	    		strStatus= this._runJob( exchange );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/JobEditor" )) {
@@ -239,12 +234,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * 
 	 * @param strRequestQuery
 	 */
-	private String _runJob( String strRequestQuery, boolean bLoadBalance ) {
+	private String _runJob( HttpExchange exchange ) {
 		// Try Load Balancer first if this request did not originate from a load balanced request
-		if( bLoadBalance && this.mpLoadBalancer._Distribute( strRequestQuery ) )
+		if( this.mpLoadBalancer._Distribute( exchange ) )
 			return ToolboxHTTPServer.STATUS_SUCCESS;
 
 		String strStatus= ToolboxHTTPServer.STATUS_SUCCESS;
+		String strRequestQuery= exchange.getRequestURI().getQuery();
 		
 		if( strRequestQuery != null ) {				
 			try {
@@ -292,7 +288,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 								eJob.addContent( aElement );
 							}
 						}
-						else
+						// ignore the load balancing origin paramter.  This is used in _Distribute
+						else if( !aElementInfo[0].equals( "origin" ) )
 							throw new Exception( "An error was found parsing REST command:  Unknown parameter: " +  strParam );						
 					}
 				}
