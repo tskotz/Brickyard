@@ -41,10 +41,10 @@ public class LoadBalancer {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 )
 				if( aElementInfo[0].equals( this.m_strFromToolbox ))
-					strFromToolbox= aElementInfo[1].toLowerCase();
+					strFromToolbox= aElementInfo[1];
 		}
 
-		List<String> pBosses= Arrays.asList( DatabaseMgr._Preferences()._GetPref( Preferences.AllowJobRequestsFrom ).replace( " ", "" ).split( "," ) );
+		List<String> pBosses= Arrays.asList( DatabaseMgr._Preferences()._GetPref( Preferences.AllowJobRequestsFrom ).replace( " ", "" ).toLowerCase().split( "," ) );
 
 		if( strFromToolbox == null )
 			return "No Toolbox was specified";
@@ -105,10 +105,10 @@ public class LoadBalancer {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 )
 				if( aElementInfo[0].equals( "origin" ))
-					strOrigin= aElementInfo[1].toLowerCase();
+					strOrigin= aElementInfo[1];
 		}
 
-		List<String> pOrigins= Arrays.asList( (strOrigin!=null ? strOrigin.split(";") : new String[]{} ));
+		List<String> pOrigins= Arrays.asList( (strOrigin!=null ? strOrigin.toLowerCase().split(";") : new String[]{} ));
 		String strThisOrigin= exchange.getRequestHeaders().get( "Host" ).get( 0 );
 
 		// Let's find the toolbox with the least going on
