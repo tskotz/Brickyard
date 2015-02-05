@@ -41,14 +41,14 @@ public class LoadBalancer {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 )
 				if( aElementInfo[0].equals( this.m_strFromToolbox ))
-					strFromToolbox= aElementInfo[1];
+					strFromToolbox= aElementInfo[1].toLowerCase();
 		}
 
 		List<String> pBosses= Arrays.asList( DatabaseMgr._Preferences()._GetPref( Preferences.AllowJobRequestsFrom ).replace( " ", "" ).split( "," ) );
 
 		if( strFromToolbox == null )
 			return "No Toolbox was specified";
-		if( !pBosses.contains( strFromToolbox ) )
+		if( !pBosses.contains( strFromToolbox.toLowerCase() ) )
 			return strFromToolbox + " is not authorized to Load Balance with this Toolbox";
 			
 		return "NumJobs:" + String.valueOf( this._GetNumJobs() );
@@ -90,10 +90,14 @@ public class LoadBalancer {
 		if( !DatabaseMgr._Preferences()._GetPrefBool( Preferences.EnableJobLoadBalancing ) )
 			return false;
 
+		System.out.println( "\nRunning Load Balancer:" );
+
 		int iNumJobs= this._GetNumJobs();
 		// If we aren't busy then don't try to distribute.  Run locally
-		if( iNumJobs == 0 )
+		if( iNumJobs == 0 ) {
+			System.out.println( "0 jobs running locally so deferring to local toolbox" );
 			return false;
+		}
 
 		String strOrigin= null;
 		// Look for the origin of this request  i.e  origin=192.168.1.1:8080,192.168.1.5:8321
@@ -101,7 +105,7 @@ public class LoadBalancer {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 )
 				if( aElementInfo[0].equals( "origin" ))
-					strOrigin= aElementInfo[1];
+					strOrigin= aElementInfo[1].toLowerCase();
 		}
 
 		List<String> pOrigins= Arrays.asList( (strOrigin!=null ? strOrigin.split(";") : new String[]{} ));
@@ -112,14 +116,14 @@ public class LoadBalancer {
 		String[] aFarm= DatabaseMgr._Preferences()._GetPref( Preferences.SendJobRequestsTo ).replace( " ", "" ).split( "," );
 		for( String strToolbox : aFarm ) {
 			
-			if( pOrigins.contains( strToolbox ) ) {
+			if( pOrigins.contains( strToolbox.toLowerCase() ) ) {
 				System.out.println( "Load Balancing is skipping " + strToolbox + " because it is one of the job rquest originators" );
 				continue;
 			}
 			
 			// See how many running and queued jobs it has
 			String strReply= this._PostURL( "http://" + strToolbox + "/AutoManager/LB/GetNumJobs?" + this.m_strFromToolbox + "=" + strThisOrigin );
-			System.out.println( strToolbox + " " + strReply );
+			System.out.println( strToolbox + ": " + strReply );
 			if( strReply.startsWith( "NumJobs:" ) ) {
 				int iRemoteNumJobs= Integer.valueOf( strReply.replace( "NumJobs:", "" ) );
 				if( iRemoteNumJobs < iNumJobs ) {
@@ -146,6 +150,8 @@ public class LoadBalancer {
 			else
 				System.out.println( strStatus );	
 		}
+		else
+			System.out.println( "deferring to local toolbox" );
 			
 		return bDistributed;
 	}
@@ -164,8 +170,10 @@ public class LoadBalancer {
 			String strBuff;
 			while( null != (strBuff= br.readLine()) )
 				strResponse+= strBuff;
+		} catch( java.net.UnknownHostException e ) {
+			strResponse= "Unknown host: " + e.getMessage();
 		} catch( Exception e ) {
-			if( !e.getMessage().equals( "Connection refused" ))
+			if( !e.getMessage().equals( "Connection refused" ) )
 				e.printStackTrace();
 			strResponse= e.getMessage();
 		}
