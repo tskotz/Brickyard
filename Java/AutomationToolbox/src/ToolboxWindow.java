@@ -90,7 +90,12 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	 * @throws IOException
 	 */
 	private void _startWebServer() {
-		InetSocketAddress addr= new InetSocketAddress( Integer.parseInt(this.m_txtFldHttpPort.getText() ) );
+	    System.out.println( "\n/**********************************************\\" );
+	    System.out.println( "|*               ToolboxHTTPServer             *|" );
+	    System.out.println( "\\**********************************************/" );
+	    System.out.println( "ToolboxHTTPServer Version: " + ToolboxHTTPServer.VERSION );
+
+	    InetSocketAddress addr= new InetSocketAddress( Integer.parseInt(this.m_txtFldHttpPort.getText() ) );
 	    try {
 	    	if( this.m_ToolboxHTTPServer == null )
 	    		this.m_ToolboxHTTPServer= new ToolboxHTTPServer( this.m_txtFldHttpPort.getText() );
@@ -103,13 +108,13 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		    this.m_httpserver.createContext( "/", this.m_ToolboxHTTPServer );
 		    this.m_httpserver.setExecutor( Executors.newCachedThreadPool() );
 		    this.m_httpserver.start();
-		    System.out.println( "Web server is listening on port " + this.m_txtFldHttpPort.getText() );
+		    System.out.println( "ToolboxHTTPServer is listening on port " + this.m_txtFldHttpPort.getText() + "\n" );
 			// Set button text to Stop
 			this.m_btnStartWebServer.setText( "Stop Server" );		
 			// Store the port
 			DatabaseMgr._Preferences()._PutPref( Preferences.pvtWebServerPort, this.m_txtFldHttpPort.getText() );
 		} catch (IOException e) {
-		    System.out.println( "Server failed to start:" );
+		    System.out.println( "ToolboxHTTPServer failed to start:" );
 			e.printStackTrace();
 			this._stopWebServer();
 		}

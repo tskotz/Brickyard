@@ -10,6 +10,7 @@ import java.util.List;
 import com.sun.net.httpserver.HttpExchange;
 
 public class LoadBalancer {
+	private final String m_strFromToolbox= "fromtoolbox";
 
 	/**
 	 * @param args
@@ -30,14 +31,25 @@ public class LoadBalancer {
 	 * @param strRequestQuery
 	 * @return
 	 */
-	public String _GetNumJobsRequest( HttpExchange exchange ) {
+	public String _GetNumJobsRequest( String strRequestQuery ) {
 		if( !DatabaseMgr._Preferences()._GetPrefBool( Preferences.EnableJobLoadBalancing ) )
 			return "Load Balancing is not enabled";
 		
-		String strCaller= exchange.getRequestHeaders().get( "Origin" ) != null ? exchange.getRequestHeaders().get( "Origin" ).get( 0 ).replace( "http://", "" ) 
-																			   : exchange.getRequestHeaders().get( "Host" ).get( 0 );
-		if( !DatabaseMgr._Preferences()._GetPref( Preferences.AllowJobRequestsFrom ).contains( strCaller ) )
-			return exchange.getRequestHeaders().get( "Host" ).get( 0 ) + " is not authorized to Load Balance with this Toolbox";
+		String strFromToolbox= null;
+		// Look for the name of the toolbox this request is from 
+		for( String strParam : strRequestQuery.split( "&" ) ) {
+			String[] aElementInfo= strParam.split( "=" );
+			if( aElementInfo.length == 2 )
+				if( aElementInfo[0].equals( this.m_strFromToolbox ))
+					strFromToolbox= aElementInfo[1];
+		}
+
+		List<String> pBosses= Arrays.asList( DatabaseMgr._Preferences()._GetPref( Preferences.AllowJobRequestsFrom ).replace( " ", "" ).split( "," ) );
+
+		if( strFromToolbox == null )
+			return "No Toolbox was specified";
+		if( !pBosses.contains( strFromToolbox ) )
+			return strFromToolbox + " is not authorized to Load Balance with this Toolbox";
 			
 		return "NumJobs:" + String.valueOf( this._GetNumJobs() );
 	}
@@ -84,19 +96,20 @@ public class LoadBalancer {
 			return false;
 
 		String strOrigin= null;
-		// Look for the origin of this request 
+		// Look for the origin of this request  i.e  origin=192.168.1.1:8080,192.168.1.5:8321
 		for( String strParam : strRequestQuery.split( "&" ) ) {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 )
 				if( aElementInfo[0].equals( "origin" ))
 					strOrigin= aElementInfo[1];
 		}
-		
-		List<String> pOrigins= Arrays.asList( (strOrigin!=null ? strOrigin.split(";") : new String[]{} ));
 
+		List<String> pOrigins= Arrays.asList( (strOrigin!=null ? strOrigin.split(";") : new String[]{} ));
+		String strThisOrigin= exchange.getRequestHeaders().get( "Host" ).get( 0 );
+
+		// Let's find the toolbox with the least going on
 		String strFarmToThisToolbox= null;
 		String[] aFarm= DatabaseMgr._Preferences()._GetPref( Preferences.SendJobRequestsTo ).replace( " ", "" ).split( "," );
-		// Let's find the toolbox with the least going on
 		for( String strToolbox : aFarm ) {
 			
 			if( pOrigins.contains( strToolbox ) ) {
@@ -105,7 +118,7 @@ public class LoadBalancer {
 			}
 			
 			// See how many running and queued jobs it has
-			String strReply= this._PostURL( "http://" + strToolbox + "/AutoManager/LB/GetNumJobs" );
+			String strReply= this._PostURL( "http://" + strToolbox + "/AutoManager/LB/GetNumJobs?" + this.m_strFromToolbox + "=" + strThisOrigin );
 			System.out.println( strToolbox + " " + strReply );
 			if( strReply.startsWith( "NumJobs:" ) ) {
 				int iRemoteNumJobs= Integer.valueOf( strReply.replace( "NumJobs:", "" ) );
@@ -121,8 +134,6 @@ public class LoadBalancer {
 		if( strFarmToThisToolbox != null ) {
 			System.out.println( "Farming job out to: " + strFarmToThisToolbox );
 			
-			String strThisOrigin= exchange.getRequestHeaders().get( "Origin" ) != null ? exchange.getRequestHeaders().get( "Origin" ).get( 0 ).replace( "http://", "" )
-																					   : exchange.getRequestHeaders().get( "Host" ).get( 0 );
 			// To prevent Load Balancing feedback loops we need to set the request's origin hierarchy
 			if( strOrigin == null )
 				strRequestQuery+= "&origin=" + strThisOrigin;
@@ -154,7 +165,8 @@ public class LoadBalancer {
 			while( null != (strBuff= br.readLine()) )
 				strResponse+= strBuff;
 		} catch( Exception e ) {
-			e.printStackTrace();
+			if( !e.getMessage().equals( "Connection refused" ))
+				e.printStackTrace();
 			strResponse= e.getMessage();
 		}
 		

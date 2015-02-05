@@ -31,6 +31,8 @@ import com.sun.net.httpserver.HttpHandler;
 
 public class ToolboxHTTPServer implements HttpHandler {
 	
+	static final String  VERSION= "0.0001";
+
 	private String  mstrWorkingDir= new File("").getAbsolutePath();
 	private String 	mstrTemplateDir= this.mstrWorkingDir + "/AutomationToolbox/Preferences/Templates/";
 	private String  mstrPort= null;
@@ -70,12 +72,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 		System.out.println( "Query: " + exchange.getRequestURI().getQuery() );
 		System.out.println( "Protocol: " + exchange.getProtocol() );
 		System.out.println( "Method: " + exchange.getRequestMethod() );
-		if( exchange.getRequestHeaders().get( "Origin" ) != null )
-			System.out.println( "Remote Adr: " + exchange.getRequestHeaders().get( "Origin" ).get( 0 ).replace( "http://", "" ) );
-		else
-			System.out.println( "Remote Adr: " + exchange.getRequestHeaders().get( "Host" ).get( 0 ) );
-
-		this.mstrWebServerURL= "http:/" + exchange.getRequestHeaders().get( "Host" ).get( 0 );
+		System.out.println( "Local: " + exchange.getRequestHeaders().get( "Host" ).get( 0 ) );
+		System.out.println( "Local: " + exchange.getLocalAddress().getHostName() + ":" + exchange.getLocalAddress().getPort() );
+		System.out.println( "referer: " + (exchange.getRequestHeaders().containsKey( "Referer" ) ? exchange.getRequestHeaders().get( "Referer" ).get( 0 ) : "undefined" ) );
+		System.out.println( "Remote Svr: " + exchange.getRemoteAddress().getHostName() + ":" +  exchange.getRemoteAddress().getPort() );
+		System.out.println( "Remote Adr: " + (exchange.getRequestHeaders().containsKey( "Origin" ) ? exchange.getRequestHeaders().get( "Origin" ).get( 0 ).replace( "http://", "" ) : "undefined" ) );
+		
+		this.mstrWebServerURL= "http://" + exchange.getRequestHeaders().get( "Host" ).get( 0 );
 
 	    if (requestMethod.equalsIgnoreCase("GET")) {
 	    	String strStatus= "Ooops!";
@@ -162,7 +165,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/LB/GetNumJobs" )) {
-	    		strStatus= this.mpLoadBalancer._GetNumJobsRequest( exchange );
+	    		strStatus= this.mpLoadBalancer._GetNumJobsRequest( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
 	    	else {
