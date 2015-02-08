@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -168,6 +169,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    		strStatus= this.mpLoadBalancer._GetNumJobsRequest( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetTestbedDescriptor" )) {
+				strStatus= this._GetTestbedDescriptor( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
 	    	else {
 	    		strStatus= "Unknown Request: " + exchange.getRequestURI().getPath();
 	    	    System.out.println( strStatus );	
@@ -247,14 +252,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 		
 		if( strRequestQuery != null ) {				
 			try {
-				String strDataparamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getCanonicalPath();
+				List<String> pDataparamFiles= new ArrayList<String>();
 
 				// root element
 				Element eJob = new Element("Job");
 
 				// Insert the Timestamp Element
 				eJob.addContent( new Element( JobTags.Timestamp.name() ).setText( TimeUtils.getDateTime().replace( "-", "/" ) ) );
-
+				
 				for( String strParam : strRequestQuery.split( "&" ) ) {
 					String[] aElementInfo= strParam.split( "=" );
 					if( aElementInfo.length == 2 ) {
@@ -268,34 +273,18 @@ public class ToolboxHTTPServer implements HttpHandler {
 							eJob.addContent( new Element( JobTags.Classpath.name() ).setText( aElementInfo[1].trim() ) );
 						else if( aElementInfo[0].equals( "commandlineargs" ))
 							eJob.addContent( new Element( JobTags.CommandLineArgs.name() ).setText( aElementInfo[1].trim() ) );
+						else if( aElementInfo[0].equals( "origin" ))
+							eJob.addContent( new Element( JobTags.Origin.name() ).setText( aElementInfo[1].trim() ) );
 						else if( aElementInfo[0].equals( "dataparamfile" )) {
 							// i.e. dataparamfile=Products/RX3/RX3FileLoadingTestMac.xml;Bank1;dependacyxml;false
-							String[] aTestInfo= aElementInfo[1].trim().split(";");
-							String strDataparamFile= aTestInfo[0];
-							String strTestbedOrGroup= aTestInfo[1].trim();	
-							String strDependency= aTestInfo.length>3 ? aTestInfo[2] : "";
-							boolean bParallelize= aTestInfo.length>3 ? aTestInfo[3].equals("true") : false;
-							
-							TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strTestbedOrGroup );
-							if( pTBDescr == null )
-								throw new Exception(  strTestbedOrGroup + " could not be found!");
-							String strTestbedLookupValue= pTBDescr.mstrValue;
-							
-							// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
-							for( String strThisTestbed : strTestbedLookupValue.split(",")) {
-								Element aElement= new Element( JobTags.DataParamFile.name() );
-								aElement.setText( strDataparamDir + "/" + strDataparamFile );
-								aElement.setAttribute( "testbed", strThisTestbed.trim() );
-								if( strTestbedLookupValue != strThisTestbed )
-									aElement.setAttribute( "group", strTestbedOrGroup );
-								eJob.addContent( aElement );
-							}
+							pDataparamFiles.add( aElementInfo[1].trim() );
 						}
-						// ignore the load balancing origin paramter.  This is used in _Distribute
-						else if( !aElementInfo[0].equals( "origin" ) )
+						else
 							throw new Exception( "An error was found parsing REST command:  Unknown parameter: " +  strParam );						
 					}
 				}
+				
+				this._ProcessDataparamFiles( pDataparamFiles, eJob );
 				
 				// write the content into xml file	
 				XMLOutputter xmlOutput = new XMLOutputter();
@@ -313,6 +302,52 @@ public class ToolboxHTTPServer implements HttpHandler {
 	
 		}
 		return strStatus;		
+	}
+	
+	/**
+	 * 
+	 * @param pDataparamFiles
+	 * @param eJob
+	 * @throws Exception
+	 */
+	private void _ProcessDataparamFiles( List<String> pDataparamFiles, Element eJob ) throws Exception
+	{
+		String strDataparamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getCanonicalPath();
+		for( String strDPFile : pDataparamFiles ) {
+			String[] aTestInfo= strDPFile.trim().split(";");
+			String strDataparamFile= aTestInfo[0];
+			String strTestbedOrGroup= aTestInfo[1].trim();	
+			String strDependency= aTestInfo.length>3 ? aTestInfo[2] : "";
+			boolean bParallelize= aTestInfo.length>3 ? aTestInfo[3].equals("true") : false;
+			
+			// If we have an origin then get the testbed info directly from origin
+			TestbedDescriptor pTBDescr= null;
+			String strOrigin= eJob.getChildTextTrim( JobTags.Origin.name() );
+			if(  strOrigin != null && !strOrigin.isEmpty() ) {
+				List<String> pOrigins= Arrays.asList( strOrigin.toLowerCase().split(";") );
+				String strResult= LoadBalancer._PostURL(  "http://" + pOrigins.get( 0 ) + "/AutoManager/GetTestbedDescriptor?" + strTestbedOrGroup );
+				System.out.println( strResult );
+				pTBDescr= new TestbedDescriptor( strResult );
+			}
+			// If we still don't have a testbed descriptor then get it locally
+			if(  pTBDescr == null )
+				pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strTestbedOrGroup );
+			// Now check it for real
+			if( pTBDescr == null )
+				throw new Exception(  strTestbedOrGroup + " could not be found!");
+			
+			String strTestbedLookupValue= pTBDescr.mstrValue;
+			
+			// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
+			for( String strThisTestbed : strTestbedLookupValue.split(",")) {
+				Element aElement= new Element( JobTags.DataParamFile.name() );
+				aElement.setText( strDataparamDir + "/" + strDataparamFile );
+				aElement.setAttribute( "testbed", strThisTestbed.trim() );
+				if( strTestbedLookupValue != strThisTestbed )
+					aElement.setAttribute( "group", strTestbedOrGroup );
+				eJob.addContent( aElement );
+			}
+		}
 	}
 	
 	/**
@@ -871,7 +906,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @return
 	 */
 	private String _GetTestbedValue( String strRequestQuery ) {
-		return DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery /* is TestbedName*/ )._ToRESTReply();
+		return DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery )._AsBasic();
    	}
 
 	/**
@@ -1015,6 +1050,19 @@ public class ToolboxHTTPServer implements HttpHandler {
 			strData+= "<option value=\"" + pJob.mstrJobName + "\">" + pJob.mstrJobName + "</option>\n";
 		
 		return strData;
+	}
+	
+	/**
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _GetTestbedDescriptor( String strRequestQuery ) {
+		TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery );
+		if( pTBDescr != null )
+			return pTBDescr._AsREST();
+		
+		return ToolboxHTTPServer.STATUS_FAILED;		
 	}
 
 }

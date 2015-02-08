@@ -122,7 +122,7 @@ public class LoadBalancer {
 			}
 			
 			// See how many running and queued jobs it has
-			String strReply= this._PostURL( "http://" + strToolbox + "/AutoManager/LB/GetNumJobs?" + this.m_strFromToolbox + "=" + strThisOrigin );
+			String strReply= LoadBalancer._PostURL( "http://" + strToolbox + "/AutoManager/LB/GetNumJobs?" + this.m_strFromToolbox + "=" + strThisOrigin );
 			System.out.println( strToolbox + ": " + strReply );
 			if( strReply.startsWith( "NumJobs:" ) ) {
 				int iRemoteNumJobs= Integer.valueOf( strReply.replace( "NumJobs:", "" ) );
@@ -144,11 +144,11 @@ public class LoadBalancer {
 			else	
 				strRequestQuery.replace( "&origin=" + strOrigin, "&origin=" + strOrigin + ";" + strThisOrigin );
 
-			String strStatus= this._PostURL( "http://" + strFarmToThisToolbox + "/AutoManager/RunJob?" + strRequestQuery );
+			String strStatus= LoadBalancer._PostURL( "http://" + strFarmToThisToolbox + "/AutoManager/RunJob?" + strRequestQuery );
 			if( strStatus == ToolboxHTTPServer.STATUS_SUCCESS )
 				bDistributed= true;
 			else
-				System.out.println( strStatus );	
+				System.out.println( "Load Balancer Error : " + strFarmToThisToolbox + " returned " + strStatus );	
 		}
 		else
 			System.out.println( "deferring to local toolbox" );
@@ -161,10 +161,11 @@ public class LoadBalancer {
 	 * @param strURL
 	 * @return
 	 */
-	private String _PostURL( String strURL ) {
+	public static String _PostURL( String strURL ) {
 		String strResponse= "";
 		
 		try {
+			System.out.println( "Posting URL: " + strURL );
 			URL url= new URL( strURL );
 			BufferedReader br= new BufferedReader( new InputStreamReader( url.openStream() ) );
 			String strBuff;

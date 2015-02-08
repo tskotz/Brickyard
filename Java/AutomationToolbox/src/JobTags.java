@@ -18,6 +18,7 @@ public enum JobTags {
 	Classpath( "Classpath" ),
 	CommandLineArgs( "CommandLineArgs" ),
 	DataParamFile( "DataParamFile" ),
+	Origin( "Origin" )
 	;
 	
 	private final String mData;

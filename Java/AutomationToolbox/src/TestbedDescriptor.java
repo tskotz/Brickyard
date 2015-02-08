@@ -56,9 +56,13 @@ public class TestbedDescriptor {
 		this.mstrDescription= strDescription.equals("null") ? "" : strDescription.replace(";", " ");
 	}
 	
-	public String _ToRESTReply()
+	public String _AsBasic()
 	{
 		return this.mstrTestbed + ";" + this.mstrValue + ";" + this.mstrType + ";" + this.mstrRunMode + ";" + this.mstrDescription;		
 	}
 
+	public String _AsREST()
+	{
+		return "name=" + this.mstrTestbed + "&value=" + this.mstrValue + "&type=" + this.mstrType + "&runmode=" + this.mstrRunMode + "&descr=" + this.mstrDescription;		
+	}
 }
