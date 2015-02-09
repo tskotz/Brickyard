@@ -602,8 +602,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            	String strOnLoadScript= "";
 	            	if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.StartTestManagerOnLaunch ) )
 	            		strOnLoadScript+= "document.getElementById( 'starttestmanagercb' ).checked = true;";
+	            	if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.AllowJobRequestsFromCB ) )
+	            		strOnLoadScript+= "document.getElementById( 'loadsharingmastercb' ).checked = true;";
+	            	if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.SendJobRequestsToCB ) )
+	            		strOnLoadScript+= "document.getElementById( 'loadsharingserverscb' ).checked = true;";
 		            if( DatabaseMgr._Preferences()._GetPrefBool( Preferences.EnableJobLoadBalancing ) )
-		            	strOnLoadScript+= "document.getElementById( 'loadbalancingcb' ).checked = true;EnableLoadBalancing()";
+		            	strOnLoadScript+= "document.getElementById( 'loadbalancingcb' ).checked = true;";
+		            strOnLoadScript+= "EnableLoadBalancing()";
 	            	line= line.replace( "onload=\"\"", "onload=\"" + strOnLoadScript + "\"" );	            	
 	            }
 	            	    			
@@ -649,8 +654,12 @@ public class ToolboxHTTPServer implements HttpHandler {
 						DatabaseMgr._Preferences()._PutPref( Preferences.StartTestManagerOnLaunch, aElementInfo[1] );
 					else if( aElementInfo[0].equals( "loadbalancingcb" ))
 						DatabaseMgr._Preferences()._PutPref( Preferences.EnableJobLoadBalancing, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "loadsharingmastercb" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.AllowJobRequestsFromCB, aElementInfo[1] );
 					else if( aElementInfo[0].equals( "loadsharingmaster" ))
 						DatabaseMgr._Preferences()._PutPref( Preferences.AllowJobRequestsFrom, aElementInfo[1] );
+					else if( aElementInfo[0].equals( "loadsharingserverscb" ))
+						DatabaseMgr._Preferences()._PutPref( Preferences.SendJobRequestsToCB, aElementInfo[1] );
 					else if( aElementInfo[0].equals( "loadsharingservers" ))
 						DatabaseMgr._Preferences()._PutPref( Preferences.SendJobRequestsTo, aElementInfo[1] );
 					else

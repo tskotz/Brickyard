@@ -22,10 +22,14 @@
 	function EnableLoadBalancing() 
 	{
  		var bEnabled= document.getElementById( "loadbalancingcb" ).checked;
- 		document.getElementById( "loadsharingmaster" ).disabled= !bEnabled;
- 		document.getElementById( "loadsharingmaster" ).style.fontStyle=bEnabled?"normal":"italic";
- 		document.getElementById( "loadsharingservers" ).disabled= !bEnabled;
- 		document.getElementById( "loadsharingservers" ).style.fontStyle=bEnabled?"normal":"italic";
+ 		var bMasterEnabled= document.getElementById( "loadsharingmastercb" ).checked;
+ 		var bServersEnabled= document.getElementById( "loadsharingserverscb" ).checked;
+ 		document.getElementById( "loadsharingmastercb" ).disabled= !bEnabled;
+ 		document.getElementById( "loadsharingmaster" ).disabled= (!bEnabled || !bMasterEnabled);
+ 		document.getElementById( "loadsharingmaster" ).style.fontStyle=(bEnabled&&bMasterEnabled?"normal":"italic");
+ 		document.getElementById( "loadsharingserverscb" ).disabled= !bEnabled;
+ 		document.getElementById( "loadsharingservers" ).disabled= (!bEnabled || !bServersEnabled);
+ 		document.getElementById( "loadsharingservers" ).style.fontStyle=(bEnabled&&bServersEnabled?"normal":"italic");
  	} 
  	
  	function SaveSettings() 
@@ -41,7 +45,9 @@
 		strURL+= "&starttestmanagercb=" + document.getElementById( "starttestmanagercb" ).checked;
 		strURL+= "&dashboardlogo=" + document.getElementById( "dashboardlogo" ).value;
 		strURL+= "&loadbalancingcb=" + document.getElementById( "loadbalancingcb" ).checked;
+		strURL+= "&loadsharingmastercb=" + document.getElementById( "loadsharingmastercb" ).checked;
 		strURL+= "&loadsharingmaster=" + document.getElementById( "loadsharingmaster" ).value;
+		strURL+= "&loadsharingserverscb=" + document.getElementById( "loadsharingserverscb" ).checked;
 		strURL+= "&loadsharingservers=" + document.getElementById( "loadsharingservers" ).value;
  		
 		var strReply= RunURL( strURL );
@@ -81,8 +87,10 @@
 	<tr><td style="text-align:right;"><label for="loadbalancingcb"> Enable Job Load Balancing</label></td>
 		<td><input id="loadbalancingcb" type="checkbox" onclick="EnableLoadBalancing()"></td></tr>
 	<tr><td style="text-align:right;width:200px"><label for="loadsharingmaster">Allow Job Requests From:</label></td>
+		<td style="width:5px"><input id="loadsharingmastercb" type="checkbox" disabled onclick="EnableLoadBalancing()"></td>
 		<td><input id="loadsharingmaster" type="text" value="" style="width:99%;font-style:italic;" disabled></td></tr>
 	<tr><td style="text-align:right;"><label for="loadsharingservers">Send Job Requests To:</label></td>
+		<td style="width:5px"><input id="loadsharingserverscb" type="checkbox" disabled onclick="EnableLoadBalancing()"></td>
 		<td><input id="loadsharingservers" type="text" value="" style="width:99%;font-style:italic;" disabled></td></tr>
 </table>
 </div>

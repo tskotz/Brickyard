@@ -35,6 +35,9 @@ public class LoadBalancer {
 		if( !DatabaseMgr._Preferences()._GetPrefBool( Preferences.EnableJobLoadBalancing ) )
 			return "Load Balancing is not enabled";
 		
+		if( !DatabaseMgr._Preferences()._GetPrefBool( Preferences.AllowJobRequestsFromCB ) )
+			return "Load Balancing has Allow Job Requests From turned off";
+		
 		String strFromToolbox= null;
 		// Look for the name of the toolbox this request is from 
 		for( String strParam : strRequestQuery.split( "&" ) ) {
@@ -88,6 +91,9 @@ public class LoadBalancer {
 			return false;
 		
 		if( !DatabaseMgr._Preferences()._GetPrefBool( Preferences.EnableJobLoadBalancing ) )
+			return false;
+		
+		if( !DatabaseMgr._Preferences()._GetPrefBool( Preferences.SendJobRequestsToCB ) )
 			return false;
 
 		System.out.println( "\nRunning Load Balancer:" );
@@ -145,7 +151,7 @@ public class LoadBalancer {
 				strRequestQuery.replace( "&origin=" + strOrigin, "&origin=" + strOrigin + ";" + strThisOrigin );
 
 			String strStatus= LoadBalancer._PostURL( "http://" + strFarmToThisToolbox + "/AutoManager/RunJob?" + strRequestQuery );
-			if( strStatus == ToolboxHTTPServer.STATUS_SUCCESS )
+			if( strStatus.equalsIgnoreCase( ToolboxHTTPServer.STATUS_SUCCESS ) )
 				bDistributed= true;
 			else
 				System.out.println( "Load Balancer Error : " + strFarmToThisToolbox + " returned " + strStatus );	
