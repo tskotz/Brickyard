@@ -54,12 +54,12 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	final 	JPanel 			m_TestManagerPanel = new JPanel();
 	private ToolboxHTTPServer	m_ToolboxHTTPServer= null;
 
-	private static File		m_fStagingDir;
-	private static File 	m_fIncomingDir;
-	private static File 	m_fQueuedDir;
-	private static File 	m_fRunningDir;
-	private static File 	m_fCompletedDir;
-	private static File 	m_fRetiredDir;
+	private static File		sfStagingDir;
+	private static File 	sfIncomingDir;
+	private static File 	sfQueuedDir;
+	private static File 	sfRunningDir;
+	private static File 	sfCompletedDir;
+	private static File 	sfRetiredDir;
 	
 	private	Map<String, Boolean>	m_ActiveTestbeds= new HashMap<String, Boolean>();
 	private HttpServer 				m_httpserver= null;
@@ -194,13 +194,13 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		if( DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ).isEmpty() )
 			DatabaseMgr._Preferences()._PutPref( Preferences.StagingDir, "./AutomationToolbox/ManagerStagingDirs" );
 		
-		this.m_fStagingDir= new File( DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ).replace( "./", System.getProperty("user.dir") + "/" ) );
+		sfStagingDir= new File( DatabaseMgr._Preferences()._GetPref( Preferences.StagingDir ).replace( "./", System.getProperty("user.dir") + "/" ) );
 		
-		if( !this.m_fStagingDir.exists() )
-			this.m_fStagingDir.mkdirs();
+		if( !sfStagingDir.exists() )
+			sfStagingDir.mkdirs();
 			
-		if( this.m_fStagingDir.exists() )
-			this.m_txtfldStagingDir.setText( this.m_fStagingDir.getAbsolutePath() );
+		if( sfStagingDir.exists() )
+			this.m_txtfldStagingDir.setText( sfStagingDir.getAbsolutePath() );
 		
         this.m_tableTestManager= new JTable( new DefaultTableModel() );
         // Create a couple of columns
@@ -474,11 +474,11 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	private void _setStagingDir() {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-		chooser.setCurrentDirectory( ToolboxWindow.this.m_fStagingDir );
+		chooser.setCurrentDirectory( ToolboxWindow.sfStagingDir );
 	    int returnVal = chooser.showOpenDialog( this.m_TestManagerPanel );
 	    if( returnVal == JFileChooser.APPROVE_OPTION ) {
-	    	this.m_fStagingDir= chooser.getSelectedFile();
-	    	this.m_txtfldStagingDir.setText( ToolboxWindow.this.m_fStagingDir.getAbsolutePath() );
+	    	sfStagingDir= chooser.getSelectedFile();
+	    	this.m_txtfldStagingDir.setText( ToolboxWindow.sfStagingDir.getAbsolutePath() );
 	    	this._createStagingDirs();
 	    }
 	}
@@ -488,22 +488,22 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	 * @return
 	 */
 	private boolean _createStagingDirs() {
-    	if( !this.m_fStagingDir.exists() ) {
-        	System.out.println( "Staging dir does not exist! : " + this.m_fStagingDir.getAbsolutePath() );
+    	if( !sfStagingDir.exists() ) {
+        	System.out.println( "Staging dir does not exist! : " + sfStagingDir.getAbsolutePath() );
     		return false;  		
     	}		
 		
-    	this.m_fIncomingDir=  new File( ToolboxWindow.this.m_fStagingDir.getAbsoluteFile() + "/Incoming" );
-    	this.m_fQueuedDir=    new File( ToolboxWindow.this.m_fStagingDir.getAbsoluteFile() + "/Queued" );
-    	this.m_fRunningDir=   new File( ToolboxWindow.this.m_fStagingDir.getAbsoluteFile() + "/Running" );
-    	this.m_fCompletedDir= new File( ToolboxWindow.this.m_fStagingDir.getAbsoluteFile() + "/Completed" );
-    	this.m_fRetiredDir=   new File( ToolboxWindow.this.m_fStagingDir.getAbsoluteFile() + "/Retired" );
+    	sfIncomingDir=  new File( ToolboxWindow.sfStagingDir.getAbsoluteFile() + "/Incoming" );
+    	sfQueuedDir=    new File( ToolboxWindow.sfStagingDir.getAbsoluteFile() + "/Queued" );
+    	sfRunningDir=   new File( ToolboxWindow.sfStagingDir.getAbsoluteFile() + "/Running" );
+    	sfCompletedDir= new File( ToolboxWindow.sfStagingDir.getAbsoluteFile() + "/Completed" );
+    	sfRetiredDir=   new File( ToolboxWindow.sfStagingDir.getAbsoluteFile() + "/Retired" );
     	
-    	this.m_fIncomingDir.mkdir();
-    	this.m_fQueuedDir.mkdir();
-    	this.m_fRunningDir.mkdir();
-    	this.m_fCompletedDir.mkdir();
-    	this.m_fRetiredDir.mkdirs();
+    	sfIncomingDir.mkdir();
+    	sfQueuedDir.mkdir();
+    	sfRunningDir.mkdir();
+    	sfCompletedDir.mkdir();
+    	sfRetiredDir.mkdirs();
     	
     	return true;
 	}
@@ -563,7 +563,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 		if( nRows != null && nRows.length > 0 ) {
 			for( int nRow : nRows ) {
 				// Only run completed jobs
-				if( ToolboxWindow.this.m_tableTestManager.getValueAt( nRow, COL_STATUS ).toString().equals( this.m_fCompletedDir.getName() ) ) {
+				if( ToolboxWindow.this.m_tableTestManager.getValueAt( nRow, COL_STATUS ).toString().equals( sfCompletedDir.getName() ) ) {
 	    			for( File f : this._getJobDir( nRow ).listFiles() ) {
 	    				if( f.getName().endsWith( ".job.xml" )) {
 	    					try {
@@ -583,7 +583,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 						        outStream.close();
 						        inStream.close();
 						        
-						        fTemp.renameTo( new File( this.m_fIncomingDir, f.getName() ) );
+						        fTemp.renameTo( new File( sfIncomingDir, f.getName() ) );
 						        ToolboxWindow.this.m_tableTestManager.getSelectionModel().removeSelectionInterval( nRow, nRow );						        
 						    } catch( IOException e ) {
 								e.printStackTrace();
@@ -605,7 +605,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 				File fDir= new File( this.m_txtfldStagingDir.getText() + "/" + 
 									 this.m_tableTestManager.getValueAt( nRow, COL_STATUS ).toString() + "/" +
 									 this.m_tableTestManager.getValueAt( nRow, COL_REQUEST ).toString() );
-				JobRunner jobRunner= new JobRunner( fDir, this.m_fRunningDir, this.m_fCompletedDir, null );
+				JobRunner jobRunner= new JobRunner( fDir, sfRunningDir, sfCompletedDir, null );
 				if( jobRunner._Kill() ) {
 					ToolboxWindow.this._removeTestbeds( jobRunner.m_strTestbeds );
 			        ToolboxWindow.this.m_tableTestManager.getSelectionModel().removeSelectionInterval( nRow, nRow );
@@ -621,7 +621,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	private void _showJobInfo( int[] nRows ) {
 		if( nRows != null && nRows.length > 0 ) {
 			for( int nRow : nRows ) {
-				JobInfoWindow je= new JobInfoWindow( this._getJobDir( nRow ), this.m_fIncomingDir );
+				JobInfoWindow je= new JobInfoWindow( this._getJobDir( nRow ), sfIncomingDir );
 				je.setVisible( true );
 			}
 		}
@@ -703,7 +703,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
 			boolean bDelete= !bGetConfirmation;
 			
 			if( bGetConfirmation ) {
-				if( fFile.getAbsolutePath().contains( this.m_fCompletedDir.getAbsolutePath() ) )
+				if( fFile.getAbsolutePath().contains( sfCompletedDir.getAbsolutePath() ) )
 					bDelete= JOptionPane.showConfirmDialog( null, "Are you sure you want to delete:\n" + fFile.getName(), "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE ) == JOptionPane.YES_OPTION;
 			}
 			
@@ -746,8 +746,8 @@ public class ToolboxWindow extends JFrame implements ActionListener
         	//System.out.println( "Running Test Manager" );
         	boolean bRescan= false;
       	
-        	if( !this.m_fStagingDir.exists() ) {
-            	System.out.println( "Staging dir does not exist! : " + this.m_fStagingDir.getAbsolutePath() );
+        	if( !sfStagingDir.exists() ) {
+            	System.out.println( "Staging dir does not exist! : " + sfStagingDir.getAbsolutePath() );
         		return;  		
         	}
         	        	    	
@@ -760,11 +760,11 @@ public class ToolboxWindow extends JFrame implements ActionListener
     			JobRunner jobRunner;
 
     			// Folders will be processed in the order they appear in list and that order is very important
-    			for( File stagingDir : new File[]{this.m_fRunningDir, this.m_fQueuedDir, this.m_fIncomingDir, this.m_fCompletedDir} ) {
+    			for( File stagingDir : new File[]{sfRunningDir, sfQueuedDir, sfIncomingDir, sfCompletedDir} ) {
     				File[] fFiles= stagingDir.listFiles();
     				
     				// Sort items by date
-    				if( stagingDir.equals( this.m_fCompletedDir ) ) {
+    				if( stagingDir.equals( sfCompletedDir ) ) {
     					// Sort starting with most recent 
 	    				Arrays.sort(fFiles, new Comparator<File>(){
 	    				    public int compare(File f1, File f2) {
@@ -786,20 +786,20 @@ public class ToolboxWindow extends JFrame implements ActionListener
     					if( fItem.getName().equals( ".DS_Store" ))
     						continue;  // ignore it
     					// Handle Queued
-    					if( stagingDir.equals( this.m_fQueuedDir ) && fItem.isDirectory() )
+    					if( stagingDir.equals( sfQueuedDir ) && fItem.isDirectory() )
     						jobRunner= this._HandleJobRequest( fItem );
     					// Handle Incoming
-    					else if( stagingDir.equals( this.m_fIncomingDir ) && fItem.isFile())
+    					else if( stagingDir.equals( sfIncomingDir ) && fItem.isFile())
     						jobRunner= this._HandleJobRequest( fItem );
     					// Handle Completed
-    					else if( stagingDir.equals( this.m_fCompletedDir ) && fItem.isDirectory() ) {
-    						jobRunner= new JobRunner( fItem, this.m_fRunningDir, this.m_fCompletedDir, this.m_fQueuedDir );
+    					else if( stagingDir.equals( sfCompletedDir ) && fItem.isDirectory() ) {
+    						jobRunner= new JobRunner( fItem, sfRunningDir, sfCompletedDir, sfQueuedDir );
     						if( ++completedCount > nShowJobCount || jobRunner.m_bErrors )
-    							jobRunner._Retire( this.m_fRetiredDir ); //only show the last n completed
+    							jobRunner._Retire( sfRetiredDir ); //only show the last n completed
     					}
     					// Handle Running
-    					else if( stagingDir.equals( this.m_fRunningDir ) && fItem.isDirectory() ) {
-    						jobRunner= new JobRunner( fItem, this.m_fRunningDir, this.m_fCompletedDir, this.m_fQueuedDir );
+    					else if( stagingDir.equals( sfRunningDir ) && fItem.isDirectory() ) {
+    						jobRunner= new JobRunner( fItem, sfRunningDir, sfCompletedDir, sfQueuedDir );
     						if( jobRunner._IsRunning() ) 
     							this._addTestbeds( jobRunner.m_strTestbeds );
     						else {
@@ -846,7 +846,7 @@ public class ToolboxWindow extends JFrame implements ActionListener
      * @return
      */
     private JobRunner _HandleJobRequest( File jobFile ) {
-    	JobRunner jobRunner= new JobRunner( jobFile, this.m_fRunningDir, this.m_fCompletedDir, this.m_fQueuedDir );
+    	JobRunner jobRunner= new JobRunner( jobFile, sfRunningDir, sfCompletedDir, sfQueuedDir );
     	// If this is not a valid job request then move it directly to completed
     	if( !jobRunner._IsValid() )
         	jobRunner._CleanUp();
@@ -994,18 +994,18 @@ public class ToolboxWindow extends JFrame implements ActionListener
 	
 	// Static Accessor Methods for the Staging dirs
 	public static File _IncomingDir() {
-		return ToolboxWindow.m_fIncomingDir;
+		return ToolboxWindow.sfIncomingDir;
 	}
 	public static File _QueuedDir() {
-		return ToolboxWindow.m_fQueuedDir;
+		return ToolboxWindow.sfQueuedDir;
 	}
 	public static File _RunningDir() {
-		return ToolboxWindow.m_fRunningDir;
+		return ToolboxWindow.sfRunningDir;
 	}
 	public static File _CompletedDir() {
-		return ToolboxWindow.m_fCompletedDir;
+		return ToolboxWindow.sfCompletedDir;
 	}
 	public static File _RetiredDir() {
-		return ToolboxWindow.m_fRetiredDir;
+		return ToolboxWindow.sfRetiredDir;
 	}
 }

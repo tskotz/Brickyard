@@ -1,6 +1,5 @@
 package AutomationToolbox.src;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,6 +12,7 @@ public class Sandbox {
 	/**
 	 * @param args
 	 */
+	@SuppressWarnings("unused")
 	public static void main( String[] args ) {
 		
 		List<String> pBosses= Arrays.asList( "aaaaa, bbbbb, ccccc".replace( " ", "" ).split( "," ) );

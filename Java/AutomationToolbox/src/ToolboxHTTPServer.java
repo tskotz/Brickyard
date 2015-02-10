@@ -345,6 +345,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 				aElement.setAttribute( "testbed", strThisTestbed.trim() );
 				if( strTestbedLookupValue != strThisTestbed )
 					aElement.setAttribute( "group", strTestbedOrGroup );
+				aElement.setAttribute( "parallelize", bParallelize?"true":"false" );
+				aElement.setAttribute( "dependency", strDependency );
 				eJob.addContent( aElement );
 			}
 		}

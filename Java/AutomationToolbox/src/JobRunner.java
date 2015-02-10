@@ -382,7 +382,7 @@ public class JobRunner {
 	        strItems= root.getChildren( JobTags.DataParamFile.toString() );
 	        for( Object objItem : strItems )
 	        	if( !((Element)objItem).getText().isEmpty() ) {
-	        		this.m_fTests.add( new TestInfo( ((Element)objItem).getText(), ((Element)objItem).getAttributeValue("testbed")) );
+	        		this.m_fTests.add( new TestInfo( (Element)objItem ) );
 	        		this.m_strTestbeds.add( ((Element)objItem).getAttributeValue("testbed") );
 	        	}
 	        
@@ -634,10 +634,18 @@ public class JobRunner {
 	public class TestInfo {
 		private File m_strDataparamFile;
 		private String m_strTestbed;
+		private String m_strDependency;
+		private boolean m_bParallelize;
 		
-		public TestInfo( String strDataparamFile, String strTestbed ) {
+		public TestInfo( String strDataparamFile, String strTestbed, boolean bParallelize, String strDependency ) {
 			this.m_strDataparamFile= new File( strDataparamFile );
 			this.m_strTestbed= strTestbed;
+			this.m_bParallelize= bParallelize;
+			this.m_strDependency= strDependency;
+		}
+		
+		public TestInfo( Element e ) {
+			this( e.getText(), e.getAttributeValue("testbed"), e.getAttributeValue("parallelize").equalsIgnoreCase( "true" ), e.getAttributeValue("dependency"));
 		}
 		
 		public File _Dataparam() {
@@ -646,6 +654,14 @@ public class JobRunner {
 
 		public String _Testbed() {
 			return this.m_strTestbed;			
+		}
+		
+		public boolean _Parallelize() {
+			return this.m_bParallelize;
+		}
+		
+		public String _Dependency() {
+			return this.m_strDependency;
 		}
 	}
 

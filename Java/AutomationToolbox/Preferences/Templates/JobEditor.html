@@ -310,6 +310,7 @@
        	return true;
     }
     
+    var gQueuedCounter= 0;
     function SetQueuedTestbed( strQueuedTestID )
     {
 	    if( document.getElementById( "Testbeds" ).value == "--Select--" )
@@ -334,7 +335,7 @@
         for( i=0; i<tests.length; i++ ) {
         	// Filter out this row's queued test id
         	if( tests[i].id != strQueuedTestID ) {
-    			var strOption= tests[i].id + " : " + tests[i].getAttribute( "testbed" );
+    			var strOption= tests[i].getAttribute( "testpath" ) + " : " + tests[i].getAttribute( "testbed" );
         		strOptions+= "<option id=\"" + strOption + "\" value=\"" + strOption + "\">" + strOption + "</option>\n";
         	}
     	}
@@ -386,7 +387,7 @@
     		    	
         var tests= document.getElementById( "QueueTestsList" ).getElementsByTagName('li')
         for( i=0; i<tests.length; i++ ) {
-    		strURL+= "&dataparamfile=" + tests[i].id;
+    		strURL+= "&dataparamfile=" + tests[i].getAttribute( "testpath" );
     		strURL+= ";" + tests[i].getAttribute( "testbed" );
     		strURL+= ";" + tests[i].getAttribute( "dependency" );
     		strURL+= ";" + tests[i].getAttribute( "parallelize" );
@@ -452,12 +453,14 @@
 
     function QueueTest( strTestPath )
     {
-        var strNewElementID= strTestPath;        
+    	gQueuedCounter+= 1;
+        var strNewElementID= "QueuedTest_" + gQueuedCounter;  
         var pos =strTestPath.lastIndexOf( "/");
         var strTestbed= document.getElementById( "Testbeds" ).options[document.getElementById( "Testbeds" ).selectedIndex].text;
         //TODO: Warning Warning Major code duplication!!
         var newElement = document.createElement("li");
         newElement.setAttribute( "id", strNewElementID );
+        newElement.setAttribute( "testpath", strTestPath );
         newElement.setAttribute( "testbed", strTestbed );
         newElement.setAttribute( "parallelize", "false" );
 		newElement.setAttribute( "dependency", "" );
@@ -638,10 +641,13 @@
 						if( strMachine != "" )
 							strTestbed= strMachine;
 	   					var namePos= strTestPath.lastIndexOf( "/");
-	        			var strNewElementID= strTestPath;
+	   			    	gQueuedCounter+= 1;
+	   			        var strNewElementID= "QueuedTest_" + gQueuedCounter;  
 		        		var newElement = document.createElement("li");
 		        		var strDependencyColor= strDependency?"#FF0000":"#CCCCCC";
+		                //TODO: Warning Warning Major code duplication!!
 		        		newElement.setAttribute( "id", strNewElementID );
+		                newElement.setAttribute( "testpath", strTestPath );
         				newElement.setAttribute( "testbed", strTestbed );
         				newElement.setAttribute( "parallelize", bParallelChecked );
         				newElement.setAttribute( "dependency", strDependency );
