@@ -17,6 +17,7 @@ public class JobData {
 	public String m_strJobTemplate;
 	public String m_strUser;
 	public String m_strCmdLineArgs= "";
+	public String m_strDataparamsDir= "";
 	public	List<String> 		m_strPlatforms= new ArrayList<String>();
 	public	List<String> 		m_strTestbeds= new ArrayList<String>();
 	public	List<String>		m_strClasspath= new ArrayList<String>();
@@ -45,6 +46,7 @@ public class JobData {
         this.m_strJobName= 		this._getChildText( JobTags.JobName.toString(), root, null );
 	    this.m_strUser= 	 	this._getChildText( JobTags.User.toString(), root, null );
 	    this.m_strJobTemplate= 	this._getChildText( JobTags.JobTemplate.toString(), root, null );
+	    this.m_strDataparamsDir=this._getChildText( JobTags.DataParamsDir.toString(), root, null );
 	        
 		List<?> strItems= root.getChildren( JobTags.CommandLineArgs.toString() );
         for( Object objItem : strItems )
@@ -64,7 +66,7 @@ public class JobData {
         strItems= root.getChildren( JobTags.DataParamFile.toString() );
         for( Object objItem : strItems ) {
         	if( !((Element)objItem).getText().isEmpty() ) {
-        		DataparamFileInfo pDPInfo= new DataparamFileInfo( (Element)objItem );
+        		DataparamFileInfo pDPInfo= new DataparamFileInfo( (Element)objItem, this.m_strDataparamsDir );
         		this.m_fTests.add( pDPInfo );
         		if( pDPInfo._GetGroup() != null ) {
         			if( !this.m_strTestbeds.contains( pDPInfo._GetGroup() ) )
@@ -94,9 +96,9 @@ public class JobData {
 		Element m_E;
 		File m_f;
 		
-		public DataparamFileInfo( Element e ) {
+		public DataparamFileInfo( Element e, String strDataparamsDir ) {
 			m_E= e;
-			m_f= new File(m_E.getText());
+			m_f= new File( strDataparamsDir + "/" + m_E.getText() );
 		}
 		
 		public File _GetFile() {

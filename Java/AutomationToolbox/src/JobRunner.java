@@ -142,9 +142,9 @@ public class JobRunner {
     		
     		// Run the tests
     		boolean bOK= true;
-			for( TestInfo fTestFile :  this.m_fTests ) {
-				if( !fTestFile._Dataparam().exists() ) {
-					System.out.println( "Could not start job " + this.m_fJobXML.getName() +" because folder does not exist: " + fTestFile._Dataparam().getAbsolutePath().replace("\\", "/") );
+			for( TestInfo fTestFile : this.m_fTests ) {
+				if( !fTestFile._DataparamFile().exists() ) {
+					System.out.println( "Could not start job " + this.m_fJobXML.getName() +" because folder does not exist: " + fTestFile._DataparamFile().getAbsolutePath().replace("\\", "/") );
 					bOK= false;
 				}
 			}
@@ -291,49 +291,144 @@ public class JobRunner {
 	
 	/**
 	 * 
+	 * @param pTestInfo
+	 * @return
+	 * @throws Exception 
+	 */
+	private String CreateTestCommand( TestInfo pTestInfo, String strClassPath ) throws Exception {
+        TestParameters pTestParams= new TestParameters( new String[]{"-paramsFile", pTestInfo._DataparamFile().getAbsolutePath().replace("\\", "/")} );
+        
+        String strResultsDirName= GetResultsDirFromTest( pTestInfo._DataparamFile(), pTestInfo._Testbed() );
+
+		String strTestCommand= "# " + pTestInfo._Dataparam() + " : " + pTestInfo._Testbed() + "\n" +
+					 "java -debug" + 
+					 " -classpath " + strClassPath + " " + 
+					 pTestParams._GetCommonParams()._GetMainClass() +
+					 " jobid=" + this.m_strJobID + 
+					 " -paramsFile \"" + pTestInfo._DataparamFile().getAbsolutePath().replace("\\", "/") + "\"" +
+					 " -logDir \"" + this.m_fJobDir.getAbsolutePath().replace("\\", "/") + "/" + strResultsDirName + "\"" +
+					 " -testbed \"" + pTestInfo._Testbed() + "\" " +
+					 this.m_strOptCmdLineArgs + "\n";
+		
+		return strTestCommand;
+	}
+	
+	/**
+	 * 
 	 * @param fTestFile
 	 * @param strClassPath
 	 * @throws Exception 
 	 */
 	private void _runTest( List<TestInfo> fTestFiles, String strClassPath ) throws Exception {	
-		File f= new File( this.m_fJobDir, "run" + (System.getProperty("os.name").equals( "Mac OS X" )?".command":".bat") );
-		RandomAccessFile fRunFile = new RandomAccessFile( f, "rw");
+		int nParallelCount= 0;
+		String strExt= (System.getProperty("os.name").equals( "Mac OS X" )?".command":".bat");
+		List<File> fRunFilesList= new ArrayList<File>();
+		RandomAccessFile fMainRunFile = null;
 
-		try {
-			for( TestInfo pTestInfo :  this.m_fTests ) {
-		        TestParameters pTestParams= new TestParameters( new String[]{"-paramsFile", pTestInfo._Dataparam().getAbsolutePath().replace("\\", "/")} );
-		        		        		        
-		        //  comp/testpath
-		        String strResultsDirName= GetResultsDirFromTest( pTestInfo._Dataparam(), pTestInfo._Testbed() );
-
-				String test= "java -debug" + 
-							 " -classpath " + strClassPath + " " + 
-							 pTestParams._GetCommonParams()._GetMainClass() +
-							 " jobid=" + this.m_strJobID + 
-							 " -paramsFile \"" + pTestInfo._Dataparam().getAbsolutePath().replace("\\", "/") + "\"" +
-							 " -logDir \"" + this.m_fJobDir.getAbsolutePath().replace("\\", "/") + "/" + strResultsDirName + "\"" +
-							 " -testbed \"" + pTestInfo._Testbed() + "\" " +
-							 this.m_strOptCmdLineArgs + "\n";
-				fRunFile.writeBytes( test );
+		// Sort out the dependencies
+		for( TestInfo pTestInfo : this.m_fTests ) {
+			// Find any tests that depend on this test execution and add it as a dependent
+			String strDependent= pTestInfo._Dataparam() + " : " + pTestInfo._Testbed();
+			for( TestInfo pDependentTestInfo : this.m_fTests ) {
+				if( pDependentTestInfo._Dependency() != null && !pDependentTestInfo._IsAddedAsDependency() && pDependentTestInfo._Dependency().equalsIgnoreCase( strDependent ) )
+					pTestInfo._AddDependent( pDependentTestInfo );
 			}
-		} finally {
-			fRunFile.close();
 		}
 		
+		// Create the run.command/bat files
 		try {
-			String runCmd= f.getAbsolutePath() + " >> \"" + this._GetOutputFile().getAbsolutePath().replace("\\", "/") + "\" 2>&1";
-			if( System.getProperty("os.name").equals( "Mac OS X" ) ) {
-				this._log( "/bin/bash -c " + runCmd + "\n\n" );
-				this.m_pProcess= Runtime.getRuntime().exec( new String[]{"chmod", "777", f.getAbsolutePath()} );
-				this.m_pProcess= Runtime.getRuntime().exec( new String[]{"/bin/bash", "-c", runCmd} );
+			for( TestInfo pTestInfo : this.m_fTests ) {
+				// If it has been added as a dependency then it will be handled when we process its dependency
+				if( pTestInfo._IsAddedAsDependency() )
+					continue;
+								
+				if( pTestInfo._Parallelize() ) {
+					// Since we are parallelizing, put it in its own run.command/bat file
+					fRunFilesList.add( new File( this.m_fJobDir, "run" + (++nParallelCount) + strExt ) );
+					RandomAccessFile fRunFileParallel = new RandomAccessFile( fRunFilesList.get( fRunFilesList.size()-1 ), "rw");
+					try {
+						fRunFileParallel.writeBytes( this.CreateTestCommand( pTestInfo, strClassPath ) );
+						
+						if( !pTestInfo._GetDependents().isEmpty() ) {
+							fRunFileParallel.writeBytes( "\nif [ $? == 0 ]\nthen\n" );
+							for( TestInfo pDependentTestInfo : pTestInfo._GetDependents() ) {
+								if( pDependentTestInfo._Parallelize() ) {
+									File f= new File( this.m_fJobDir, "run" + (++nParallelCount) + strExt );
+									RandomAccessFile fRunFileDepParallel = new RandomAccessFile( f, "rw");
+									try {
+										// Create run.command/bat file
+										fRunFileDepParallel.writeBytes( this.CreateTestCommand( pDependentTestInfo, strClassPath ) );
+										// Added run call to the parent run.command/bat file
+										String runCmd= "\"" + f.getAbsolutePath() + "\" >> \"" + this._GetOutputFile().getAbsolutePath().replace("\\", "/") + "\" 2>&1";
+										fRunFileParallel.writeBytes( "/bin/bash -c " + runCmd );
+									} finally {
+										fRunFileDepParallel.close();
+									}
+									Runtime.getRuntime().exec( new String[]{"chmod", "777", f.getAbsolutePath()} );
+								}
+								else
+									fRunFileParallel.writeBytes( this.CreateTestCommand( pDependentTestInfo, strClassPath ) );									
+							}
+							fRunFileParallel.writeBytes( "\nfi\n" );
+						}
+					} finally {
+						fRunFileParallel.close();
+					}
+				}
+				else {
+					if( fMainRunFile == null ) {
+						fRunFilesList.add( new File( this.m_fJobDir, "run" + strExt ) );
+						fMainRunFile = new RandomAccessFile( fRunFilesList.get( 0 ), "rw");
+					}
+					
+					fMainRunFile.writeBytes( this.CreateTestCommand( pTestInfo, strClassPath ) );
+					
+					if( !pTestInfo._GetDependents().isEmpty() ) {
+						fMainRunFile.writeBytes( "\nif [ $? == 0 ]\nthen\n" );
+						for( TestInfo pDependentTestInfo : pTestInfo._GetDependents() ) {
+							if( pDependentTestInfo._Parallelize() ) {
+								File f= new File( this.m_fJobDir, "run" + (++nParallelCount) + strExt );
+								RandomAccessFile fRunFileDepParallel = new RandomAccessFile( f, "rw");
+								try {
+									// Create run.command/bat file
+									fRunFileDepParallel.writeBytes( this.CreateTestCommand( pDependentTestInfo, strClassPath ) );
+									// Added run call to the parent run.command/bat file
+									String runCmd= "\"" + f.getAbsolutePath() + "\" >> \"" + this._GetOutputFile().getAbsolutePath().replace("\\", "/") + "\" 2>&1";
+									fMainRunFile.writeBytes( "/bin/bash -c " + runCmd );
+								} finally {
+									fRunFileDepParallel.close();
+								}
+								Runtime.getRuntime().exec( new String[]{"chmod", "777", f.getAbsolutePath()} );
+							}
+							else
+								fMainRunFile.writeBytes( this.CreateTestCommand( pDependentTestInfo, strClassPath ) );
+						}
+						fMainRunFile.writeBytes( "\nfi\n" );
+					}
+				}
 			}
-			else {
-				this._log( "cmd /C " + runCmd + "\n\n" );
-				this.m_pProcess= Runtime.getRuntime().exec(new String[]{"cmd", "/C", runCmd});
+		} finally {
+			if( fMainRunFile != null )
+				fMainRunFile.close();
+		}
+		
+		// Finally Run all the run.command/bat files
+		for( File f : fRunFilesList ) {			
+			try {
+				String runCmd= f.getAbsolutePath() + " >> \"" + this._GetOutputFile().getAbsolutePath().replace("\\", "/") + "\" 2>&1";
+				if( System.getProperty("os.name").equals( "Mac OS X" ) ) {
+					this._log( "/bin/bash -c " + runCmd + "\n\n" );
+					Runtime.getRuntime().exec( new String[]{"chmod", "777", f.getAbsolutePath()} );
+					this.m_pProcess= Runtime.getRuntime().exec( new String[]{"/bin/bash", "-c", runCmd} );
+				}
+				else {
+					this._log( "cmd /C " + runCmd + "\n\n" );
+					this.m_pProcess= Runtime.getRuntime().exec(new String[]{"cmd", "/C", runCmd});
+				}
+			} catch( Exception e ) {
+				e.printStackTrace();
 			}
-		} catch( Exception e ) {
-			e.printStackTrace();
-		}		
+		}
 	}
 	
 	/**
@@ -632,24 +727,36 @@ public class JobRunner {
 	 *
 	 */
 	public class TestInfo {
-		private File m_strDataparamFile;
+		private File m_fDataparamFile= null;
+		private String m_strDataparamFile;
 		private String m_strTestbed;
 		private String m_strDependency;
 		private boolean m_bParallelize;
+		private boolean m_bAddedAsDependency= false;
+		private List<TestInfo> m_Dependencies= new ArrayList<TestInfo>();
 		
 		public TestInfo( String strDataparamFile, String strTestbed, boolean bParallelize, String strDependency ) {
-			this.m_strDataparamFile= new File( strDataparamFile );
+			this.m_strDataparamFile= strDataparamFile;
 			this.m_strTestbed= strTestbed;
 			this.m_bParallelize= bParallelize;
 			this.m_strDependency= strDependency;
 		}
 		
 		public TestInfo( Element e ) {
-			this( e.getText(), e.getAttributeValue("testbed"), e.getAttributeValue("parallelize").equalsIgnoreCase( "true" ), e.getAttributeValue("dependency"));
+			this( e.getText(), 
+				  e.getAttributeValue("testbed"), 
+				  e.getAttributeValue("parallelize") != null ? e.getAttributeValue("parallelize").equalsIgnoreCase( "true" ) : false, 
+				  e.getAttributeValue("dependency") );
 		}
 		
-		public File _Dataparam() {
+		public String _Dataparam() {
 			return this.m_strDataparamFile;			
+		}
+
+		public File _DataparamFile() {
+			if( this.m_fDataparamFile == null)
+				this.m_fDataparamFile= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + "/" + this.m_strDataparamFile);
+			return this.m_fDataparamFile;	
 		}
 
 		public String _Testbed() {
@@ -662,6 +769,25 @@ public class JobRunner {
 		
 		public String _Dependency() {
 			return this.m_strDependency;
+		}
+		
+		public void _SetAddedAsDependency() {
+			this.m_bAddedAsDependency= true;
+		}
+		
+		public boolean _IsAddedAsDependency() {
+			return this.m_bAddedAsDependency;
+		}
+		
+		public void _AddDependent( TestInfo pDependent ) {
+			if( pDependent != null ) {
+				this.m_Dependencies.add( pDependent );
+				pDependent._SetAddedAsDependency();
+			}
+		}
+		
+		public List<TestInfo> _GetDependents() {
+			return this.m_Dependencies;
 		}
 	}
 

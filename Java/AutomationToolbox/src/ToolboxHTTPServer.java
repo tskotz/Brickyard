@@ -259,6 +259,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 
 				// Insert the Timestamp Element
 				eJob.addContent( new Element( JobTags.Timestamp.name() ).setText( TimeUtils.getDateTime().replace( "-", "/" ) ) );
+				eJob.addContent( new Element( JobTags.DataParamsDir.name() ).setText( new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getCanonicalPath() ) );
 				
 				for( String strParam : strRequestQuery.split( "&" ) ) {
 					String[] aElementInfo= strParam.split( "=" );
@@ -312,7 +313,6 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 */
 	private void _ProcessDataparamFiles( List<String> pDataparamFiles, Element eJob ) throws Exception
 	{
-		String strDataparamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getCanonicalPath();
 		for( String strDPFile : pDataparamFiles ) {
 			String[] aTestInfo= strDPFile.trim().split(";");
 			String strDataparamFile= aTestInfo[0];
@@ -341,7 +341,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 			// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
 			for( String strThisTestbed : strTestbedLookupValue.split(",")) {
 				Element aElement= new Element( JobTags.DataParamFile.name() );
-				aElement.setText( strDataparamDir + "/" + strDataparamFile );
+				aElement.setText( strDataparamFile );
 				aElement.setAttribute( "testbed", strThisTestbed.trim() );
 				if( strTestbedLookupValue != strThisTestbed )
 					aElement.setAttribute( "group", strTestbedOrGroup );

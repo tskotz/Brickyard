@@ -223,7 +223,7 @@ public class JobInfoWindow extends JFrame {
 		getContentPane().setLayout(groupLayout);
 		
 		for( TestInfo f : this.m_JobInfo.m_fTests )
-			((DefaultTableModel)this.m_tableTests.getModel()).addRow( new Object[]{ (f._Dataparam().exists()?"":"Not Found: ") + f._Dataparam().getAbsolutePath() } );	
+			((DefaultTableModel)this.m_tableTests.getModel()).addRow( new Object[]{ (f._DataparamFile().exists()?"":"Not Found: ") + f._DataparamFile().getAbsolutePath() } );	
 	}
 	
 	/**

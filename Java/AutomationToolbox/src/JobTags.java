@@ -17,6 +17,7 @@ public enum JobTags {
 	Testbed( "Testbed" ), //obsolete
 	Classpath( "Classpath" ),
 	CommandLineArgs( "CommandLineArgs" ),
+	DataParamsDir( "DataParamsDir" ),
 	DataParamFile( "DataParamFile" ),
 	Origin( "Origin" )
 	;
