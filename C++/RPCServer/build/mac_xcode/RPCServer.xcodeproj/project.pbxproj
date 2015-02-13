@@ -247,7 +247,7 @@
 		7DF14CAB152A28D8005ABBB4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 7DF14CAE152A28D8005ABBB4 /* Build configuration list for PBXProject "RPCServer" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -329,7 +329,6 @@
 		7DF14CC1152A28D8005ABBB4 /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CURRENT_PROJECT_VERSION = 0004;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(value)",

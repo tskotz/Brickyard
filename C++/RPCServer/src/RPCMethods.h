@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////
 //
 // RPCMethods.h: RPC Server internal methods
-// Copyright (c) 2012 - iZotope, Inc.  All Rights Reserved
+// Copyright (c) 2015 - Brickyard, Inc.  All Rights Reserved
 //
 //////////////////////////////////////////////////////////////////////////////
 namespace TestAutomation { class RPCRequestInterface; class RPCServerInterface; class RPCReplyInterface; }

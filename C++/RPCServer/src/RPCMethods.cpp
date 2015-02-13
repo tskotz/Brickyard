@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////
 //
 // RPCMethods.cpp: RPC Server internal methods
-// Copyright (c) 2012 - iZotope, Inc.  All Rights Reserved
+// Copyright (c) 2015 - Brickyard, Inc.  All Rights Reserved
 //
 //////////////////////////////////////////////////////////////////////////////#include <iostream>
 #include <iostream>
