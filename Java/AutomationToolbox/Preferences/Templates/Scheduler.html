@@ -17,7 +17,7 @@
 	<tr><td style="text-align:right;"><label for="stagingdir">Run Job: </label></td>
 		<td><select><option>--Select--</option><option>User1</option><option>User2</option></select> 
 			<select><option>--Select--</option><option>Job1</option><option>Job2</option></select></td></tr>
-	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Trigger: </label></td>
+	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Triggers: </label></td>
 		<td>
 			<input type="checkbox">Mon
 			<input type="checkbox">Tue
@@ -38,7 +38,7 @@
 			<br>
 			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> <select><option>minutes</option><option>hours</option><option>weeks</option><option>months</option></select>
 			</select><br>
-			<input type="checkbox"> If the following command returns 0: <br>
+			<input type="checkbox"> If the following command exits with: <input id="exitstatus" type="text" value="0" style="text-align:center;width:40px;"><br>
 			<input id="script" type="text" value="" style="width:100%;">
 		</td></tr>
 </table>
@@ -50,7 +50,7 @@
 	<tr><td style="text-align:right;"><label for="stagingdir">Run Job: </label></td>
 		<td><select><option>--Select--</option><option>User1</option><option>User2</option></select> 
 			<select><option>--Select--</option><option>Job1</option><option>Job2</option></select></td></tr>
-	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Trigger: </label></td>
+	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Triggers: </label></td>
 		<td>
 			<input type="checkbox">Mon
 			<input type="checkbox">Tue
@@ -71,7 +71,7 @@
 			<br>
 			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> <select><option>minutes</option><option>hours</option><option>weeks</option><option>months</option></select>
 			</select><br>
-			<input type="checkbox"> If the following command returns 0: <br>
+			<input type="checkbox"> If the following command exits with: <input id="exitstatus" type="text" value="0" style="text-align:center;width:40px;"><br>
 			<input id="script" type="text" value="" style="width:100%;">
 		</td></tr>
 </table>
