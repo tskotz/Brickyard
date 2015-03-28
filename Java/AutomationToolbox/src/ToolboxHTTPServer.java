@@ -775,9 +775,9 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            else if( line.contains( "id=\"DataparamTitle\"" ))
 	            	line= line.replace( "><", ">" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "<");
 	            else if( line.contains( "id=\"Author\"" ))
-	            	line= "<td id=\"Author\">" + hmData.get("Author") + "</td>";
+	            	line= line.replace( "value=\"\"", "value=\"" + hmData.get("Author") + "\"" );
 	            else if( line.contains( "id=\"Description\"" ))
-	            	line= "<td id=\"Description\">" + hmData.get("Description") + "</td>";
+	            	line= line.replace( "</textarea>", hmData.get("Description") + "</textarea>" );
 	            
 	            sb.append( line+"\n" );
 

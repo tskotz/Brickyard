@@ -13,7 +13,7 @@
 <div>
 <table id="event1" style="width:100%;background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
 	<tr><td style="width:64px;text-align:right;"><input type="checkbox" checked><label for="eventname"> Event:</label></td>
-		<td><input id="eventname" type="text" value="Unnamed Scheduled Job 1" style="width:92%;"><button>Delete</button></td></tr>
+		<td><input id="eventname" type="text" value="Unnamed Scheduled Job 1" style="width:72%;"><button>Run Now</button><button>Save</button><button>Delete</button></td></tr>
 	<tr><td style="text-align:right;"><label for="stagingdir">Run Job: </label></td>
 		<td><select><option>--Select--</option><option>User1</option><option>User2</option></select> 
 			<select><option>--Select--</option><option>Job1</option><option>Job2</option></select></td></tr>
@@ -36,8 +36,14 @@
 			<br>
 			<input type="checkbox"> Run when Test Manager starts up
 			<br>
+		</td></tr>
+	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Looper: </label></td>
+		<td>
 			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> <select><option>minutes</option><option>hours</option><option>weeks</option><option>months</option></select>
 			</select><br>
+		</td></tr>
+	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Prereq: </label></td>
+		<td>
 			<input type="checkbox"> If the following command exits with: <input id="exitstatus" type="text" value="0" style="text-align:center;width:40px;"><br>
 			<input id="script" type="text" value="" style="width:100%;">
 		</td></tr>
@@ -46,7 +52,7 @@
 <div>
 <table id="event2" style="width:100%;background-color:#eeeeee;padding:10px; color: black; border: black 1px solid">
 	<tr><td style="width:64px;text-align:right;"><input type="checkbox" checked><label for="stagingdir"> Event:</label></td>
-		<td><input id="stagingdir" type="text" value="Unnamed Scheduled Job 2" style="width:92%;"><button>Delete</button></td></tr>
+		<td><input id="stagingdir" type="text" value="Unnamed Scheduled Job 2" style="width:72%;"><button>Run Now</button><button>Save</button><button>Delete</button></td></tr>
 	<tr><td style="text-align:right;"><label for="stagingdir">Run Job: </label></td>
 		<td><select><option>--Select--</option><option>User1</option><option>User2</option></select> 
 			<select><option>--Select--</option><option>Job1</option><option>Job2</option></select></td></tr>
@@ -69,8 +75,14 @@
 			<br>
 			<input type="checkbox"> Run when Test Manager starts up
 			<br>
+		</td></tr>
+	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Looper: </label></td>
+		<td>
 			<input type="checkbox"> Repeat every <input id="repeatminutes" type="text" value="60" style="text-align:center;width:20px;"> <select><option>minutes</option><option>hours</option><option>weeks</option><option>months</option></select>
 			</select><br>
+		</td></tr>
+	<tr><td style="vertical-align:top;text-align:right;"><label for="stagingdir">Prereq: </label></td>
+		<td>
 			<input type="checkbox"> If the following command exits with: <input id="exitstatus" type="text" value="0" style="text-align:center;width:40px;"><br>
 			<input id="script" type="text" value="" style="width:100%;">
 		</td></tr>

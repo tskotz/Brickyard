@@ -189,8 +189,8 @@ public class TestEditorWindow extends JFrame {
     	SAXBuilder builder = new SAXBuilder(false);
         Document doc;
 		try {
-			hmData.put( "Author", "<i>Anonymous</i>" );
-			hmData.put( "Description", "<i>None</i>" );
+			hmData.put( "Author", "Anonymous" );
+			hmData.put( "Description", "None" );
 			hmData.put( "Table", "" );
 			
 	        LinkedHashMap<String, String> hmParams= new LinkedHashMap<String, String>();
