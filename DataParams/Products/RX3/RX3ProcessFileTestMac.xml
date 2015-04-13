@@ -20,6 +20,7 @@
     <Parameter name="sshUser@Host"              type="String"       value="iztestauto@buildarchive.izotope.int -i iztestauto_id_rsa" />
     <Parameter name="sshRemoteArchiveDir"       type="String"       value="/build_archive/Restoration/Build-full-%BuildNumber%-rx3" />
     <Parameter name="//defaultTimeout"          type="Int"          value="500" />
+    <Parameter name="trainingEnd hms"           type="String"       value="00:01:00.000" />
     <!-- Testcase ******************************************************************************************************************************** -->
     <Testcase>
         <Parameter name="testcaseName"              type="String"   value="Denoise Test: Learn From Region" />

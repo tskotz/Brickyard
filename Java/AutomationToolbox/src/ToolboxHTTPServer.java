@@ -83,7 +83,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 
 	    if (requestMethod.equalsIgnoreCase("GET")) {
 	    	String strStatus= "Ooops!";
-	    	byte[] bufJPEG= null;
+	    	byte[] bufFileData= null;
 	    	
 	    	if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/RunJob" )) {
 	    		strStatus= this._runJob( exchange );
@@ -110,8 +110,12 @@ public class ToolboxHTTPServer implements HttpHandler {
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetImage" )) {
-	    		bufJPEG= this._getImage( exchange.getRequestURI().getQuery() );
+	    		bufFileData= this._getFileData( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/jpeg");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetResource" )) {
+	    		bufFileData= this._getFileData( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", exchange.getRequestURI().getQuery().endsWith(".css")?"text/css":"text/plain");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetResultData" )) {
 	    		strStatus= this._getResultData( exchange.getRequestURI().getQuery() );
@@ -181,8 +185,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    	exchange.sendResponseHeaders(200, 0);
 
 	    	OutputStream responseBody = exchange.getResponseBody();
-	    	if( bufJPEG != null )
-	    		responseBody.write( bufJPEG );
+	    	if( bufFileData != null )
+	    		responseBody.write( bufFileData );
 	    	else
 	    		responseBody.write( strStatus.getBytes() );
 	    		
@@ -233,7 +237,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		"											<a href=\"/AutoManager/Preferences\"><button style=\"color:#0000ff;\">Preferences</button></a>" + 
 				"</td>\n" +
 		"	</tr>\n" +
-		"</table><hr>\n";
+		"</table>\n<hr>\n";
 	}
 
 	/**
@@ -679,7 +683,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strRequestQuery
 	 * @return
 	 */
-	private byte[] _getImage( String strRequestQuery ) {
+	private byte[] _getFileData( String strRequestQuery ) {
 		String strResultFile= strRequestQuery;
 	    byte[] fileData = null;
 		try {
@@ -762,7 +766,76 @@ public class ToolboxHTTPServer implements HttpHandler {
 		
 		BufferedReader br= null;
 	    try {
-	    	HashMap<String, String> hmData= TestEditorWindow._createHTML( fDataparamterFile, false );
+	    	HashMap<String, String> hmData= TestEditorWindow._createHTML( fDataparamterFile, this.mstrWebServerURL );
+	    	
+			br= new BufferedReader(new FileReader(strTemplateFile));
+	        String line = br.readLine();
+
+	        while( line != null ) {
+	            if( line.equals( "<!-- Insert Header -->" ) )
+	            	sb.append( this._HeaderGenerator("Data Parameter Editor") );
+	            else if( line.contains( "<title>" ))
+	            	line= "	<title>" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "</title>";
+	            else if( line.contains( "id=\"DataparamTitle\"" ))
+	            	line= line.replace( "><", ">" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "<");
+	            else if( line.contains( "id=\"Author\"" ))
+	            	line= line.replace( "value=\"\"", "value=\"" + hmData.get("Author") + "\"" );
+	            else if( line.contains( "id=\"Description\"" ))
+	            	line= line.replace( "</textarea>", hmData.get("Description") + "</textarea>" );
+	            
+	            sb.append( line+"\n" );
+
+	            if( line.contains( "id=\"ParametersTable\"" ))
+	            	sb.append( hmData.get("Table") );
+
+	            line = br.readLine();
+	        }
+	    } catch( IOException e ) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+	        try {
+	        	if( br != null )
+	        		br.close();
+			} catch( IOException e ) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	    			
+		return sb.toString();
+	}
+
+	/**
+	 * ex:
+	 * http://tskotz-mac-wifi:8080/AutoManager/DataparameterEditor?dataparam=/Products/Alloy/AlloyPerfTestMac.xml
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _showDataParamEditorV1( String strRequestQuery ) {		
+		String strTemplateFile= this.mstrTemplateDir + "/DataparamEditorProto.html";
+		String strDataParamFile= null;
+		File fDataparamterFile= null;
+        String strDataParamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getAbsolutePath();
+        StringBuilder sb = new StringBuilder();
+        
+		for( String strParam : strRequestQuery.split( "&" ) ) {
+			String[] aElementInfo= strParam.split( "=" );
+			if( aElementInfo.length == 2 ) {
+				if( aElementInfo[0].equals( "dataparam" ))
+					strDataParamFile= strDataParamDir + aElementInfo[1];
+				else
+					System.out.println("Warning: Unknown REST param: " + strParam );
+			}
+		}
+
+		if( strDataParamFile != null )
+			fDataparamterFile= new File( strDataParamFile );
+		
+		BufferedReader br= null;
+	    try {
+	    	HashMap<String, String> hmData= TestEditorWindow._createHTML( fDataparamterFile, this.mstrWebServerURL );
 	    	
 			br= new BufferedReader(new FileReader(strTemplateFile));
 	        String line = br.readLine();

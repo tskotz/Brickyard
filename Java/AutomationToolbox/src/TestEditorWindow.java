@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 
 public class TestEditorWindow extends JFrame {
@@ -183,7 +185,7 @@ public class TestEditorWindow extends JFrame {
 	/**
 	 * 
 	 */
-	static public HashMap<String, String> _createHTML( File fXMLFile, boolean bTable ) {
+	static public HashMap<String, String> _createHTML( File fXMLFile, String mstrWebServerURL ) {
         HashMap<String, String> hmData= new HashMap<String, String>();
 		String strHTMLData= "";
     	SAXBuilder builder = new SAXBuilder(false);
@@ -193,50 +195,129 @@ public class TestEditorWindow extends JFrame {
 			hmData.put( "Description", "None" );
 			hmData.put( "Table", "" );
 			
-	        LinkedHashMap<String, String> hmParams= new LinkedHashMap<String, String>();
-			String strTableHeader= "<thead><tr class=\"ui-widget-header\">\n" +
-			        "<th></th>" + 		// empty header for action popup menu
-			        "<th>Name</th>" +	// name header
-			        "<th>Type</th>" +	// type header
-			        "<th>Globals</th>";	// Global header
+			String strTableHeader= 
+					"<thead>\n" +
+					"	<tr style=\"background-color:#000000;height:10px;cursor:pointer\">\n" +
+					"		<th></th> <!-- empty header for action popup menu -->\n" +
+					"		<th></th> <!-- name header -->\n";	
 			
+			String strDataParamNames= 
+					"	<tr class=\"ui-widget-header\" style=\"white-space:nowrap;text-align:center;font-size:13px;\">\n" +
+			        "		<td></td>\n" +
+			        "		<td>&nbspTest Case Name&nbsp</td>\n";
+	      
+			String strDefaultValues= 
+					"	<!-- Defaults -->\n" +
+					"	<tr style=\"xoutline:thin solid;background-color:#bbbbbb;text-align:center\">\n" +
+					"		<td id=\"defaults\">Defaults:</td>\n" +
+					"		<td><i>*unique name</i></td>\n";
+
+			String strTestCases= 
+			        "	<!-- the real start of the testcases -->\n";
+
 			if( fXMLFile != null ) {
 				doc= builder.build( fXMLFile );
 			    // Get the root element
 		        Element root= doc.getRootElement();
-		        
-		        // Parse the Global Parameters
+
+		        LinkedHashMap<String, String> defaultParamSet= new LinkedHashMap<String, String>();
+		        HashMap<String, String> paramType= new HashMap<String, String>();
+
 				List<?> eCommonParams= root.getChildren( "Parameter" );
+				List<?> eTestcases= root.getChildren( "Testcase" );
+
+				// Get a complete list of all common and testcase params by doing a prescan of Common and Testcase params		        
+				// Testcase params
+		        for( int i= 0; i < eTestcases.size(); ++i ) {
+					List<?> eTCParamsPre= ((Element)eTestcases.get( i )).getChildren( "Parameter" );
+			        for( Object o : eTCParamsPre ) {
+			        	Element param= (Element)o;
+		        		defaultParamSet.put( param.getAttribute( "name" ).getValue(),
+	        					  			 param.getAttribute( "value" ).getValue() );
+		        		paramType.put( param.getAttribute( "name" ).getValue(), 
+	        					   	   param.getAttribute( "type" ).getValue() );
+			        }
+		        }
+
+				// Common params
 		        for( Object o : eCommonParams ) {
 		        	Element param= (Element)o;
-		        	if( param.getAttribute( "name" ).getValue().equalsIgnoreCase("author") )
-		        		hmData.put( "Author", param.getAttribute( "value" ).getValue() );
-		        	else if( param.getAttribute( "name" ).getValue().equalsIgnoreCase("description") )
-		        		hmData.put( "Description", param.getAttribute( "value" ).getValue() );
-		        	else
-		        		AppendListRow( param, hmParams, false );
+	        		defaultParamSet.put( param.getAttribute( "name" ).getValue(),
+	        					         param.getAttribute( "value" ).getValue() );
+	        		paramType.put( param.getAttribute( "name" ).getValue(), 
+	        					   param.getAttribute( "type" ).getValue() );
 		        }
+
+		        if( defaultParamSet.containsKey("author"))
+	        		hmData.put( "Author", defaultParamSet.get("author") );
 		        
+		        if( defaultParamSet.containsKey("description"))
+	        		hmData.put( "description", defaultParamSet.get("description") );
+		        			        
+		        // Create the table headers, param names and defaults
+		        for (Entry<String, String> entry : defaultParamSet.entrySet()) {
+		            String parameterName = entry.getKey();
+		        	if( !parameterName.equals("testcaseName") ) {
+			            String parameterValue= entry.getValue();			           	
+		        		strDataParamNames+= "		<td>&nbsp" + parameterName + " <img class=\"header-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\">&nbsp</td>\n";
+			        	strTableHeader+= "    	<th></th>\n";
+			        	// Set default values
+			            if( paramType.get( parameterName ).equalsIgnoreCase("Boolean"))
+			            	strDefaultValues+= 	"		<td><select><option " + (parameterValue.equalsIgnoreCase("true")?"selected":"") + ">True</option><option " + (!parameterValue.equalsIgnoreCase("true")?"selected":"") + " disabled>False</option></select></td>\n";
+			           	else
+			            	strDefaultValues+= 	"		<td><input type=\"text\" style=\"width: 100%;\" id=\"paramvalue\" value=\"" + parameterValue + "\"></td>\n";
+			        	// Now make all the default values italicized
+			        	if( !parameterValue.isEmpty() )
+			        		entry.setValue("<i>"+parameterValue+"</i>");
+		        	}
+		        }
+		        		        
 		        // Parse the Testcases
-				List<?> eTestcases= root.getChildren( "Testcase" );
 		        for( int i= 0; i < eTestcases.size(); ++i ) {
+		        	// Start with the full default values
+			        LinkedHashMap<String, String> tcParamSet = new LinkedHashMap<String, String>(defaultParamSet);
+			        // Start new testcase row
+	        		strTestCases+= 
+	        				"	<tr align=\"center\">\n" +
+	        			    "		<td>\n" +
+	    					"			<table>\n" +
+	    			        "				<tr>\n" +
+	    			        "					<td style=\"vertical-align: middle;\"> <img class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n"+
+	    			        "					<td><input type=\"checkbox\" id=\"EnableTestase_id\" checked></td>\n" +
+	    			        "				</tr>\n" +
+	    			        "			</table>\n" +
+	    			        "		</td>\n";
+	        		
 					List<?> eTCParams= ((Element)eTestcases.get( i )).getChildren( "Parameter" );
+					// Update the defaults with the testcase specific values
 			        for( int r= 0; r < eTCParams.size(); ++r ) {
 			        	Element param= (Element)eTCParams.get( r );
-			        	if( param.getAttribute( "name" ).getValue().equalsIgnoreCase("testcaseName") )
-			        		strTableHeader+= "<th><input type=\"checkbox\" id=\"EnableTestase_id\" style=\"float:left;\"><label for=\"EnableTestase_id\" style=\"float:left;\">" +param.getAttribute( "value" ).getValue() + "</label></th>";
-			        	else
-			        		AppendListRow( param, hmParams, true );
+			        	tcParamSet.put(param.getAttribute( "name" ).getValue(), param.getAttribute( "value" ).getValue());
 			        }
+
+			        // testcaseName must be first column
+	        		strTestCases+= "		<td>" + tcParamSet.get("testcaseName") + "</td>\n";
+	        		// Now add everything else skipping testcaseName
+	        		for (Entry<String, String> entry : tcParamSet.entrySet()) {
+	        			if( !entry.getKey().equals("testcaseName") )
+	        				strTestCases+= "		<td>" + entry.getValue() + "</td>\n";
+			        }
+
+			        strTestCases+= "	</tr>\n";
 			    }
 			}
 	        
-	        strTableHeader+= "</thead>\n"; // Close out the table header
+			// Close out the table header
+			strTableHeader+= "		<th></th> <!-- type header -->\n	<tr>\n</thead\n"; 
+			strDataParamNames+= "		<td> <img class=\"context-menu-one box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\"></td>\n	</tr>\n";
+			strDefaultValues+= 	"		<td></td>\n	</tr>\n";
 	        
 	        // Now piece together the full table data
-	        strHTMLData= strTableHeader + "<tbody>\n";
-	        for (Object value : hmParams.values())
-		        strHTMLData+= value.toString(); 
+	        strHTMLData= strTableHeader + "<tbody>\n" + strDataParamNames + strDefaultValues + strTestCases;
+	        
+//	        strHTMLData= strTableHeader + "<tbody>\n";
+//	        for (Object value : hmParams.values())
+//		        strHTMLData+= value.toString(); 
 	        strHTMLData+= "</tbody>\n";
 	        
     		hmData.put( "Table", strHTMLData );
@@ -252,7 +333,7 @@ public class TestEditorWindow extends JFrame {
 		
 		return hmData;
  	}
-
+	
 	/**
 	 * 
 	 * @param param

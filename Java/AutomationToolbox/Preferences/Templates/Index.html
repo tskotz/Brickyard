@@ -1,4 +1,50 @@
 <HTML>
+	<head>
+		<meta charset="utf-8">
+		<title>Test</title>
+		<script language="javascript"> 
+			function toggle(elementId) 
+			{
+				var ele = document.getElementById(elementId);
+				if( ele.style.display == "block" )
+    				ele.style.display = "none";
+				else
+					ele.style.display = "block";
+			} 
+		</script>
+	</head>
+	
 <h1>Automation Toolbox<br></h1>
-Getting Started
-<br><a href="https://github.com/tskotz/Brickyard">https://github.com/tskotz/Brickyard</a><br></HTML>
+
+<a id="displayText" href="javascript:toggle('Getting the Sources');">Getting The Sources</a>
+<div id="Getting the Sources" style="display: none">
+<h4>The Repo</h4>
+The Repo can be found here: <a href="https://github.com/tskotz/Brickyard">https://github.com/tskotz/Brickyard</a><br>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+Click the "Clone in Desktop" button<br><br>
+Account info
+<table style="border: 1px solid black;">
+	<tr><td>Username:</td><td>tskotz</td></tr>
+	<tr><td>Password:</td><td>spiritt3ch</td></tr>
+	<tr><td>Email:</td><td>tskotz@gmail.com</td></tr>
+</table>
+<h4>Install GitHub client if needed</h4>
+Mac: <a href="https://mac.github.com/">https://mac.github.com/</a>
+<br>Win: <a href="https://github.com/">https://github.com/</a><br></HTML>
+<hr>
+</div>
+
+<br>
+<a id="displayText" href="javascript:toggle('Setting Up the AutomationToolbox Project');">Setting Up the AutomationToolbox Project</a>
+<div id="Setting Up the AutomationToolbox Project" style="display: none">
+<h4>The Project</h4>
+Mac: 
+OS: 10.10.1<br>
+Eclipse version: Juno Service Release 2<br>
+Java version: java version "1.6.0_65"<br>
+<br>
+Create new Java project in Eclipse pointing to /Brickyard/Java folder<br>
+Create new "Java Application" "Debug Configuration" pointing to “AutomationToolbox.src.ToolboxWindow”  No args 
+
+<hr>
+</div>
