@@ -136,13 +136,27 @@
 
     <!-- Header and Row widget context menus -->
     <script type="text/javascript">
+        /*
+         Document this!
+         */
         $(function(){
             $.contextMenu({
                 selector: '.header-context-menu',
                 trigger: 'left',
                 callback: function(key, options) {
-                    var m = "header clicked: " + key;
-                    window.console && console.log(m) || alert(m);
+                    //var m = "header clicked: " + key;
+                    //window.console && console.log(m) || alert(m);
+                    var col = $(this).closest("td").index();
+                    if( key == 'Edit')
+                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Black'});
+                    else if( key == 'Insert')
+                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'White'});
+                    else if( key == 'Duplicate')
+                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Blue'});
+                    else if( key == 'Remove')
+                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Orange'});
+                    else if( key == 'Disable')
+                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Gray'});
                 },
                 items: {
                     "Edit": {name: "Edit"},
@@ -156,15 +170,43 @@
             $('.header-context-menu').on('click', function(e){console.log('clicked header', this);})
         });
         
+        /*
+         Document this!
+         */
         $(function(){
             $.contextMenu({
                 selector: '.row-context-menu',
                 trigger: 'left',
                 callback: function(key, options) {
-                    var m = "row clicked: " + key;
-                    window.console && console.log(m) || alert(m);
+                    //var m = "row clicked: " + key;
+                    var theRow= $(this).closest("table").closest("tr");
+                    //alert(theRow.attr('id'));
+                    if( key == 'Edit') {
+                        var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" checked></td><td>Default</td></tr></table>\n'
+                        theRow.css({backgroundColor: 'black'});
+                        theRow.children("td").each(function() {
+                            if( $(this).index() > 0 ) {
+                                $(this).css({color:'White'});
+                                if( $(this).text() == "true" )
+                                    $(this).html(strDefaultPopup + '<select><option selected>True</option><option>False</option></select>');
+                                else if( $(this).text() == "false" )
+                                    $(this).html(strDefaultPopup + '<select><option>True</option><option selected>False</option></select>');
+                                else
+                                    $(this).html(strDefaultPopup + '<input type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                            }
+                        });
+                    }
+                    else if( key == 'Insert')
+                        theRow.css({backgroundColor: 'White'});
+                    else if( key == 'Duplicate')
+                        theRow.css({backgroundColor: 'Blue'});
+                    else if( key == 'Remove')
+                        theRow.css({backgroundColor: 'Orange'});
+                    else if( key == 'Disable')
+                        theRow.css({backgroundColor: 'Gray'});
                 },
                 items: {
+                    "Disable": {name: "Disable"},
                     "Edit": {name: "Edit"},
                     "Insert": {name: "Insert"},
                     "Duplicate": {name: "Duplicate"},
@@ -172,9 +214,20 @@
                 }
             });
           
-            $('.row-context-menu').on('click', function(e){console.log('clicked row', this);})
+           /* clean this up */
+            $('.row-context-menu').on('click',
+                    function(e){
+                        console.log('clicked row', this);
+                        var currentRow = $(this).closest('tr');
+                        //alert(currentRow.attr('id'));
+                    }
+            )
         });
         
+        
+        /*
+         Document this!
+         */
         $(document).ready(function() {
             $('.defaultTable').dragtable();
                           

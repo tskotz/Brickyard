@@ -259,7 +259,7 @@ public class TestEditorWindow extends JFrame {
 		            String parameterName = entry.getKey();
 		        	if( !parameterName.equals("testcaseName") ) {
 			            String parameterValue= entry.getValue();			           	
-		        		strDataParamNames+= "		<td>&nbsp" + parameterName + " <img class=\"header-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\">&nbsp</td>\n";
+		        		strDataParamNames+= "		<td id=\"" + parameterName + "\">&nbsp" + parameterName + " <img class=\"header-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\">&nbsp</td>\n";
 			        	strTableHeader+= "    	<th></th>\n";
 			        	// Set default values
 			            if( paramType.get( parameterName ).equalsIgnoreCase("Boolean"))
@@ -278,11 +278,11 @@ public class TestEditorWindow extends JFrame {
 			        LinkedHashMap<String, String> tcParamSet = new LinkedHashMap<String, String>(defaultParamSet);
 			        // Start new testcase row
 	        		strTestCases+= 
-	        				"	<tr align=\"center\">\n" +
-	        			    "		<td>\n" +
-	    					"			<table>\n" +
-	    			        "				<tr>\n" +
-	    			        "					<td style=\"vertical-align: middle;\"> <img class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n"+
+	        				"	<tr id=\"TheTableRow\" align=\"center\">\n" +
+	        			    "		<td id=\"innertabletd\">\n" +
+	    					"			<table id=\"innertable\">\n" +
+	    			        "				<tr id=\"innertablerow\">\n" +
+	    			        "					<td id=\"innertd\" style=\"vertical-align: middle;\"> <img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n"+
 	    			        "					<td><input type=\"checkbox\" id=\"EnableTestase_id\" checked></td>\n" +
 	    			        "				</tr>\n" +
 	    			        "			</table>\n" +
