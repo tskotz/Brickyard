@@ -148,14 +148,14 @@
                     //window.console && console.log(m) || alert(m);
                     var col = $(this).closest("td").index();
                     if( key == 'Edit')
-                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Black'});
+                        $( "#dialog-form" ).dialog( "open" );
                     else if( key == 'Insert')
                         $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'White'});
                     else if( key == 'Duplicate')
                         $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Blue'});
                     else if( key == 'Remove')
                         $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Orange'});
-                    else if( key == 'Disable')
+                    else if( key == 'Disable/Enable')
                         $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Gray'});
                 },
                 items: {
