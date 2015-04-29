@@ -177,6 +177,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 				strStatus= this._GetTestbedDescriptor( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/SaveDataParameter" )) {
+				strStatus= this._SaveDataParameter( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetAllDataParameterNames" )) {
+				strStatus= this._GetAllDataParameterNames( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
 	    	else {
 	    		strStatus= "Unknown Request: " + exchange.getRequestURI().getPath();
 	    	    System.out.println( strStatus );	
@@ -989,6 +997,19 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strRequestQuery
 	 * @return
 	 */
+	private String _GetTestbedDescriptor( String strRequestQuery ) {
+		TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery );
+		if( pTBDescr != null )
+			return pTBDescr._AsREST();
+		
+		return ToolboxHTTPServer.STATUS_FAILED;		
+	}
+	
+	/**
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
 	private String _GetTestbedValue( String strRequestQuery ) {
 		return DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery )._AsBasic();
    	}
@@ -1141,12 +1162,113 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strRequestQuery
 	 * @return
 	 */
-	private String _GetTestbedDescriptor( String strRequestQuery ) {
-		TestbedDescriptor pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strRequestQuery );
-		if( pTBDescr != null )
-			return pTBDescr._AsREST();
+	private String _SaveDataParameter( String strRequestQuery ) {
+		String[] astrDataParamInfo= new String[5]; // name, value, info, aslist, description
+		
+		for( String strParam : strRequestQuery.split( "&" ) ) {
+			//System.out.println( strParam );
+			String[] aTestbedInfo= strParam.split( "=" );
+			if( aTestbedInfo.length == 2 ) {
+				if( aTestbedInfo[0].equals( "name" ))
+					astrDataParamInfo[0]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "value" ))
+					astrDataParamInfo[1]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "type" ))
+					astrDataParamInfo[2]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "aslist" ))
+					astrDataParamInfo[3]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "descr" ))
+					astrDataParamInfo[4]= aTestbedInfo[1];
+			}
+		}
+		
+		if( DatabaseMgr._DataParameters()._AddDataParameter(astrDataParamInfo[0], astrDataParamInfo[1], astrDataParamInfo[2], Boolean.getBoolean(astrDataParamInfo[3]), astrDataParamInfo[4]) )
+			return STATUS_SUCCESS;
+        
+		return STATUS_FAILED;
+	}
+
+	/**
+	 * ex.
+	 * http://tskotz-mac-wifi:8080/AutoManager/Contents?Platforms/BreakTweaker
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _UpdateDataParameter( String strRequestQuery ) {
+		String[] astrTestbedInfo= new String[6]; // curname, newname, value, info, aslist, description
+		
+		for( String strParam : strRequestQuery.split( "&" ) ) {
+			//System.out.println( strParam );
+			String[] aTestbedInfo= strParam.split( "=" );
+			if( aTestbedInfo.length == 2 ) {
+				if( aTestbedInfo[0].equals( "oldname" ))
+					astrTestbedInfo[0]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "name" ))
+					astrTestbedInfo[1]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "value" ))
+					astrTestbedInfo[2]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "type" ))
+					astrTestbedInfo[3]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "aslist" ))
+					astrTestbedInfo[4]= aTestbedInfo[1];
+				else if( aTestbedInfo[0].equals( "descr" ))
+					astrTestbedInfo[5]= aTestbedInfo[1];
+			}
+		}
+		
+		if( DatabaseMgr._DataParameters()._UpdateDataParameter( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2], astrTestbedInfo[3], Boolean.getBoolean(astrTestbedInfo[4]), astrTestbedInfo[5]) )
+			return STATUS_SUCCESS;
+        
+		return STATUS_FAILED;
+	}
+
+	/**
+	 * ex.
+	 * http://tskotz-mac-wifi:8080/AutoManager/Contents?Platforms/BreakTweaker
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _DeleteDataParameter( String strRequestQuery ) {
+		String strDataParamName= "";
+		
+		for( String strParam : strRequestQuery.split( "&" ) ) {
+			//System.out.println( strParam );
+			String[] aTestbedInfo= strParam.split( "=" );
+			if( aTestbedInfo.length == 2 ) {
+				if( aTestbedInfo[0].equals( "name" ))
+					strDataParamName= aTestbedInfo[1];
+			}
+		}
+		
+		if( DatabaseMgr._DataParameters()._DeleteDataParameter( strDataParamName ) )
+			return STATUS_SUCCESS;
+        
+		return STATUS_FAILED;
+	}
+
+	/**
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _GetDataParameter( String strRequestQuery ) {
+		DataParameter pDataParam= DatabaseMgr._DataParameters()._GetDataParameter( strRequestQuery );
+		if( pDataParam != null )
+			return pDataParam._AsREST();
 		
 		return ToolboxHTTPServer.STATUS_FAILED;		
+	}
+	
+	/**
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _GetAllDataParameterNames( String strRequestQuery ) {
+		String[] dps= DatabaseMgr._DataParameters()._GetDataParameterNames();
+		return Arrays.toString(dps).replace("[", "").replace("]", "");
 	}
 
 }

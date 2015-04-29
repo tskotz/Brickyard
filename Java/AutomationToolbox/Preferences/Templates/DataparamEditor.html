@@ -34,8 +34,19 @@
     </style>
     
     <script>
+        function RunURL( aUrl )
+        {
+            xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "GET", aUrl, false );
+            xmlHttp.setRequestHeader('Content-type', 'text/plain');
+            xmlHttp.send( null );
+            return xmlHttp.responseText;
+        }
+    </script>
+    
+    <script>
         $(function() {
-          var dialog, form,
+          var dataParamEditorDialog, form,
           
           // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
           emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
@@ -104,19 +115,27 @@
                                                "<td>" + ptype.val() + "</td>" +
                                                "<td>" + strValue +"</td>" +
                                                "</tr>" );
-                  dialog.dialog( "close" );
+                  dataParamEditorDialog.dialog( "close" );
               }
               return valid;
           }
+                          
+          function saveDataParameter() {
+            var strStatus= RunURL( "/AutoManager/SaveDataParameter?name="+pname.val()+"&type="+ptype.val()+"&value="+pvalue.val()+"&aslist="+pAsList.is(':checked')+"&descr="+pdesc.val() );
+            if( strStatus.toLowerCase() != "success" )
+                alert( strStatus );
+            else
+                dataParamEditorDialog.dialog( "close" );
+          }
           
-          dialog = $( "#dialog-form" ).dialog({
+          dataParamEditorDialog = $( "#createNewParameterDialog" ).dialog({
                                               autoOpen: false,
                                               height: 340,
                                               width: 350,
                                               modal: true,
                                               buttons: {
-                                                "Save": addUser,
-                                                Cancel: function() { dialog.dialog( "close" ); }
+                                                "Save": saveDataParameter,
+                                                Cancel: function() { dataParamEditorDialog.dialog( "close" ); }
                                               },
                                               close: function() {
                                                 form[ 0 ].reset();
@@ -124,18 +143,64 @@
                                               }
                                             });
           
-          form = dialog.find( "form" ).on( "submit", function( event ) {
+          form = dataParamEditorDialog.find( "form" ).on( "submit", function( event ) {
                                           event.preventDefault();
                                           addUser();
                                         });
           
-          $( "#create-user" ).button().on( "click", function() { dialog.dialog( "open" ); });
+          $( "#create-user" ).button().on( "click", function() { dataParamEditorDialog.dialog( "open" ); });
           
         });
     </script>
-
-    <!-- Header and Row widget context menus -->
+    
+    <!-- Header widget context menus -->
     <script type="text/javascript">
+        /*
+         document this
+         */
+        function EditRow( theRow ) {
+            var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" checked></td><td>Default</td></tr></table>\n'
+            theRow.css({backgroundColor: 'black'});
+            theRow.children("td").each(function() {
+                if( $(this).index() == 0) {
+                    $(this).html( "<img id=\"customImage\" class=\"row-context-editmenu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+                }
+                if( $(this).index() > 0 ) {
+                    $(this).css({color:'White'});
+                if( $(this).text() == "true" )
+                    $(this).html(strDefaultPopup + '<select id="paramBoolVal"><option selected>True</option><option>False</option></select>');
+                else if( $(this).text() == "false" )
+                    $(this).html(strDefaultPopup + '<select id="paramBoolVal"><option>True</option><option selected>False</option></select>');
+                else
+                    $(this).html(strDefaultPopup + '<input id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                }
+            });
+        }
+    
+        /*
+         Document this!
+         */
+        function ApplyRowEdits( theRow ) {
+            if( confirm( "Click OK to apply changes" ) ) {
+                theRow.css({backgroundColor: ''});
+                theRow.children('td').each( function() {
+                    if( $(this).index() == 0 ) {
+                        $(this).html( "<img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+                    }
+                    else {
+                        $(this).css({color:'Black'});
+                        var strText= "";
+                        if( $(this).find('option:selected').text() )
+                            strText= $(this).find('option:selected').text().toLowerCase();
+                        else if( $(this).children(':text') )
+                            strText= $(this).children(':text').val();
+               
+                        $(this).html( strText );
+                    }
+               });
+            }
+        }
+    
         /*
          Document this!
          */
@@ -148,13 +213,28 @@
                     //window.console && console.log(m) || alert(m);
                     var col = $(this).closest("td").index();
                     if( key == 'Edit')
-                        $( "#dialog-form" ).dialog( "open" );
-                    else if( key == 'Insert')
-                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'White'});
-                    else if( key == 'Duplicate')
-                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Blue'});
-                    else if( key == 'Remove')
-                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Orange'});
+                        $( "#createNewParameterDialog" ).dialog( "open" );
+                    else if( key == 'New')
+                        $( "#createNewParameterDialog" ).dialog( "open" );
+                    else if( key == 'Insert') {
+                          var strDataParams= RunURL( "/AutoManager/GetAllDataParameterNames" );
+                          var elmnt= document.getElementById( "pnameslist" );
+                          var items= strDataParams.split(', ');
+                          for( i=0; i<items.length; i++)
+                          {
+                              var option = document.createElement("option");
+                              option.text = items[i];
+                              option.value = items[i];
+                              elmnt.add(option);
+                          }
+
+                          //document.getElementById( "QueueTestsList" ).appendChild( newElement );
+                        $( "#InsertDPColumn" ).dialog( "open" );
+                    }
+                    else if( key == 'Remove') {
+                        if( confirm( "Are you sure you want to remove the column?" ) )
+                            $("td").filter(":nth-child(" + (col + 1) + ")").remove();
+                    }
                     else if( key == 'Disable/Enable')
                         $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Gray'});
                 },
@@ -162,8 +242,8 @@
                     "Edit": {name: "Edit"},
                     "Disable/Enable": {name: "Disable"},
                     "Insert": {name: "Insert"},
-                    "Duplicate": {name: "Duplicate"},
-                    "Remove": {name: "Remove"}
+                    "Remove": {name: "Remove"},
+                    "New": {name: "New"}
                 }
             });
           
@@ -171,7 +251,7 @@
         });
         
         /*
-         Document this!
+         <!-- Row widget context menus -->
          */
         $(function(){
             $.contextMenu({
@@ -179,29 +259,44 @@
                 trigger: 'left',
                 callback: function(key, options) {
                     //var m = "row clicked: " + key;
-                    var theRow= $(this).closest("table").closest("tr");
+                    var theRow= $(this).closest("tr");
                     //alert(theRow.attr('id'));
                     if( key == 'Edit') {
-                        var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" checked></td><td>Default</td></tr></table>\n'
-                        theRow.css({backgroundColor: 'black'});
-                        theRow.children("td").each(function() {
-                            if( $(this).index() > 0 ) {
-                                $(this).css({color:'White'});
-                                if( $(this).text() == "true" )
-                                    $(this).html(strDefaultPopup + '<select><option selected>True</option><option>False</option></select>');
-                                else if( $(this).text() == "false" )
-                                    $(this).html(strDefaultPopup + '<select><option>True</option><option selected>False</option></select>');
-                                else
-                                    $(this).html(strDefaultPopup + '<input type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                        EditRow( theRow );
+                    }
+                    else if( key == 'Insert') {
+                        var theTable= $(this).closest("table");
+                        var defaultRow= theTable.find('tr:nth-child(2)')
+                        var clone= theRow.clone()
+                        clone.children('td').each (function() {
+                            if( $(this).index() == 0) {
+                                $(this).html( "<img id=\"customImage\" class=\"row-context-editmenu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+                            }
+                            else if( $(this).index() == 1 )
+                                $(this).html( "unnamed" );
+                            else if( $(this).index() > 1 ) {
+                                var strText= "";
+                                if( defaultRow.children('td').eq($(this).index()).find('option').html() )
+                                    strText= defaultRow.children('td').eq($(this).index()).find('option:selected').text().toLowerCase();
+                                else if( defaultRow.children('td').eq($(this).index()).find('input') )
+                                    strText= defaultRow.children('td').eq($(this).index()).find('input').val();
+                                               
+                                $(this).html( strText );
                             }
                         });
+                        clone.insertAfter(theRow);
+                        EditRow( clone );
                     }
-                    else if( key == 'Insert')
-                        theRow.css({backgroundColor: 'White'});
-                    else if( key == 'Duplicate')
-                        theRow.css({backgroundColor: 'Blue'});
-                    else if( key == 'Remove')
-                        theRow.css({backgroundColor: 'Orange'});
+                    else if( key == 'Duplicate') {
+                        var clone= theRow.clone()
+                        clone.insertAfter(theRow);
+                        clone.children("td").eq(1).text( clone.children("td").eq(1).text() + " - copy");
+                        EditRow( clone );
+                    }
+                    else if( key == 'Remove') {
+                          if( confirm( "Are you sure you want to remove the row?" ) )
+                            theRow.remove();
+                    }
                     else if( key == 'Disable')
                         theRow.css({backgroundColor: 'Gray'});
                 },
@@ -216,6 +311,41 @@
           
            /* clean this up */
             $('.row-context-menu').on('click',
+                    function(e){
+                        console.log('clicked row', this);
+                        var currentRow = $(this).closest('tr');
+                        //alert(currentRow.attr('id'));
+                    }
+            )
+        });
+
+        /*
+         <!-- Row widget context menus -->
+         */
+        $(function(){
+            $.contextMenu({
+                selector: '.row-context-editmenu',
+                trigger: 'left',
+                callback: function(key, options) {
+                    var theRow= $(this).closest("tr");
+                    if( key == 'Apply') {
+                          ApplyRowEdits( theRow );
+                    }
+                    else if( key == 'Cancel') {
+                        if( confirm( "Are you sure you want to cancel the changes?" ) ) {
+                            alert("Not yet fully implemented");
+                            ApplyRowEdits( theRow );
+                        }
+                    }
+                 },
+                items: {
+                    "Apply": {name: "Apply"},
+                    "Cancel": {name: "Cancel"}
+                }
+            });
+          
+           /* clean this up */
+            $('.row-context-editmenu').on('click',
                     function(e){
                         console.log('clicked row', this);
                         var currentRow = $(this).closest('tr');
@@ -241,13 +371,45 @@
                           
             $("#ParametersTable tbody").sortable({ helper: fixHelperModified }).disableSelection();
         });
+        
+        $(function () {
+          var insertDPDialog;
+          
+          $("#ParametersTable td").dblclick(function (e) {
+                                        e.stopPropagation();      //<-------stop the bubbling of the event here
+                                        var currentEle = $(this);
+                                        var value = $(this).html();
+                                        alert(value);
+                                      });
+
+         insertDPDialog = $( "#InsertDPColumn" ).dialog({
+                                                 autoOpen: false,
+                                                 height: 340,
+                                                 width: 350,
+                                                 modal: true,
+                                                 buttons: {
+                                                    Cancel: function() { insertDPDialog.dialog( "close" ); }
+                                                 },
+                                                 close: function() {
+                                                    form[ 0 ].reset();
+                                                    allFields.removeClass( "ui-state-error" );
+                                                 }
+                                                 });
+                                                 
+                                                 form = insertDPDialog.find( "form" ).on( "submit", function( event ) {
+                                                                                            event.preventDefault();
+                                                                                            //addUser();
+                                                                                       });
+        });
+
+
     </script>
 </head>
 
 <body>
     <!-- Insert Header -->
  
-    <div id="dialog-form" title="Create New Parameter">
+    <div id="createNewParameterDialog" title="Create New Parameter">
         <form>
             <fieldset>
                 <label for="pname">Name</label>
@@ -256,11 +418,23 @@
                 <select id="ptype" style="float:left;" onclick="configureParamType()">
                     <option selected>String</option><option>Boolean</option><option>Float</option><option>Double</option><option>Int</option>
                 </select>
-                <input type="checkbox" id="asListcb" name="ltype" value="listtype" style="float:left;"> As List<br><br><br>
+                <input type="checkbox" id="asListcb" name="asListcb" value="listtype" style="float:left;"> As List<br><br><br>
                 <label id="pValueLabel" for="pvalue">Default Value</label>
                 <input type="text" name="pvalue" id="pvalue" value="" class="text ui-widget-content ui-corner-all">
                 <label for="pdesc">Description</label>
                 <textarea name="pdesc" id="pdesc" value="Description of parameter" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="InsertDPColumn" title="Insert Column">
+        <form>
+            <fieldset>
+                <label for="pname">Data Parameters</label>
+                <select id="pnameslist" style="float:left;" onclick="xconfigureParamType()">
+                </select>
                 <!-- Allow form submission with keyboard without duplicating the dialog button -->
                 <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
             </fieldset>

@@ -21,11 +21,11 @@ limitations under the License.
 */
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -67,12 +67,14 @@ public class DatabaseMgr
 	private final String mstrJobsTableName= "JobsTable";
 	private final String mstrUsersTableName= "UsersTable";
 	private final String mstrPreferencesTableName= "PreferencesTable4";
+	private final String mstrDataParametersTableName= "DataParametersTable2";
 
 	private TableVersionsWrapper mTableVersionsTable= null;
 	private TestbedsTableWrapper mTestbedsTable= null;
 	private JobsTableWrapper mJobsTable= null;
 	private UsersTableWrapper mUsersTable= null;
 	private PreferencesTableWrapper mPreferencesTable= null;
+	private DataParametersTableWrapper mDataParametersTable= null;
 	
 	private Connection mConnection = null;
 
@@ -144,7 +146,7 @@ public class DatabaseMgr
 	 */
 	public static TableVersionsWrapper _Versions()
 	{
-		// Create the testbeds table if it does not exist
+		// Create the Versions table if it does not exist
 		if( DatabaseMgr._GetInstance().mTableVersionsTable == null )
 			DatabaseMgr._GetInstance().mTableVersionsTable= DatabaseMgr._GetInstance().new TableVersionsWrapper();
 		
@@ -170,7 +172,7 @@ public class DatabaseMgr
 	 */
 	public static JobsTableWrapper _Jobs()
 	{
-		// Create the testbeds table if it does not exist
+		// Create the Jobs table if it does not exist
 		if( DatabaseMgr._GetInstance().mJobsTable == null )
 			DatabaseMgr._GetInstance().mJobsTable= DatabaseMgr._GetInstance().new JobsTableWrapper();
 		
@@ -183,7 +185,7 @@ public class DatabaseMgr
 	 */
 	public static PreferencesTableWrapper _Preferences()
 	{
-		// Create the testbeds table if it does not exist
+		// Create the Preferences table if it does not exist
 		if( DatabaseMgr._GetInstance().mPreferencesTable == null )
 			DatabaseMgr._GetInstance().mPreferencesTable= DatabaseMgr._GetInstance().new PreferencesTableWrapper();
 		
@@ -201,6 +203,19 @@ public class DatabaseMgr
 			DatabaseMgr._GetInstance().mUsersTable= DatabaseMgr._GetInstance().new UsersTableWrapper();
 		
 		return DatabaseMgr._GetInstance().mUsersTable;
+	}
+
+	/**
+	 * DataParameters Table Accessor
+	 * @return
+	 */
+	public static DataParametersTableWrapper _DataParameters()
+	{
+		// Create the DataParameters table if it does not exist
+		if( DatabaseMgr._GetInstance().mDataParametersTable == null )
+			DatabaseMgr._GetInstance().mDataParametersTable= DatabaseMgr._GetInstance().new DataParametersTableWrapper();
+		
+		return DatabaseMgr._GetInstance().mDataParametersTable;
 	}
 
 	/**
@@ -233,8 +248,14 @@ public class DatabaseMgr
 		            the directory that the system property derby.system.home points to, or the current
 		            directory if derby.system.home is not set.
 		          */
-		         this.mConnection= DriverManager.getConnection( this.mstrProtocol + this.mstrDBName + ";create=true", props );	
+		         this.mConnection= DriverManager.getConnection( this.mstrProtocol + this.mstrDBName + ";create=true;upgrade=true", props );	
 		         System.out.println( "Connected to and created database " + this.mstrDBName );
+		         
+		         // this will print the name and version of the software used for running this Derby system
+		         DatabaseMetaData dbmd = this.mConnection.getMetaData();
+		         String productName = dbmd.getDatabaseProductName();
+		         String productVersion = dbmd.getDatabaseProductVersion();
+		         System.out.println("Using " + productName + " " + productVersion);
 		
 		         this.mConnection.setAutoCommit( true );
 		
@@ -1010,6 +1031,217 @@ public class DatabaseMgr
 		{
 			return Integer.valueOf( this._GetPref( prefType ) );
 		}
+	}
+	
+	/**
+	 * 
+	 * @author terryskotz
+	 *
+	 */
+	public class DataParametersTableWrapper
+	{
+		private final String DP_NAME_COL=  "name";
+		private final int	 DP_NAME_COL_MAX_SIZE= 100;
+		private final String DP_TYPE_COL=  "type";
+		private final int	 DP_TYPE_COL_MAX_SIZE= 10;
+		private final String DP_AS_LIST_COL=  "aslist";
+		private final String DP_VALUE_COL=  "value";
+		private final int	 DP_VALUE_COL_MAX_SIZE= 500;
+		private final String DP_DESC_COL=  "descr";
+		private final int	 DP_DESC_COL_MAX_SIZE= 500;
+		
+		private String mstrMyTable= null;
+		
+		/**
+		 * 
+		 */
+		public DataParametersTableWrapper()
+		{
+			this.mstrMyTable= DatabaseMgr._GetInstance().mstrDataParametersTableName;
+			try
+			{
+				// Add the table to the master db
+		        Statement s = DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "CREATE TABLE %s ( %s varchar(%d), %s varchar(%d), %s varchar(%d), %s boolean, %s varchar(%d))", 
+		        		 this.mstrMyTable, DP_NAME_COL, DP_NAME_COL_MAX_SIZE, DP_TYPE_COL, DP_TYPE_COL_MAX_SIZE,
+		        		 				   DP_VALUE_COL, DP_VALUE_COL_MAX_SIZE, DP_AS_LIST_COL, DP_DESC_COL, DP_DESC_COL_MAX_SIZE);
+		        //System.out.println( strQuery );
+		        s.execute( strQuery );		        
+			}
+		    catch (Throwable e)
+		    {
+		        if( e.getMessage().contains( "already exists in Schema") )
+		        	;// this is ok
+		        else 
+		        {
+			        System.out.println("exception thrown:");
+		        	if (e instanceof SQLException)
+		        		DatabaseMgr._GetInstance().printSQLError((SQLException) e);
+		        	else
+		        		e.printStackTrace();
+		        }
+		    }
+			DatabaseMgr._Versions()._SetVersion(this.mstrMyTable, "1.0");
+		}
+		
+		/**
+		 * 
+		 * @return
+		 */
+		public String[] _GetDataParameterNames( )
+		{
+			ArrayList<String> arrTestbeds= new ArrayList<String>();
+			
+			try 
+			{
+		        Statement s = DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "SELECT %s, %s, %s, %s, %s FROM %s ORDER BY %s", 
+		        								 DP_NAME_COL, DP_TYPE_COL, DP_VALUE_COL, DP_AS_LIST_COL, DP_DESC_COL, 
+		        								 this.mstrMyTable, DP_NAME_COL );
+				ResultSet rs= s.executeQuery( strQuery );
+
+				System.out.println( "****************" );
+
+				while( rs.next() ) {
+					arrTestbeds.add( rs.getString(DP_NAME_COL) );
+					System.out.println( rs.getString(DP_NAME_COL) );
+					System.out.println( rs.getString(DP_VALUE_COL) );
+					System.out.println( rs.getString(DP_TYPE_COL) );
+					System.out.println( rs.getString(DP_AS_LIST_COL) );
+					System.out.println( rs.getString(DP_DESC_COL) );
+				}
+				
+				rs.close();
+				s.close();
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+			}
+			
+			return arrTestbeds.toArray(new String[arrTestbeds.size()]);
+		}
+
+		/**
+		 * 
+		 * @param strName
+		 * @return
+		 */
+		public DataParameter _GetDataParameter( String strName  )
+		{
+			DataParameter pDataParameter= null;
+			try 
+			{
+				Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+		        String strQuery= String.format( "SELECT * FROM %s WHERE %s='%s'", this.mstrMyTable, DP_NAME_COL, strName );
+				ResultSet rs= s.executeQuery( strQuery );
+
+				if( rs.next() )
+					pDataParameter= new DataParameter( rs.getString(DP_NAME_COL), rs.getString(DP_TYPE_COL), rs.getString(DP_VALUE_COL),
+	 						 						   rs.getBoolean(DP_AS_LIST_COL), rs.getString(DP_DESC_COL));
+				rs.close();
+				s.close();
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+			}
+			
+			return pDataParameter;
+		}
+		
+		/**
+		 * 
+		 * @param strName
+		 * @param strValue
+		 * @param strType
+		 * @param bAsList
+		 * @param strDescription
+		 * @return
+		 */
+		public boolean _AddDataParameter( String strName, String strValue, String strType, boolean bAsList, String strDescription )
+		{			
+			try 
+			{
+				if( this._GetDataParameter(strName) == null )
+				{
+					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+					s.execute( "INSERT INTO " + this.mstrMyTable + 
+							   " VALUES ('" + strName + "','" + strType + "','" + strValue + "','" + bAsList + "','" + strDescription + "')" );
+					s.close();
+				}
+				else
+					System.out.println( "The data parameter already exists: " + strName );
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+				return false;
+			}
+			
+	        return true;
+		}
+
+		/**
+		 * 
+		 * @param strCurName
+		 * @param strNewName
+		 * @param strNewValue
+		 * @param strNewType
+		 * @param bAsList
+		 * @param strDescription
+		 * @return
+		 */
+		public boolean _UpdateDataParameter( String strCurName, String strNewName, String strNewValue, String strNewType, boolean bAsList, String strDescription )
+		{			
+			try 
+			{
+				if( this._GetDataParameter(strNewName) != null )
+					System.out.println( "The new data parameter already exists: " + strNewName );					
+				else if( this._GetDataParameter(strCurName) != null )
+				{
+					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+					String strQuery= String.format( "UPDATE %s SET %s='%s',%s='%s',%s='%s',%s='%s',%s='%s' WHERE %s='%s'", 
+							this.mstrMyTable, 
+							DP_NAME_COL, strNewName, DP_TYPE_COL, strNewType, DP_VALUE_COL, strNewValue,
+							DP_AS_LIST_COL, bAsList, DP_DESC_COL, strDescription, DP_NAME_COL, strCurName );
+					s.execute( strQuery );
+					s.close();
+				}
+				else
+					System.out.println( "The data parameter does not exist: " + strCurName );
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+				return false;
+			}
+			
+	        return true;
+		}
+		
+		/**
+		 * 
+		 * @param strName
+		 * @return
+		 */
+		public boolean _DeleteDataParameter( String strName )
+		{			
+			try 
+			{
+				Statement s= DatabaseMgr._GetInstance()._CreateStatement();
+				String strQuery= String.format( "DELETE FROM %s WHERE %s='%s'", this.mstrMyTable, DP_NAME_COL, strName );
+				s.execute( strQuery );
+				s.close();
+			} 
+			catch (SQLException e) 
+			{
+				DatabaseMgr._GetInstance().printSQLError( e );
+				return false;
+			}
+			return true;
+		}
+
 	}
 
 }

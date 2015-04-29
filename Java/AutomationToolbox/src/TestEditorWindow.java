@@ -279,14 +279,7 @@ public class TestEditorWindow extends JFrame {
 			        // Start new testcase row
 	        		strTestCases+= 
 	        				"	<tr id=\"TheTableRow\" align=\"center\">\n" +
-	        			    "		<td id=\"innertabletd\">\n" +
-	    					"			<table id=\"innertable\">\n" +
-	    			        "				<tr id=\"innertablerow\">\n" +
-	    			        "					<td id=\"innertd\" style=\"vertical-align: middle;\"> <img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n"+
-	    			        "					<td><input type=\"checkbox\" id=\"EnableTestase_id\" checked></td>\n" +
-	    			        "				</tr>\n" +
-	    			        "			</table>\n" +
-	    			        "		</td>\n";
+	    			        "		<td style=\"vertical-align: middle;\"> <img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n";
 	        		
 					List<?> eTCParams= ((Element)eTestcases.get( i )).getChildren( "Parameter" );
 					// Update the defaults with the testcase specific values
