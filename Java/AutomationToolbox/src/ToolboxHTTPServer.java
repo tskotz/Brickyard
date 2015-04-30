@@ -181,6 +181,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 				strStatus= this._SaveDataParameter( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetDataParameter" )) {
+				strStatus= this._GetDataParameter( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/UpdateDataParameter" )) {
+				strStatus= this._UpdateDataParameter( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetAllDataParameterNames" )) {
 				strStatus= this._GetAllDataParameterNames( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
@@ -1182,10 +1190,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 			}
 		}
 		
-		if( DatabaseMgr._DataParameters()._AddDataParameter(astrDataParamInfo[0], astrDataParamInfo[1], astrDataParamInfo[2], Boolean.getBoolean(astrDataParamInfo[3]), astrDataParamInfo[4]) )
-			return STATUS_SUCCESS;
-        
-		return STATUS_FAILED;
+		return DatabaseMgr._DataParameters()._AddDataParameter(astrDataParamInfo[0], astrDataParamInfo[1], astrDataParamInfo[2], astrDataParamInfo[3].equalsIgnoreCase("true"), astrDataParamInfo[4]);       
 	}
 
 	/**
@@ -1202,9 +1207,9 @@ public class ToolboxHTTPServer implements HttpHandler {
 			//System.out.println( strParam );
 			String[] aTestbedInfo= strParam.split( "=" );
 			if( aTestbedInfo.length == 2 ) {
-				if( aTestbedInfo[0].equals( "oldname" ))
+				if( aTestbedInfo[0].equals( "name" ))
 					astrTestbedInfo[0]= aTestbedInfo[1];
-				else if( aTestbedInfo[0].equals( "name" ))
+				else if( aTestbedInfo[0].equals( "newname" ))
 					astrTestbedInfo[1]= aTestbedInfo[1];
 				else if( aTestbedInfo[0].equals( "value" ))
 					astrTestbedInfo[2]= aTestbedInfo[1];
@@ -1256,7 +1261,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	private String _GetDataParameter( String strRequestQuery ) {
 		DataParameter pDataParam= DatabaseMgr._DataParameters()._GetDataParameter( strRequestQuery );
 		if( pDataParam != null )
-			return pDataParam._AsREST();
+			return pDataParam._AsBasic();
 		
 		return ToolboxHTTPServer.STATUS_FAILED;		
 	}

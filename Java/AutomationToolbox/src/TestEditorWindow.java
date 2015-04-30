@@ -257,6 +257,8 @@ public class TestEditorWindow extends JFrame {
 		        // Create the table headers, param names and defaults
 		        for (Entry<String, String> entry : defaultParamSet.entrySet()) {
 		            String parameterName = entry.getKey();
+	        		DatabaseMgr._DataParameters()._AddDataParameter(parameterName, entry.getValue(), paramType.get( parameterName ), false, "Imported from " + fXMLFile.getAbsolutePath());
+
 		        	if( !parameterName.equals("testcaseName") ) {
 			            String parameterValue= entry.getValue();			           	
 		        		strDataParamNames+= "		<td id=\"" + parameterName + "\">&nbsp" + parameterName + " <img class=\"header-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\">&nbsp</td>\n";

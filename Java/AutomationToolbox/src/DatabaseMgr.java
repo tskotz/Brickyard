@@ -79,6 +79,16 @@ public class DatabaseMgr
 	private Connection mConnection = null;
 
 	/**
+	 * Escape any special characters required for sql command
+	 * @param text
+	 * @return
+	 */
+	static private String DoEscapes( String text )
+	{
+		return text.replace("\'", "\'\'");
+	}
+	
+	/**
 	 * Test code
 	 * @param args
 	 */
@@ -1051,6 +1061,7 @@ public class DatabaseMgr
 		private final int	 DP_DESC_COL_MAX_SIZE= 500;
 		
 		private String mstrMyTable= null;
+		private String mstrStatus= "";
 		
 		/**
 		 * 
@@ -1159,27 +1170,29 @@ public class DatabaseMgr
 		 * @param strDescription
 		 * @return
 		 */
-		public boolean _AddDataParameter( String strName, String strValue, String strType, boolean bAsList, String strDescription )
-		{			
+		public String _AddDataParameter( String strName, String strValue, String strType, boolean bAsList, String strDescription )
+		{	
+			String strStatus= ToolboxHTTPServer.STATUS_SUCCESS;
+
 			try 
 			{
 				if( this._GetDataParameter(strName) == null )
 				{
 					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
 					s.execute( "INSERT INTO " + this.mstrMyTable + 
-							   " VALUES ('" + strName + "','" + strType + "','" + strValue + "','" + bAsList + "','" + strDescription + "')" );
+							   " VALUES ('" + DoEscapes(strName) + "','" + DoEscapes(strType) + "','" + DoEscapes(strValue) + "','" + bAsList + "','" + DoEscapes(strDescription) + "')" );
 					s.close();
 				}
 				else
-					System.out.println( "The data parameter already exists: " + strName );
+					strStatus= "The data parameter already exists: " + strName;
 			} 
 			catch (SQLException e) 
 			{
 				DatabaseMgr._GetInstance().printSQLError( e );
-				return false;
+				strStatus= e.getMessage();
 			}
 			
-	        return true;
+	        return strStatus;
 		}
 
 		/**
@@ -1203,8 +1216,8 @@ public class DatabaseMgr
 					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
 					String strQuery= String.format( "UPDATE %s SET %s='%s',%s='%s',%s='%s',%s='%s',%s='%s' WHERE %s='%s'", 
 							this.mstrMyTable, 
-							DP_NAME_COL, strNewName, DP_TYPE_COL, strNewType, DP_VALUE_COL, strNewValue,
-							DP_AS_LIST_COL, bAsList, DP_DESC_COL, strDescription, DP_NAME_COL, strCurName );
+							DP_NAME_COL, DoEscapes(strNewName), DP_TYPE_COL, DoEscapes(strNewType), DP_VALUE_COL, DoEscapes(strNewValue),
+							DP_AS_LIST_COL, bAsList, DP_DESC_COL, DoEscapes(strDescription), DP_NAME_COL, DoEscapes(strCurName) );
 					s.execute( strQuery );
 					s.close();
 				}
