@@ -147,6 +147,7 @@
                                               modal: true,
                                               buttons: {
                                                 "Save": saveDataParameter,
+                                                "Insert": InsertDPColumn,
                                                 Cancel: function() { dataParamEditorDialog.dialog( "close" ); }
                                               },
                                               close: function() {
@@ -214,6 +215,14 @@
         }
     
         /*
+         Document this!
+         */
+        function CancelRowEdits( theRow ) {
+            if( confirm( "Are you sure you want to remove the row?" ) )
+                theRow.remove();
+        }
+
+        /*
         Document This!
         */
         function configureInsertDPColumn( dataParamName ) {
@@ -239,9 +248,9 @@
                     var theTable= $(this).closest("table");
                     var thisTD= $(this).closest("td");
                     var col = thisTD.index();
+                    var dataParamName= thisTD.text().trim();
                           
                     if( key == 'Edit') {
-                        var dataParamName= thisTD.text().trim();
                         var info= RunURL( "/AutoManager/GetDataParameter?" + dataParamName );
                         var items= info.split(";");
                         document.getElementById( "pname" ).value= items[0];
@@ -271,7 +280,7 @@
                         $( "#InsertDPColumn" ).data("activeTD", thisTD).dialog( "open" );
                     }
                     else if( key == 'Remove') {
-                        if( confirm( "Are you sure you want to remove the column?" ) )
+                        if( confirm( "Are you sure you want to remove column " + dataParamName + "?" ) )
                             $("td").filter(":nth-child(" + (col + 1) + ")").remove();
                     }
                     else if( key == 'Disable/Enable')
@@ -371,10 +380,7 @@
                           ApplyRowEdits( theRow );
                     }
                     else if( key == 'Cancel') {
-                        if( confirm( "Are you sure you want to cancel the changes?" ) ) {
-                            alert("Not yet fully implemented");
-                            ApplyRowEdits( theRow );
-                        }
+                            CancelRowEdits( theRow );
                     }
                  },
                 items: {
@@ -412,6 +418,22 @@
         });
         
         $(function () {
+          
+          function DoInsertDPColumn() {
+            var i= $(this).data('activeTD').index();
+            $('#ParametersTable tbody').find('tr').each(function() {
+                var htmlData= "";
+                if( $(this).index() == 0 )
+                    htmlData= '&nbsp' + document.getElementById( "pnameslist" ).value + ' <img id="customImage" class="header-context-menu box menu-1" src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png" onmouseover="" style="cursor:pointer;vertical-align:middle;" height="10" width="10">&nbsp';
+                else if( $(this).index() == 1 )
+                    htmlData= '<input type="text" style="width: 100%;" id="paramvalue" value="'+document.getElementById( "pvalue2" ).value+'">';
+                else
+                    htmlData= document.getElementById( "pvalue2" ).value
+                $(this).find('td').eq(i).after('<td>'+htmlData+'</td>');
+            });
+            insertDPDialog.dialog( "close" );
+          }
+    
           var insertDPDialog;
           
           $("#ParametersTable td").dblclick(function (e) {
@@ -427,23 +449,11 @@
                                                  width: 350,
                                                  modal: true,
                                                  buttons: {
-                                                    "Insert": function() { var i= $(this).data('activeTD').index();
-                                                                            $('#ParametersTable tbody').find('tr').each(function() {
-                                                                                var htmlData= "";
-                                                                                if( $(this).index() == 0 )
-                                                                                    htmlData= '&nbsp' + document.getElementById( "pnameslist" ).value + ' <img id="customImage" class="header-context-menu box menu-1" src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png" onmouseover="" style="cursor:pointer;vertical-align:middle;" height="10" width="10">&nbsp';
-                                                                                else if( $(this).index() == 1 )
-                                                                                    htmlData= '<input type="text" style="width: 100%;" id="paramvalue" value="'+document.getElementById( "pvalue2" ).value+'">';
-                                                                                else
-                                                                                    htmlData= document.getElementById( "pvalue2" ).value
-                                                                                $(this).find('td').eq(i).after('<td>'+htmlData+'</td>');
-                                                                            });
-                                                                            insertDPDialog.dialog( "close" ); },
+                                                    "Insert": DoInsertDPColumn,
                                                     Cancel: function() { insertDPDialog.dialog( "close" ); }
                                                  },
                                                  close: function() {
                                                     form[ 0 ].reset();
-                                                    allFields.removeClass( "ui-state-error" );
                                                  }
                                                  });
                                                  
@@ -453,6 +463,11 @@
                                                                                        });
         });
 
+function ShowNewDPDialog() {
+    $( "#InsertDPColumn" ).dialog( "close" );
+    $( "#createNewParameterDialog" ).dialog({ title: "New Data Parameter"}).dialog( "open" );
+    
+}
 
     </script>
 </head>
@@ -486,7 +501,8 @@
                 <label for="pnameslist">Name</label>
                 <select id="pnameslist" style="float:left;" onclick="configureInsertDPColumn(value)">
                     <option selected>--Select--</option>
-                </select><br><br><br>
+                </select>
+                <button onclick="ShowNewDPDialog()">New</button><br><br><br>
                 <label for="ptype2">Type</label>
                 <select id="ptype2" style="float:left;" disabled>
                     <option selected>String</option><option>Boolean</option><option>Float</option><option>Double</option><option>Int</option>
