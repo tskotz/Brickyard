@@ -168,24 +168,67 @@
     
     <!-- Header widget context menus -->
     <script type="text/javascript">
+    
         /*
          document this
          */
-        function EditRow( theRow ) {
-            var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" checked></td><td>Default</td></tr></table>\n'
+        function toggleDisabled( cbox ) {
+            var td= cbox.parentElement.parentElement.parentElement.parentElement.parentElement;
+            var e= td.getElementsByTagName("input")[1];
+            if( !e )
+                e= cbox.parentElement.parentElement.parentElement.parentElement.parentElement.getElementsByTagName("select")[0];
+                
+            e.disabled= cbox.checked;
+            td.setAttribute("default", cbox.checked);
+        }
+    
+        /*
+         document this
+         */
+        function EditRow( theRow, bEditInPlace ) {
+            if( bEditInPlace )
+                theRow.attr("bEditInPlace", true);
+
             theRow.css({backgroundColor: 'black'});
-            theRow.children("td").each(function() {
-                if( $(this).index() == 0) {
+            theRow.children("td").each(function()
+            {
+                if( $(this).index() == 0)
+                {
                     $(this).html( "<img id=\"customImage\" class=\"row-context-editmenu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
                 }
-                if( $(this).index() > 0 ) {
-                    $(this).css({color:'White'});
-                if( $(this).text() == "true" )
-                    $(this).html(strDefaultPopup + '<select id="paramBoolVal"><option selected>True</option><option>False</option></select>');
-                else if( $(this).text() == "false" )
-                    $(this).html(strDefaultPopup + '<select id="paramBoolVal"><option>True</option><option selected>False</option></select>');
                 else
-                    $(this).html(strDefaultPopup + '<input id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                {
+                    $(this).css({color:'White'});
+                    
+                    if( bEditInPlace )
+                        $(this).attr("origVal", $(this).text());
+                    
+                    // Testcase column
+                    if( $(this).index() == 1)
+                    {
+                        $(this).html('<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                        $(this).css({'vertical-align':'bottom'}).css({'white-space':'nowrap'});
+                        
+                    }
+                    else
+                    {
+                        var strChecked= "";
+                        var strDisabled= "";
+                        if( $(this).attr("default") == "true" )
+                        {
+                            strChecked= "checked";
+                            strDisabled= "disabled=\"true\"";
+                        }
+                                               
+                        var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" onClick="toggleDisabled(this)"'+strChecked+'></td><td>Default</td></tr></table>\n'
+
+                        if( $(this).text() == "true" )
+                            $(this).html(strDefaultPopup + '<select id="paramBoolVal" '+strDisabled+'><option selected>True</option><option>False</option></select>');
+                        else if( $(this).text() == "false" )
+                            $(this).html(strDefaultPopup + '<select id="paramBoolVal" '+strDisabled+'><option>True</option><option selected>False</option></select>');
+                        else
+                            $(this).html(strDefaultPopup + '<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                    }
                 }
             });
         }
@@ -217,9 +260,30 @@
         /*
          Document this!
          */
+        function RevertRowToOrig( theRow ) {
+            theRow.css({backgroundColor: ''});
+            theRow.children('td').each( function() {
+                if( $(this).index() == 0 ) {
+                    $(this).html( "<img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+                }
+                else {
+                    $(this).css({color:'Black'});
+                    $(this).html( $(this).attr("origVal") );
+                    $(this).removeAttr("origVal");
+                }
+            });
+        }
+
+        /*
+         Document this!
+         */
         function CancelRowEdits( theRow ) {
-            if( confirm( "Are you sure you want to remove the row?" ) )
-                theRow.remove();
+            if( confirm( "Are you sure you want to cancel the row edits?" ) ) {
+               if( theRow.attr("bEditInPlace") )
+                    RevertRowToOrig( theRow );
+               else
+                    theRow.remove();
+            }
         }
 
         /*
@@ -310,7 +374,7 @@
                     var theRow= $(this).closest("tr");
                     //alert(theRow.attr('id'));
                     if( key == 'Edit') {
-                        EditRow( theRow );
+                        EditRow( theRow, true );
                     }
                     else if( key == 'Insert') {
                         var theTable= $(this).closest("table");

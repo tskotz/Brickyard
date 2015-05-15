@@ -57,10 +57,10 @@
    				//Add it to the database first
    				var strURL;
    				if( bSave )
-   					strURL = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + 
+   					strURL = "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value +
    											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
    				else
-   					strURL = GetURLMachineAndPort() + "/AutoManager/UpdateTestbed?oldname=" + strCurTestbed + "&name=" + option.text + "&value=" + option.value + 
+   					strURL = "/AutoManager/UpdateTestbed?oldname=" + strCurTestbed + "&name=" + option.text + "&value=" + option.value +
 											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
    					
    				var strStatus= RunURL( strURL );
@@ -97,7 +97,7 @@
 	    	open : function (event, ui) {
 	    		var strTestbedSelection= document.getElementById("Testbeds").options[document.getElementById("Testbeds").selectedIndex].text;
             	if( strTestbedSelection != "New Testbed" ) {
-               		var strInfo= RunURL( GetURLMachineAndPort() + "/AutoManager/GetTestbedValue?" + strTestbedSelection );
+               		var strInfo= RunURL( "/AutoManager/GetTestbedValue?" + strTestbedSelection );
             		// strTestbed; strValue; strType; strRunMode; strDescription
             		var listItems= strInfo.split(";");
 	    			$("#testbedName").val( strTestbedSelection );
@@ -148,10 +148,10 @@
    				//Add it to the database first
    				var strURL;
    				if( bSave )
-   					strURL = GetURLMachineAndPort() + "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value + 
+   					strURL = "/AutoManager/SaveTestbed?name=" + option.text + "&value=" + option.value +
    											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
    				else
-   					strURL = GetURLMachineAndPort() + "/AutoManager/UpdateTestbed?oldname=" + strCurTestbed + "&name=" + option.text + "&value=" + option.value + 
+   					strURL = "/AutoManager/UpdateTestbed?oldname=" + strCurTestbed + "&name=" + option.text + "&value=" + option.value +
 											"&type=" + option.getAttribute( "type" ) + "&runmode=" + option.getAttribute( "runmode" ) + "&descr=" + option.getAttribute( "descr" );
    					
    				var strStatus= RunURL( strURL );
@@ -188,7 +188,7 @@
 	    	open : function (event, ui) {
 	    		var strTestbedSelection= document.getElementById("Testbeds").options[document.getElementById("Testbeds").selectedIndex].text;
 	    		if( strTestbedSelection != "New Group" ) {
-            		var strInfo= RunURL( GetURLMachineAndPort() + "/AutoManager/GetTestbedValue?" + strTestbedSelection );
+            		var strInfo= RunURL( "/AutoManager/GetTestbedValue?" + strTestbedSelection );
             		// strTestbed; strValue; strType; strRunMode; strDescription
             		var listItems= strInfo.split(";");
             		$("#groupName").val( strTestbedSelection );
@@ -295,7 +295,7 @@
   		document.getElementById( "testbedStatus" ).innerHTML= "";
        	if( confirm('Are you sure you want to remove\n"' + strTestbed + '"') == true )
        	{   				
-   			var strStatus= RunURL( GetURLMachineAndPort() + "/AutoManager/DeleteTestbed?name=" + strTestbed );
+   			var strStatus= RunURL( "/AutoManager/DeleteTestbed?name=" + strTestbed );
    			if( strStatus.toLowerCase() == "success" )
    			{
     			testbedsMenu.remove(testbedsMenu.selectedIndex);
@@ -368,11 +368,11 @@
     		return;
     	}
     		
-    	var strURL= GetURLMachineAndPort();
+    	var strURL;
     	if( strType == "SaveJob" )
-    		strURL+= "/AutoManager/SaveJob";
+    		strURL= "/AutoManager/SaveJob";
     	else
-    		strURL+= "/AutoManager/RunJob";
+    		strURL= "/AutoManager/RunJob";
 	        
     	strURL+= "?jobname=" + document.getElementById( "jobname" ).value;
     	strURL+= "&user=" + document.getElementById( "jobusername" ).value;
@@ -405,7 +405,7 @@
 	        			// Ask if they want to overwrite the current saved job
 	        			if( window.confirm( "Do you want to overwrite the existing saved job?") ) {
 	        				// Delete existing job
-	        			    var strDelURL= GetURLMachineAndPort() + "/AutoManager/DeleteJob?";
+	        			    var strDelURL= "/AutoManager/DeleteJob?";
 	        			    strDelURL+= "user=" + document.getElementById( "UsersMenu" ).value + "&job=" + document.getElementById( "JobsMenu" ).value;
 	        		        var strDelStatus= RunURL( strDelURL ); 
 	        				if( strDelStatus.toLowerCase() != "success" )
@@ -425,7 +425,7 @@
 		        	alert( "Failed to start job: " + strReply );	        	
 	        }
 		    else if( strType == "RunJob" ) {
-		        var strStatusURL = GetURLMachineAndPort() + "/AutoManager/Status";
+		        var strStatusURL = "/AutoManager/Status";
         		window.location= strStatusURL;  	
 		    }
 	    }
@@ -448,7 +448,7 @@
     
     function EditDataparameter( strDataParameter )
     {
-    	var strUrl = GetURLMachineAndPort() + "/AutoManager/DataparamEditor?dataparam=/" + strDataParameter;
+    	var strUrl = "/AutoManager/DataparamEditor?dataparam=/" + strDataParameter;
         window.open( strUrl );  	
      }
 
@@ -479,7 +479,7 @@
     
     function GetURLMachineAndPort() 
     {
-        return window.location.protocol + "//" + window.location.host;
+        return ""; //window.location.protocol + "//" + window.location.host;
     }
 
     function ApplyTestSelection( params )
@@ -489,8 +489,8 @@
         if( root.value == "--Select--" )
         	return;
         
-        var dirs= RunURL( GetURLMachineAndPort() + "/AutoManager/GetDirs?" + root.value );
-        var files= RunURL( GetURLMachineAndPort() + "/AutoManager/GetFiles?" + root.value );       
+        var dirs= RunURL( "/AutoManager/GetDirs?" + root.value );
+        var files= RunURL( "/AutoManager/GetFiles?" + root.value );
         var rootElementID= "SelectTestMenu";
         var counter= 1;
         
@@ -581,7 +581,7 @@
 		document.getElementById( "LoadJobButton" ).disabled= true;
 		document.getElementById( "DeleteJobButton" ).disabled= true;
 		document.getElementById( "JobsMenu" ).disabled= false;
-		var strURL= GetURLMachineAndPort() + "/AutoManager/GetUserJobs?user=" + document.getElementById( "UsersMenu" ).value;
+		var strURL= "/AutoManager/GetUserJobs?user=" + document.getElementById( "UsersMenu" ).value;
 		document.getElementById( "JobsMenu" ).innerHTML= RunURL( strURL );
 	}
 
@@ -595,7 +595,7 @@
 	{
 		var strUser= document.getElementById( "UsersMenu" ).value;
 		var strJob= document.getElementById( "JobsMenu" ).value;
-	    var strURL= GetURLMachineAndPort() + "/AutoManager/DeleteJob?";
+	    var strURL= "/AutoManager/DeleteJob?";
 	    
     	var r= window.confirm( "Are you sure you want to delete job:\n\n" + strUser + "\n" + strJob );
 		if( r ) {
@@ -610,7 +610,7 @@
 
 	function LoadJob()
 	{
-	    var strURL= GetURLMachineAndPort() + "/AutoManager/GetJobInfo?";
+	    var strURL= "/AutoManager/GetJobInfo?";
 	    strURL+= "user=" + document.getElementById( "UsersMenu" ).value + "&job=" + document.getElementById( "JobsMenu" ).value;
         var strInfo= RunURL( strURL );
         

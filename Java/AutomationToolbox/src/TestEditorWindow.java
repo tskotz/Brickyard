@@ -270,13 +270,13 @@ public class TestEditorWindow extends JFrame {
 			            	strDefaultValues+= 	"		<td><input type=\"text\" style=\"width: 100%;\" id=\"paramvalue\" value=\"" + parameterValue + "\"></td>\n";
 			        	// Now make all the default values italicized
 			        	if( !parameterValue.isEmpty() )
-			        		entry.setValue("<i>"+parameterValue+"</i>");
+			        		entry.setValue("<td default=\"true\"><i>"+parameterValue+"</i></td>");
 		        	}
 		        }
 		        		        
 		        // Parse the Testcases
 		        for( int i= 0; i < eTestcases.size(); ++i ) {
-		        	// Start with the full default values
+		        	// Start with full copy of default values
 			        LinkedHashMap<String, String> tcParamSet = new LinkedHashMap<String, String>(defaultParamSet);
 			        // Start new testcase row
 	        		strTestCases+= 
@@ -287,15 +287,16 @@ public class TestEditorWindow extends JFrame {
 					// Update the defaults with the testcase specific values
 			        for( int r= 0; r < eTCParams.size(); ++r ) {
 			        	Element param= (Element)eTCParams.get( r );
-			        	tcParamSet.put(param.getAttribute( "name" ).getValue(), param.getAttribute( "value" ).getValue());
+			        	tcParamSet.put(param.getAttribute( "name" ).getValue(), "<td>"+param.getAttribute( "value" ).getValue()+"</td>");
 			        }
 
 			        // testcaseName must be first column
-	        		strTestCases+= "		<td>" + tcParamSet.get("testcaseName") + "</td>\n";
+	        		strTestCases+= "		" + tcParamSet.get("testcaseName") + "\n";
 	        		// Now add everything else skipping testcaseName
 	        		for (Entry<String, String> entry : tcParamSet.entrySet()) {
-	        			if( !entry.getKey().equals("testcaseName") )
-	        				strTestCases+= "		<td>" + entry.getValue() + "</td>\n";
+	        			if( !entry.getKey().equals("testcaseName") ) {
+	        					strTestCases+= "		" + entry.getValue() + "\n";	        					
+	        			}
 			        }
 
 			        strTestCases+= "	</tr>\n";
