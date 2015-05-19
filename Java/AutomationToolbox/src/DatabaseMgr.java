@@ -1173,6 +1173,11 @@ public class DatabaseMgr
 		public String _AddDataParameter( String strName, String strValue, String strType, boolean bAsList, String strDescription )
 		{	
 			String strStatus= ToolboxHTTPServer.STATUS_SUCCESS;
+			
+			if( strValue == null )
+				strValue= "";
+			if( strDescription == null )
+				strDescription= "";
 
 			try 
 			{
@@ -1205,12 +1210,19 @@ public class DatabaseMgr
 		 * @param strDescription
 		 * @return
 		 */
-		public boolean _UpdateDataParameter( String strCurName, String strNewName, String strNewValue, String strNewType, boolean bAsList, String strDescription )
-		{			
+		public String _UpdateDataParameter( String strCurName, String strNewName, String strNewValue, String strNewType, boolean bAsList, String strDescription )
+		{	
+			String strStatus= ToolboxHTTPServer.STATUS_SUCCESS;
+
+			if( strNewValue == null )
+				strNewValue= "";
+			if( strDescription == null )
+				strDescription= "";
+
 			try 
 			{
-				if( this._GetDataParameter(strNewName) != null )
-					System.out.println( "The new data parameter already exists: " + strNewName );					
+				if( !strNewName.equals( strCurName ) && this._GetDataParameter(strNewName) != null )
+					strStatus= "The new data parameter already exists: " + strNewName;					
 				else if( this._GetDataParameter(strCurName) != null )
 				{
 					Statement s= DatabaseMgr._GetInstance()._CreateStatement();
@@ -1222,15 +1234,14 @@ public class DatabaseMgr
 					s.close();
 				}
 				else
-					System.out.println( "The data parameter does not exist: " + strCurName );
+					strStatus= "The data parameter does not exist: " + strCurName;
 			} 
 			catch (SQLException e) 
 			{
 				DatabaseMgr._GetInstance().printSQLError( e );
-				return false;
 			}
 			
-	        return true;
+	        return strStatus;
 		}
 		
 		/**

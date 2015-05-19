@@ -1222,10 +1222,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 			}
 		}
 		
-		if( DatabaseMgr._DataParameters()._UpdateDataParameter( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2], astrTestbedInfo[3], Boolean.getBoolean(astrTestbedInfo[4]), astrTestbedInfo[5]) )
-			return STATUS_SUCCESS;
-        
-		return STATUS_FAILED;
+		return DatabaseMgr._DataParameters()._UpdateDataParameter( astrTestbedInfo[0], astrTestbedInfo[1], astrTestbedInfo[2], astrTestbedInfo[3], Boolean.getBoolean(astrTestbedInfo[4]), astrTestbedInfo[5]);
 	}
 
 	/**

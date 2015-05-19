@@ -120,49 +120,6 @@
               return valid;
           }
              
-          /*
-           document this
-           */
-          function saveDataParameter() {
-            var strStatus;
-            var strTitle= $( "#createNewParameterDialog" ).dialog( "option", "title" );
-
-            if( strTitle.indexOf("Edit Data Parameter:") == 0 )
-                strStatus= RunURL( "/AutoManager/UpdateDataParameter?name="+pname.attr("origname")+"&newname="+pname.val()+"&type="+ptype.val()+"&value="+pvalue.val()+"&aslist="+pAsList.is(':checked')+"&descr="+pdesc.val() );
-            else
-                strStatus= RunURL( "/AutoManager/SaveDataParameter?name="+pname.val()+"&type="+ptype.val()+"&value="+pvalue.val()+"&aslist="+pAsList.is(':checked')+"&descr="+pdesc.val() );
-
-            if( strStatus.toLowerCase() != "success" )
-                alert( strStatus );
-            else {
-                $(this).data('activeTD').text(pname.val());
-                dataParamEditorDialog.dialog( "close" );
-            }
-          }
-          
-          dataParamEditorDialog = $( "#createNewParameterDialog" ).dialog({
-                                              autoOpen: false,
-                                              height: 340,
-                                              width: 350,
-                                              modal: true,
-                                              buttons: {
-                                                "Save": saveDataParameter,
-                                                "Insert": InsertDPColumn,
-                                                Cancel: function() { dataParamEditorDialog.dialog( "close" ); }
-                                              },
-                                              close: function() {
-                                                form[ 0 ].reset();
-                                                allFields.removeClass( "ui-state-error" );
-                                              }
-                                            });
-          
-          form = dataParamEditorDialog.find( "form" ).on( "submit", function( event ) {
-                                          event.preventDefault();
-                                          addUser();
-                                        });
-          
-          $( "#create-user" ).button().on( "click", function() { dataParamEditorDialog.dialog( "open" ); });
-          
         });
     </script>
     
@@ -179,6 +136,7 @@
                 e= cbox.parentElement.parentElement.parentElement.parentElement.parentElement.getElementsByTagName("select")[0];
                 
             e.disabled= cbox.checked;
+            $(e).css({'font-style':cbox.checked?'italic':'normal'})
             td.setAttribute("default", cbox.checked);
         }
     
@@ -208,16 +166,17 @@
                     {
                         $(this).html('<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
                         $(this).css({'vertical-align':'bottom'}).css({'white-space':'nowrap'});
-                        
                     }
                     else
                     {
                         var strChecked= "";
                         var strDisabled= "";
+                        var strFontStyle= "normal";
                         if( $(this).attr("default") == "true" )
                         {
                             strChecked= "checked";
                             strDisabled= "disabled=\"true\"";
+                            strFontStyle= "italic";
                         }
                                                
                         var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" onClick="toggleDisabled(this)"'+strChecked+'></td><td>Default</td></tr></table>\n'
@@ -227,7 +186,7 @@
                         else if( $(this).text() == "false" )
                             $(this).html(strDefaultPopup + '<select id="paramBoolVal" '+strDisabled+'><option>True</option><option selected>False</option></select>');
                         else
-                            $(this).html(strDefaultPopup + '<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                            $(this).html(strDefaultPopup + '<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%; font-style:'+strFontStyle+';" value="' + $(this).text() + '">');
                     }
                 }
             });
@@ -244,9 +203,22 @@
                         $(this).html( "<img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
                     }
                     else {
+                        if( $(this).index() == 1)
+                            $(this).css({'vertical-align':'middle'});
+                            
                         $(this).css({color:'Black'});
                         var strText= "";
-                        if( $(this).find('option:selected').text() )
+                        if( $(this).attr("default") == "true" ) {
+                            var defaultRow= theRow.parents("table:first").find('tr:nth-child(2)');
+                            if( defaultRow.children('td').eq($(this).index()).find('option').html() )
+                                strText= defaultRow.children('td').eq($(this).index()).find('option:selected').text().toLowerCase();
+                            else if( defaultRow.children('td').eq($(this).index()).find('input').val() )
+                                strText= defaultRow.children('td').eq($(this).index()).find('input').val();
+                            else
+                                strText= defaultRow.children('td').eq($(this).index()).text();
+                            strText= "<i>" + strText + "</i>";
+                        }
+                        else if( $(this).find('option:selected').text() )
                             strText= $(this).find('option:selected').text().toLowerCase();
                         else if( $(this).children(':text') )
                             strText= $(this).children(':text').val();
@@ -267,8 +239,13 @@
                     $(this).html( "<img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
                 }
                 else {
+                    if( $(this).index() == 1)
+                        $(this).css({'vertical-align':'middle'});
                     $(this).css({color:'Black'});
-                    $(this).html( $(this).attr("origVal") );
+                    if( $(this).attr("default") == "true" )
+                        $(this).html( "<i>" + $(this).attr("origVal") + "</i>");
+                    else
+                        $(this).html( $(this).attr("origVal") );
                     $(this).removeAttr("origVal");
                 }
             });
@@ -285,6 +262,123 @@
                     theRow.remove();
             }
         }
+    
+        /*
+        Document this!
+        */
+        function InsertNewRow( theRow ) {
+            // Insert a new row with the default values
+            var theTable= theRow.closest("table");
+            var defaultRow= theTable.find('tr:nth-child(2)');
+            var clone= theRow.clone();
+            clone.children('td').each (
+                function() {
+                    if( $(this).index() == 0)
+                       $(this).html( "<img id=\"customImage\" class=\"row-context-editmenu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+                    else if( $(this).index() == 1 )
+                       $(this).html( "New Testcase" );
+                    else if( $(this).index() > 1 ) {
+                       $(this).html( defaultRow.children('td').eq($(this).index()).text() );
+                       $(this).attr("default", true);
+                    }
+                }
+            );
+            clone.insertAfter(theRow);
+            EditRow( clone );
+        }
+    
+        /*
+         Document this!
+         */
+        function DuplicateRow( theRow ) {
+            var clone= theRow.clone()
+            clone.insertAfter(theRow);
+            clone.children("td").eq(1).text( clone.children("td").eq(1).text() + " - copy");
+            EditRow( clone );
+        }
+    
+        /*
+         Document this!
+         */
+        function RemoveRow( theRow ) {
+            strTestCase= theRow.children('td').eq(1).text();
+            if( confirm( "Are you sure you want to remove testcase '" + strTestCase + "'?" ) )
+                theRow.remove();
+        }
+    
+        /*
+        Document this!
+        */
+        function EnableDisableRow( theRow ) {
+            var bNewDisabledState= !theRow.attr('disabled');
+            
+            theRow.attr('disabled', bNewDisabledState );
+            theRow.css({backgroundColor: (bNewDisabledState?'Yellow':'')});
+            theRow.children('td').eq(0).html( "<img id=\"customImage\" class=\"row-context-menu"+(bNewDisabledState?"Alt":"")+" box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+        }
+    
+        /*
+         Document This!
+         */
+        function EditDataParamHeader( thisTD ) {
+            var dataParamName= thisTD.text().trim();
+            var info= RunURL( "/AutoManager/GetDataParameter?" + dataParamName );
+            var items= info.split(";");
+            document.getElementById( "pname2" ).value= items[0];
+            document.getElementById( "pname2" ).setAttribute("origname", items[0]);
+            document.getElementById( "pvalue2" ).value= items[1];
+            document.getElementById( "ptype2" ).value= items[2];
+            document.getElementById( "asListcb2" ).value= (items[3] == "true");
+            document.getElementById( "pdesc2" ).value= items[4];
+            
+            $( "#InsertDPColumn" ).data("activeTD", thisTD);
+            ShowNewDPDialog( "Edit Data Parameter: " + dataParamName, false );
+        }
+    
+        /*
+         Document This!
+         */
+        function InsertDataParamHeader( thisTD ) {
+            $("#pnameslist").empty();
+            var elmnt= document.getElementById( "pnameslist" );
+            var option = document.createElement("option");
+            option.text = "--Select--";
+            option.value = "--Select--";
+            elmnt.add(option);
+            
+            var strDataParams= RunURL( "/AutoManager/GetAllDataParameterNames" );
+            var items= strDataParams.split(', ');
+            for( i=0; i<items.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = items[i];
+                option.value = items[i];
+                elmnt.add(option);
+            }
+            
+            $("#InsertDPColumn").data("activeTD", thisTD);
+            ShowNewDPDialog( "Insert Data Parameter", true );
+        }
+    
+        /*
+        Document This!
+        */
+        function RemoveDataParamHeader( thisTD ) {
+            if( confirm( "Are you sure you want to remove column '" + thisTD.text().trim() + "'?" ) )
+                $("td").filter(":nth-child(" + (thisTD.index() + 1) + ")").remove();
+        }
+    
+        /*
+         Document This!
+         */
+        function EnableDisableDataParamHeader( thisTD ) {
+            var bNewDisabledState= !thisTD.attr('disabled');
+            
+            thisTD.attr('disabled', bNewDisabledState );
+            thisTD.html( thisTD.text() + "<img id=\"customImage\" class=\"header-context-menu"+(bNewDisabledState?"Alt":"")+" box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
+
+            $("td").filter(":nth-child(" + (thisTD.index() + 1) + ")").css({backgroundColor: (bNewDisabledState?'Gray':'')});
+        }
 
         /*
         Document This!
@@ -300,6 +394,53 @@
         }
     
         /*
+         document this
+         */
+        function ShowNewDPDialog( strTitle, bNotEditable ) {
+            $("#ptype2").attr("disabled", bNotEditable);
+            $("#asListcb2").attr("disabled", bNotEditable);
+            $("#pvalue2").attr("disabled", bNotEditable);
+            $("#pdesc2").attr("disabled", bNotEditable);
+            if( bNotEditable ) {
+                $("#dataParamNamesList").show();
+                $("#dataParamNameTextEdit").hide();
+            }
+            else {
+                $("#dataParamNamesList").hide();
+                $("#dataParamNameTextEdit").show();
+            }
+            
+            if( strTitle.indexOf("Edit Data Parameter") == 0 )
+                $('.ui-dialog-buttonpane button:contains(Insert)').button('option', 'label', 'Save');
+            else
+                $('.ui-dialog-buttonpane button:contains(Save)').button('option', 'label', 'Insert');
+
+            $("#InsertDPColumn").dialog({ title: strTitle }).dialog( "open" );
+        }
+        
+        /*
+         document this
+         */
+        function saveDataParameter2() {
+            var strStatus;
+            var strTitle= $( "#InsertDPColumn" ).dialog( "option", "title" );
+            
+            if( !$("#pname2").val() )
+                strStatus= "Please provide a data parameter name";
+            else if( strTitle == "Insert New Data Parameter" )
+                strStatus= RunURL( "/AutoManager/SaveDataParameter?name="+$("#pname2").val()+"&type="+$("#ptype2").val()+"&value="+$("#pvalue2").val()+"&aslist="+$("#asListcb2").is(':checked')+"&descr="+$("#pdesc2").val() );
+            else
+                strStatus= RunURL( "/AutoManager/UpdateDataParameter?name="+$("#pname2").attr("origname")+"&newname="+$("#pname2").val()+"&type="+$("#ptype2").val()+"&value="+$("#pvalue2").val()+"&aslist="+$("#asListcb2").is(':checked')+"&descr="+$("#pdesc2").val() );
+            
+            if( strStatus.toLowerCase() != "success" ) {
+                alert( strStatus );
+                return false;
+            }
+            
+            return true;
+        }
+
+        /*
          Document this!
          */
         $(function(){
@@ -307,55 +448,22 @@
                 selector: '.header-context-menu',
                 trigger: 'left',
                 callback: function(key, options) {
-                    //var m = "header clicked: " + key;
-                    //window.console && console.log(m) || alert(m);
-                    var theTable= $(this).closest("table");
                     var thisTD= $(this).closest("td");
-                    var col = thisTD.index();
-                    var dataParamName= thisTD.text().trim();
                           
-                    if( key == 'Edit') {
-                        var info= RunURL( "/AutoManager/GetDataParameter?" + dataParamName );
-                        var items= info.split(";");
-                        document.getElementById( "pname" ).value= items[0];
-                        document.getElementById( "pname" ).setAttribute("origname", items[0]);
-                        document.getElementById( "pvalue" ).value= items[1];
-                        document.getElementById( "ptype" ).value= items[2];
-                        document.getElementById( "asListcb" ).value= (items[3] == "true");
-                        document.getElementById( "pdesc" ).value= items[4];
-                          
-                        $( "#createNewParameterDialog" ).dialog({ title: "Edit Data Parameter: " + dataParamName }).data("activeTD", thisTD).dialog( "open" );
-                    }
-                    else if( key == 'New') {
-                        $( "#createNewParameterDialog" ).dialog({ title: "New Data Parameter"}).dialog( "open" );
-                    }
-                    else if( key == 'Insert') {
-                          var strDataParams= RunURL( "/AutoManager/GetAllDataParameterNames" );
-                          var elmnt= document.getElementById( "pnameslist" );
-                          var items= strDataParams.split(', ');
-                          for( i=0; i<items.length; i++)
-                          {
-                              var option = document.createElement("option");
-                              option.text = items[i];
-                              option.value = items[i];
-                              elmnt.add(option);
-                          }
-
-                        $( "#InsertDPColumn" ).data("activeTD", thisTD).dialog( "open" );
-                    }
-                    else if( key == 'Remove') {
-                        if( confirm( "Are you sure you want to remove column " + dataParamName + "?" ) )
-                            $("td").filter(":nth-child(" + (col + 1) + ")").remove();
-                    }
-                    else if( key == 'Disable/Enable')
-                        $("td").filter(":nth-child(" + (col + 1) + ")").css({backgroundColor: 'Gray'});
+                    if( key == 'Edit')
+                        EditDataParamHeader( thisTD );
+                    else if( key == 'Insert')
+                        InsertDataParamHeader( thisTD );
+                    else if( key == 'Remove')
+                        RemoveDataParamHeader( thisTD );
+                    else if( key == 'Disable')
+                        EnableDisableDataParamHeader( thisTD );
                 },
                 items: {
-                    "Edit": {name: "Edit"},
-                    "Disable/Enable": {name: "Disable"},
-                    "Insert": {name: "Insert"},
-                    "Remove": {name: "Remove"},
-                    "New": {name: "New"}
+                    "Edit": {name: "Edit", accesskey: "e"},
+                    "Insert": {name: "Insert", accesskey: "i"},
+                    "Disable": {name: "Disable", accesskey: "a"},
+                    "Remove": {name: "Remove", accesskey: "r"}
                 }
             });
           
@@ -363,61 +471,68 @@
         });
         
         /*
-         <!-- Row widget context menus -->
+         Document this!
          */
         $(function(){
+            $.contextMenu({
+                selector: '.header-context-menuAlt',
+                trigger: 'left',
+                callback: function(key, options) {
+                    var thisTD= $(this).closest("td");
+
+                    if( key == 'Edit')
+                        EditDataParamHeader( thisTD );
+                    else if( key == 'New')
+                        NewDataParamHeader( thisTD );
+                    else if( key == 'Insert')
+                        InsertDataParamHeader( thisTD );
+                    else if( key == 'Remove')
+                        RemoveDataParamHeader( thisTD );
+                    else if( key == 'Enable')
+                        EnableDisableDataParamHeader( thisTD );
+                },
+                items: {
+                    "Edit": {name: "Edit", accesskey: "e", disabled: true},
+                    "Insert": {name: "Insert", accesskey: "i"},
+                    "Enable": {name: "Enable", accesskey: "a"},
+                    "Remove": {name: "Remove", accesskey: "r"}
+                }
+            });
+        });
+
+
+        /*
+         <!-- Row widget context menus -->
+         */
+        $(function(e){
             $.contextMenu({
                 selector: '.row-context-menu',
                 trigger: 'left',
                 callback: function(key, options) {
-                    //var m = "row clicked: " + key;
                     var theRow= $(this).closest("tr");
-                    //alert(theRow.attr('id'));
-                    if( key == 'Edit') {
+                    if( key == 'Edit')
                         EditRow( theRow, true );
-                    }
-                    else if( key == 'Insert') {
-                        var theTable= $(this).closest("table");
-                        var defaultRow= theTable.find('tr:nth-child(2)')
-                        var clone= theRow.clone()
-                        clone.children('td').each (function() {
-                            if( $(this).index() == 0) {
-                                $(this).html( "<img id=\"customImage\" class=\"row-context-editmenu box menu-1\" src=\"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\">" );
-                            }
-                            else if( $(this).index() == 1 )
-                                $(this).html( "unnamed" );
-                            else if( $(this).index() > 1 ) {
-                                var strText= "";
-                                if( defaultRow.children('td').eq($(this).index()).find('option').html() )
-                                    strText= defaultRow.children('td').eq($(this).index()).find('option:selected').text().toLowerCase();
-                                else if( defaultRow.children('td').eq($(this).index()).find('input') )
-                                    strText= defaultRow.children('td').eq($(this).index()).find('input').val();
-                                               
-                                $(this).html( strText );
-                            }
-                        });
-                        clone.insertAfter(theRow);
-                        EditRow( clone );
-                    }
-                    else if( key == 'Duplicate') {
-                        var clone= theRow.clone()
-                        clone.insertAfter(theRow);
-                        clone.children("td").eq(1).text( clone.children("td").eq(1).text() + " - copy");
-                        EditRow( clone );
-                    }
-                    else if( key == 'Remove') {
-                          if( confirm( "Are you sure you want to remove the row?" ) )
-                            theRow.remove();
-                    }
+                    else if( key == 'Insert')
+                        InsertNewRow( theRow );
+                    else if( key == 'Duplicate')
+                        DuplicateRow( theRow );
+                    else if( key == 'Remove')
+                        RemoveRow( theRow );
                     else if( key == 'Disable')
-                        theRow.css({backgroundColor: 'Gray'});
+                        EnableDisableRow( theRow );
                 },
                 items: {
-                    "Disable": {name: "Disable"},
-                    "Edit": {name: "Edit"},
-                    "Insert": {name: "Insert"},
-                    "Duplicate": {name: "Duplicate"},
-                    "Remove": {name: "Remove"}
+                    "Edit": {name: "Edit", accesskey: "e"},
+                    "Insert": {name: "Insert", accesskey: "i"},
+                    "Duplicate": {name: "Duplicate", accesskey: "d"},
+                    "Disable": {name: "Disable", accesskey: "a"},
+                    "Remove": {name: "Remove", accesskey: "r"}
+                },
+                events: {
+                    show: function(opt) {
+                        var m = opt.$menu;
+                        //alert(m.data('Disable'));
+                    }
                 }
             });
           
@@ -426,41 +541,62 @@
                     function(e){
                         console.log('clicked row', this);
                         var currentRow = $(this).closest('tr');
+                        //alert($(e).data('item'));
                         //alert(currentRow.attr('id'));
                     }
             )
         });
+        
+        /*
+        There must be an easier way to do this.  some way of dynamically changing the menu name.
+        */
+        $(function(){
+          $.contextMenu({
+                selector: '.row-context-menuAlt',
+                trigger: 'left',
+                callback: function(key, options) {
+                    var theRow= $(this).closest("tr");
+                    if( key == 'Edit')
+                        EditRow( theRow, true );
+                    else if( key == 'Insert')
+                        InsertNewRow( theRow );
+                    else if( key == 'Duplicate')
+                        DuplicateRow( theRow );
+                    else if( key == 'Remove')
+                        RemoveRow( theRow );
+                    else if( key == 'Enable')
+                        EnableDisableRow( theRow );
+                },
+                items: {
+                    "Edit": {name: "Edit", accesskey: "e", disabled: true},
+                    "Insert": {name: "Insert", accesskey: "i"},
+                    "Duplicate": {name: "Duplicate", accesskey: "c"},
+                    "Enable": {name: "Enable", accesskey: "a"},
+                    "Remove": {name: "Remove", accesskey: "r"}
+                }
+            });
+        });
+
 
         /*
          <!-- Row widget context menus -->
          */
-        $(function(){
+        $(function() {
             $.contextMenu({
                 selector: '.row-context-editmenu',
                 trigger: 'left',
                 callback: function(key, options) {
                     var theRow= $(this).closest("tr");
-                    if( key == 'Apply') {
-                          ApplyRowEdits( theRow );
-                    }
-                    else if( key == 'Cancel') {
-                            CancelRowEdits( theRow );
-                    }
+                    if( key == 'Apply')
+                        ApplyRowEdits( theRow );
+                    else if( key == 'Cancel')
+                        CancelRowEdits( theRow );
                  },
                 items: {
-                    "Apply": {name: "Apply"},
-                    "Cancel": {name: "Cancel"}
+                    "Apply": {name: "Apply", accesskey: "a"},
+                    "Cancel": {name: "Cancel", accesskey: "c"}
                 }
             });
-          
-           /* clean this up */
-            $('.row-context-editmenu').on('click',
-                    function(e){
-                        console.log('clicked row', this);
-                        var currentRow = $(this).closest('tr');
-                        //alert(currentRow.attr('id'));
-                    }
-            )
         });
         
         
@@ -469,7 +605,6 @@
          */
         $(document).ready(function() {
             $('.defaultTable').dragtable();
-                          
                           
             var fixHelperModified = function(e, tr) {
                 var $originals = tr.children();
@@ -481,92 +616,120 @@
             $("#ParametersTable tbody").sortable({ helper: fixHelperModified }).disableSelection();
         });
         
+        /*
+        Document this!
+        */
         $(function () {
-          
-          function DoInsertDPColumn() {
-            var i= $(this).data('activeTD').index();
-            $('#ParametersTable tbody').find('tr').each(function() {
-                var htmlData= "";
-                if( $(this).index() == 0 )
-                    htmlData= '&nbsp' + document.getElementById( "pnameslist" ).value + ' <img id="customImage" class="header-context-menu box menu-1" src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png" onmouseover="" style="cursor:pointer;vertical-align:middle;" height="10" width="10">&nbsp';
-                else if( $(this).index() == 1 )
-                    htmlData= '<input type="text" style="width: 100%;" id="paramvalue" value="'+document.getElementById( "pvalue2" ).value+'">';
-                else
-                    htmlData= document.getElementById( "pvalue2" ).value
-                $(this).find('td').eq(i).after('<td>'+htmlData+'</td>');
-            });
-            insertDPDialog.dialog( "close" );
-          }
-    
-          var insertDPDialog;
-          
-          $("#ParametersTable td").dblclick(function (e) {
-                                        e.stopPropagation();      //<-------stop the bubbling of the event here
-                                        var currentEle = $(this);
-                                        var value = $(this).html();
-                                        alert(value);
-                                      });
+            function DoInsertDPColumn() {
+                var bNewDataParam= $("#dataParamNameTextEdit").css('display') != 'none';
+                var i= $(this).data('activeTD').index();
+                var bEdit= $( "#InsertDPColumn" ).dialog( "option", "title" ).indexOf("Edit Data Parameter") == 0;
 
-         insertDPDialog = $( "#InsertDPColumn" ).dialog({
-                                                 autoOpen: false,
-                                                 height: 340,
-                                                 width: 350,
-                                                 modal: true,
-                                                 buttons: {
-                                                    "Insert": DoInsertDPColumn,
-                                                    Cancel: function() { insertDPDialog.dialog( "close" ); }
-                                                 },
-                                                 close: function() {
-                                                    form[ 0 ].reset();
-                                                 }
-                                                 });
-                                                 
-                                                 form = insertDPDialog.find( "form" ).on( "submit", function( event ) {
-                                                                                            event.preventDefault();
-                                                                                            //addUser();
-                                                                                       });
+                if( !bNewDataParam || saveDataParameter2() ) {
+                    $('#ParametersTable tbody').find('tr').each(function() {
+                        var htmlData= "";
+                        if( $(this).index() == 0 ) {
+                            var strElmnt= bNewDataParam?"pname2":"pnameslist";
+                            htmlData= '&nbsp' + document.getElementById( strElmnt ).value + ' <img id="customImage" class="header-context-menu box menu-1" src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png" onmouseover="" style="cursor:pointer;vertical-align:middle;" height="10" width="10">&nbsp';
+                        }
+                        else if( $(this).index() == 1 )
+                            htmlData= '<b>'+document.getElementById( "pvalue2" ).value+'</b>';
+                        else {
+                            if( bEdit ) {
+                                if( $(this).find('td').eq(i).attr("default") == "true" ) {
+                                    $(this).find('td').eq(i).html( "<i>" + document.getElementById( "pvalue2" ).value + "</i>" );
+                                    
+                                }
+                                else
+                                    htmlData= undefined; // Skip.  Don't update because it is not a default value
+                            }
+                            else
+                                htmlData= "<i>" + document.getElementById( "pvalue2" ).value + "</i>";
+                        }
+                        
+                        if( !bEdit ) { // Insert new column with default value
+                            $(this).find('td').eq(i).after('<td>'+htmlData+'</td>');
+                            if( i > 1 )
+                                $(this).find('td').eq(i+1).attr("default", true);
+
+                        }
+                        else if( htmlData ) // update existing columns 0-1 with new default value
+                            $(this).find('td').eq(i).html( htmlData );
+
+                    });
+          
+                insertDPDialog.dialog( "close" );
+            }
+        }
+    
+          
+        /*
+        Document this!
+        */
+        $("#ParametersTable td").dblclick(
+            function (e) {
+                e.stopPropagation();      //<-------stop the bubbling of the event here
+                if( $(this).parents("tr:first").index() == 1 ) {
+                    if( $(this).index() > 1 )
+                        $(this).html('<input type="text" style="width:100%;" value="' + $(this).text() + '">');
+                }
         });
-
-function ShowNewDPDialog() {
-    $( "#InsertDPColumn" ).dialog( "close" );
-    $( "#createNewParameterDialog" ).dialog({ title: "New Data Parameter"}).dialog( "open" );
-    
-}
+        
+        $( "#ParametersTable td" ).on( "keydown", function(event) {
+            if( event.which == 13 ) {
+                if( $(this).parents("tr:first").index() == 1 ) {
+                    if( $(this).index() > 1 ) {
+                        var i= $(this).index();
+                        var strVal= $(this).find('input').eq(0).val();
+                        $(this).html('<b>' + strVal + '</b>');
+                        $('#ParametersTable tbody').find('tr').each( function() {
+                            if( $(this).find('td').eq(i).attr("default") == "true" )
+                                $(this).find('td').eq(i).html( "<i>" + strVal + "</i>" );
+                        });
+                    }
+                }
+            }
+        });
+          
+        var insertDPDialog;
+        insertDPDialog = $( "#InsertDPColumn" ).dialog(
+            {
+                autoOpen: false,
+                height: 340,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Insert": DoInsertDPColumn,
+                    Cancel: function() { $(this).dialog( "close" ); }
+                },
+                close: function() { form[ 0 ].reset(); }
+            }
+        );
+                                                     
+        form = insertDPDialog.find( "form" ).on( "submit", function( event ) {
+                                                                                event.preventDefault();
+                                                                                //addUser();
+                                                                            });
+        });
 
     </script>
 </head>
 
 <body>
     <!-- Insert Header -->
- 
-    <div id="createNewParameterDialog" title="Create New Parameter">
-        <form>
-            <fieldset>
-                <label for="pname">Name</label>
-                <input type="text" name="pname" id="pname" origname="" value="New Parameter" class="text ui-widget-content ui-corner-all">
-                <label for="ptype">Type</label>
-                <select id="ptype" style="float:left;" onclick="configureParamType()">
-                    <option selected>String</option><option>Boolean</option><option>Float</option><option>Double</option><option>Int</option>
-                </select>
-                <input type="checkbox" id="asListcb" name="asListcb" value="listtype" style="float:left;"> As List<br><br><br>
-                <label id="pValueLabel" for="pvalue">Default Value</label>
-                <input type="text" name="pvalue" id="pvalue" value="" class="text ui-widget-content ui-corner-all">
-                <label for="pdesc">Description</label>
-                <textarea name="pdesc" id="pdesc" value="Description of parameter" style="height:50px;vertical-align:top;width:100%" class="text ui-widget-content ui-corner-all"></textarea>
-                <!-- Allow form submission with keyboard without duplicating the dialog button -->
-                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
-            </fieldset>
-        </form>
-    </div>
-
     <div id="InsertDPColumn" title="Insert Data Parameter Column">
         <form>
             <fieldset>
                 <label for="pnameslist">Name</label>
-                <select id="pnameslist" style="float:left;" onclick="configureInsertDPColumn(value)">
-                    <option selected>--Select--</option>
-                </select>
-                <button onclick="ShowNewDPDialog()">New</button><br><br><br>
+                <div id="dataParamNamesList">
+                    <select id="pnameslist" style="float:left;" onclick="configureInsertDPColumn(value)">
+                        <option selected>--Select--</option>
+                    </select>
+                    <button id="pnew" onclick="ShowNewDPDialog('Insert New Data Parameter', false)">New</button><br><br>
+                </div>
+                <div id="dataParamNameTextEdit" style="display:none">
+                    <input type="text" name="pname2" id="pname2" origname="" value="New Parameter" class="text ui-widget-content ui-corner-all">
+                </div>
                 <label for="ptype2">Type</label>
                 <select id="ptype2" style="float:left;" disabled>
                     <option selected>String</option><option>Boolean</option><option>Float</option><option>Double</option><option>Int</option>

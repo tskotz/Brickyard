@@ -208,7 +208,7 @@ public class TestEditorWindow extends JFrame {
 	      
 			String strDefaultValues= 
 					"	<!-- Defaults -->\n" +
-					"	<tr style=\"xoutline:thin solid;background-color:#bbbbbb;text-align:center\">\n" +
+					"	<tr style=\"xoutline:thin solid;background-color:#bbbbbb;text-align:center;white-space:nowrap;\">\n" +
 					"		<td id=\"defaults\">Defaults:</td>\n" +
 					"		<td><i>*unique name</i></td>\n";
 
@@ -264,13 +264,14 @@ public class TestEditorWindow extends JFrame {
 		        		strDataParamNames+= "		<td id=\"" + parameterName + "\">&nbsp" + parameterName + " <img class=\"header-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\">&nbsp</td>\n";
 			        	strTableHeader+= "    	<th></th>\n";
 			        	// Set default values
-			            if( paramType.get( parameterName ).equalsIgnoreCase("Boolean"))
-			            	strDefaultValues+= 	"		<td><select><option " + (parameterValue.equalsIgnoreCase("true")?"selected":"") + ">True</option><option " + (!parameterValue.equalsIgnoreCase("true")?"selected":"") + " disabled>False</option></select></td>\n";
-			           	else
-			            	strDefaultValues+= 	"		<td><input type=\"text\" style=\"width: 100%;\" id=\"paramvalue\" value=\"" + parameterValue + "\"></td>\n";
+			            //if( paramType.get( parameterName ).equalsIgnoreCase("Boolean"))
+			            //	strDefaultValues+= 	"		<td><select><option " + (parameterValue.equalsIgnoreCase("true")?"selected":"") + ">True</option><option " + (!parameterValue.equalsIgnoreCase("true")?"selected":"") + " disabled>False</option></select></td>\n";
+			           	//else
+			            //	strDefaultValues+= 	"		<td><input type=\"text\" style=\"width: 100%;\" id=\"paramvalue\" value=\"" + parameterValue + "\"></td>\n";
+			        	strDefaultValues+= "<td><b>" + parameterValue + "</b></td>\n";
+			        	
 			        	// Now make all the default values italicized
-			        	if( !parameterValue.isEmpty() )
-			        		entry.setValue("<td default=\"true\"><i>"+parameterValue+"</i></td>");
+			            entry.setValue("<td default=\"true\"><i>"+parameterValue+"</i></td>");
 		        	}
 		        }
 		        		        
@@ -280,7 +281,7 @@ public class TestEditorWindow extends JFrame {
 			        LinkedHashMap<String, String> tcParamSet = new LinkedHashMap<String, String>(defaultParamSet);
 			        // Start new testcase row
 	        		strTestCases+= 
-	        				"	<tr id=\"TheTableRow\" align=\"center\">\n" +
+	        				"	<tr id=\"TheTableRow\" style=\"white-space:nowrap;\" align=\"center\">\n" +
 	    			        "		<td style=\"vertical-align: middle;\"> <img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n";
 	        		
 					List<?> eTCParams= ((Element)eTestcases.get( i )).getChildren( "Parameter" );
