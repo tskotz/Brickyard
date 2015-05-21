@@ -270,7 +270,8 @@
             // Insert a new row with the default values
             var theTable= theRow.closest("table");
             var defaultRow= theTable.find('tr:nth-child(2)');
-            var clone= theRow.clone();
+            var clone= theRow.clone(true, true);
+            
             clone.children('td').each (
                 function() {
                     if( $(this).index() == 0)
@@ -291,7 +292,7 @@
          Document this!
          */
         function DuplicateRow( theRow ) {
-            var clone= theRow.clone()
+            var clone= theRow.clone(true, true)
             clone.insertAfter(theRow);
             clone.children("td").eq(1).text( clone.children("td").eq(1).text() + " - copy");
             EditRow( clone );
@@ -324,11 +325,12 @@
             var dataParamName= thisTD.text().trim();
             var info= RunURL( "/AutoManager/GetDataParameter?" + dataParamName );
             var items= info.split(";");
+            alert(items);
             document.getElementById( "pname2" ).value= items[0];
             document.getElementById( "pname2" ).setAttribute("origname", items[0]);
             document.getElementById( "pvalue2" ).value= items[1];
             document.getElementById( "ptype2" ).value= items[2];
-            document.getElementById( "asListcb2" ).value= (items[3] == "true");
+            document.getElementById( "asListcb2" ).checked= (items[3] == "true");
             document.getElementById( "pdesc2" ).value= items[4];
             
             $( "#InsertDPColumn" ).data("activeTD", thisTD);
@@ -608,7 +610,7 @@
                           
             var fixHelperModified = function(e, tr) {
                 var $originals = tr.children();
-                var $helper = tr.clone();
+                var $helper = tr.clone(true, true);
                 $helper.children().each(function(index) { $(this).width($originals.eq(index).width()) });
                 return $helper;
             };
@@ -636,10 +638,8 @@
                             htmlData= '<b>'+document.getElementById( "pvalue2" ).value+'</b>';
                         else {
                             if( bEdit ) {
-                                if( $(this).find('td').eq(i).attr("default") == "true" ) {
+                                if( $(this).find('td').eq(i).attr("default") == "true" )
                                     $(this).find('td').eq(i).html( "<i>" + document.getElementById( "pvalue2" ).value + "</i>" );
-                                    
-                                }
                                 else
                                     htmlData= undefined; // Skip.  Don't update because it is not a default value
                             }
@@ -662,6 +662,35 @@
             }
         }
     
+        function getColumnDataParam( index ) {
+            var dpRow= $('#ParametersTable tbody').find("tr").eq(0);
+            var dp= dpRow.find('td').eq(index);
+            var info= RunURL( "/AutoManager/GetDataParameter?" + dp.text().trim() );
+            var items= info.split(";");
+            var type= items[2];
+            var value= items[1];
+            var bList= items[3]=="true";
+          
+            if( type == "String" || type == "Float" || type == "Double" || type == "Int" ) {
+                if( bList ) {
+                    var options= value.split(",");
+                    var strSelect= '<select>\n';
+                    for( var i in options)
+                        strSelect+= '<option>'+options[i].trim()+'</option>\n';
+                    strSelect+= '</select>\n';
+                    return strSelect;
+                }
+                else
+                    return '<input type="text" style="width:100%;" value="' + value + '">';
+            }
+            else if( type == "Boolean" )
+                if( value == "true" )
+                    return '<select id="paramBoolVal"><option selected>True</option><option>False</option></select>';
+                else
+                    return '<select id="paramBoolVal"><option>True</option><option selected>False</option></select>';
+          
+            return "";
+        }
           
         /*
         Document this!
@@ -669,25 +698,41 @@
         $("#ParametersTable td").dblclick(
             function (e) {
                 e.stopPropagation();      //<-------stop the bubbling of the event here
-                if( $(this).parents("tr:first").index() == 1 ) {
-                    if( $(this).index() > 1 )
-                        $(this).html('<input type="text" style="width:100%;" value="' + $(this).text() + '">');
+                var row= $(this).parents("tr:first");
+                if( row.index() == 0 )
+                    EditDataParamHeader( $(this) );
+                if( row.index() == 1 ) {
+                    if( $(this).index() > 1 ) {
+                        $(this).html( getColumnDataParam( $(this).index() ) );
+                    }
                 }
+                else if( row.index() > 1 )
+                    EditRow( row );
         });
         
         $( "#ParametersTable td" ).on( "keydown", function(event) {
             if( event.which == 13 ) {
-                if( $(this).parents("tr:first").index() == 1 ) {
+                var row= $(this).parents("tr:first");
+                // Check if defaults row
+                if( row.index() == 1 ) {
                     if( $(this).index() > 1 ) {
                         var i= $(this).index();
-                        var strVal= $(this).find('input').eq(0).val();
+                        var strVal;//= $(this).find('input').eq(0).val();
+                        if( $(this).find('option:selected').text() )
+                            strVal= $(this).find('option:selected').text();
+                        else if( $(this).children(':text') )
+                            strVal= $(this).children(':text').val();
                         $(this).html('<b>' + strVal + '</b>');
+                        // update the rest of the rows
                         $('#ParametersTable tbody').find('tr').each( function() {
                             if( $(this).find('td').eq(i).attr("default") == "true" )
                                 $(this).find('td').eq(i).html( "<i>" + strVal + "</i>" );
                         });
                     }
                 }
+                // Apply the row edits
+                else if( row.index() > 1 )
+                    ApplyRowEdits( row );
             }
         });
           
