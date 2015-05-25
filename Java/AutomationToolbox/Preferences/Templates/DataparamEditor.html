@@ -38,7 +38,7 @@
         {
             xmlHttp = new XMLHttpRequest();
             xmlHttp.open( "GET", aUrl, false );
-            xmlHttp.setRequestHeader('Content-type', 'text/plain');
+            xmlHttp.setRequestHeader('Content-type', 'text/plain; charset=UTF-8');
             xmlHttp.send( null );
             return xmlHttp.responseText;
         }
@@ -121,10 +121,49 @@
           }
              
         });
-    </script>
-    
-    <!-- Header widget context menus -->
-    <script type="text/javascript">
+        
+        /*
+        Document this!
+        */
+        function getColumnDataParam( thisTD ) {
+            var dpRow= $('#ParametersTable tbody').find("tr").eq(0);
+            var dp= dpRow.find('td').eq(thisTD.index());
+            var info= RunURL( "/AutoManager/GetDataParameter?" + dp.text().trim() );
+            var items= info.split(";");
+            var type= items[2];
+            var value= items[1];
+            var bList= items[3]=="true";
+            
+            var strDisabled= "";
+            var strFontStyle= "normal";
+            if( thisTD.attr("default") == "true" )
+            {
+                strDisabled= " disabled=\"true\"";
+                strFontStyle= "italic";
+            }
+                    
+            if( type == "String" || type == "Float" || type == "Double" || type == "Int" ) {
+                if( bList ) {
+                    var options= value.split(",");
+                    var strSelect= '<select' + strDisabled + '>\n';
+                    for( var i in options)
+                          strSelect+= '<option ' + (thisTD.text() == options[i].trim() ? "selected":"")+ '>'+options[i].trim()+'</option>\n';
+                    strSelect+= '</select>\n';
+                    return strSelect;
+                }
+                else
+                    return '<input type="text" style="width:100%;font-style:'+strFontStyle+';" value="' + value + '"' + strDisabled + '>';
+            }
+            else if( type == "Boolean" ) {
+                if( thisTD.text().toLowerCase() == "true" )
+                    return '<select id="paramBoolVal"' + strDisabled + '><option selected>True</option><option>False</option></select>';
+                else
+                    return '<select id="paramBoolVal"' + strDisabled + '><option>True</option><option selected>False</option></select>';
+            }
+          
+            return "";
+        }
+
     
         /*
          document this
@@ -164,29 +203,16 @@
                     // Testcase column
                     if( $(this).index() == 1)
                     {
-                        $(this).html('<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
+                        $(this).html('<input id="paramTextVal" type="text" style="display:table-cell; width:93%" value="' + $(this).text() + '">');
                         $(this).css({'vertical-align':'bottom'}).css({'white-space':'nowrap'});
                     }
                     else
                     {
-                        var strChecked= "";
-                        var strDisabled= "";
-                        var strFontStyle= "normal";
-                        if( $(this).attr("default") == "true" )
-                        {
-                            strChecked= "checked";
-                            strDisabled= "disabled=\"true\"";
-                            strFontStyle= "italic";
-                        }
-                                               
+                        var strChecked= ( $(this).attr("default") == "true" ) ? "checked":"";
+                          
                         var strDefaultPopup = '<table style="border-spacing:0px;border-style:none;"><tr style="background-color:transparent"><td><input type="checkbox" onClick="toggleDisabled(this)"'+strChecked+'></td><td>Default</td></tr></table>\n'
 
-                        if( $(this).text() == "true" )
-                            $(this).html(strDefaultPopup + '<select id="paramBoolVal" '+strDisabled+'><option selected>True</option><option>False</option></select>');
-                        else if( $(this).text() == "false" )
-                            $(this).html(strDefaultPopup + '<select id="paramBoolVal" '+strDisabled+'><option>True</option><option selected>False</option></select>');
-                        else
-                            $(this).html(strDefaultPopup + '<input '+strDisabled+'id="paramTextVal" type="text" style="display:table-cell; width:93%; font-style:'+strFontStyle+';" value="' + $(this).text() + '">');
+                        $(this).html( strDefaultPopup + getColumnDataParam($(this)) );
                     }
                 }
             });
@@ -211,7 +237,7 @@
                         if( $(this).attr("default") == "true" ) {
                             var defaultRow= theRow.parents("table:first").find('tr:nth-child(2)');
                             if( defaultRow.children('td').eq($(this).index()).find('option').html() )
-                                strText= defaultRow.children('td').eq($(this).index()).find('option:selected').text().toLowerCase();
+                                strText= defaultRow.children('td').eq($(this).index()).find('option:selected').text();
                             else if( defaultRow.children('td').eq($(this).index()).find('input').val() )
                                 strText= defaultRow.children('td').eq($(this).index()).find('input').val();
                             else
@@ -219,7 +245,7 @@
                             strText= "<i>" + strText + "</i>";
                         }
                         else if( $(this).find('option:selected').text() )
-                            strText= $(this).find('option:selected').text().toLowerCase();
+                            strText= $(this).find('option:selected').text();
                         else if( $(this).children(':text') )
                             strText= $(this).children(':text').val();
                
@@ -325,7 +351,7 @@
             var dataParamName= thisTD.text().trim();
             var info= RunURL( "/AutoManager/GetDataParameter?" + dataParamName );
             var items= info.split(";");
-            alert(items);
+
             document.getElementById( "pname2" ).value= items[0];
             document.getElementById( "pname2" ).setAttribute("origname", items[0]);
             document.getElementById( "pvalue2" ).value= items[1];
@@ -475,7 +501,7 @@
         /*
          Document this!
          */
-        $(function(){
+        $( function() {
             $.contextMenu({
                 selector: '.header-context-menuAlt',
                 trigger: 'left',
@@ -506,7 +532,7 @@
         /*
          <!-- Row widget context menus -->
          */
-        $(function(e){
+        $( function(e) {
             $.contextMenu({
                 selector: '.row-context-menu',
                 trigger: 'left',
@@ -634,17 +660,21 @@
                             var strElmnt= bNewDataParam?"pname2":"pnameslist";
                             htmlData= '&nbsp' + document.getElementById( strElmnt ).value + ' <img id="customImage" class="header-context-menu box menu-1" src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png" onmouseover="" style="cursor:pointer;vertical-align:middle;" height="10" width="10">&nbsp';
                         }
-                        else if( $(this).index() == 1 )
-                            htmlData= '<b>'+document.getElementById( "pvalue2" ).value+'</b>';
+                        else if( $(this).index() == 1 ) {
+                            if( $("#asListcb2").is(':checked') )
+                                htmlData= getColumnDataParam( $(this).find('td').eq(i) );
+                            else
+                                htmlData= '<b>'+$("#pvalue2").val()+'</b>';
+                        }
                         else {
                             if( bEdit ) {
                                 if( $(this).find('td').eq(i).attr("default") == "true" )
-                                    $(this).find('td').eq(i).html( "<i>" + document.getElementById( "pvalue2" ).value + "</i>" );
+                                    $(this).find('td').eq(i).html( "<i>" + $("#pvalue2").val() + "</i>" );
                                 else
                                     htmlData= undefined; // Skip.  Don't update because it is not a default value
                             }
                             else
-                                htmlData= "<i>" + document.getElementById( "pvalue2" ).value + "</i>";
+                                htmlData= "<i>" + $("#pvalue2").val() + "</i>";
                         }
                         
                         if( !bEdit ) { // Insert new column with default value
@@ -655,41 +685,10 @@
                         }
                         else if( htmlData ) // update existing columns 0-1 with new default value
                             $(this).find('td').eq(i).html( htmlData );
-
                     });
           
                 insertDPDialog.dialog( "close" );
             }
-        }
-    
-        function getColumnDataParam( index ) {
-            var dpRow= $('#ParametersTable tbody').find("tr").eq(0);
-            var dp= dpRow.find('td').eq(index);
-            var info= RunURL( "/AutoManager/GetDataParameter?" + dp.text().trim() );
-            var items= info.split(";");
-            var type= items[2];
-            var value= items[1];
-            var bList= items[3]=="true";
-          
-            if( type == "String" || type == "Float" || type == "Double" || type == "Int" ) {
-                if( bList ) {
-                    var options= value.split(",");
-                    var strSelect= '<select>\n';
-                    for( var i in options)
-                        strSelect+= '<option>'+options[i].trim()+'</option>\n';
-                    strSelect+= '</select>\n';
-                    return strSelect;
-                }
-                else
-                    return '<input type="text" style="width:100%;" value="' + value + '">';
-            }
-            else if( type == "Boolean" )
-                if( value == "true" )
-                    return '<select id="paramBoolVal"><option selected>True</option><option>False</option></select>';
-                else
-                    return '<select id="paramBoolVal"><option>True</option><option selected>False</option></select>';
-          
-            return "";
         }
           
         /*
@@ -703,14 +702,17 @@
                     EditDataParamHeader( $(this) );
                 if( row.index() == 1 ) {
                     if( $(this).index() > 1 ) {
-                        $(this).html( getColumnDataParam( $(this).index() ) );
+                        $(this).html( getColumnDataParam( $(this) ) );
                     }
                 }
                 else if( row.index() > 1 )
                     EditRow( row );
         });
         
-        $( "#ParametersTable td" ).on( "keydown", function(event) {
+        /*
+        Document this!
+        */
+        $("#ParametersTable td").on( "keydown", function(event) {
             if( event.which == 13 ) {
                 var row= $(this).parents("tr:first");
                 // Check if defaults row
@@ -736,6 +738,9 @@
             }
         });
           
+        /*
+        Document this!
+        */
         var insertDPDialog;
         insertDPDialog = $( "#InsertDPColumn" ).dialog(
             {
@@ -751,12 +756,76 @@
             }
         );
                                                      
+        /*
+        Document this!
+        */
         form = insertDPDialog.find( "form" ).on( "submit", function( event ) {
                                                                                 event.preventDefault();
                                                                                 //addUser();
                                                                             });
         });
 
+        function saveDPContents( strType ) {
+        
+            var strLocation= $('#Location').text();
+            var strFileName= $('#Location').text().split('/').pop();
+            if( strType=="SaveAs" ) {
+                var strNewFileName= prompt( "Data Parameter File Name:", strFileName.replace(".xml", "_New"));
+                if( !strNewFileName )
+                    return;
+
+                if( strNewFileName.lastIndexOf(".xml") != strNewFileName.length - ".xml".length)
+                    strNewFileName+= ".xml";
+                    
+                strLocation= strLocation.replace( strFileName, strNewFileName );
+                strFileName= strNewFileName;
+            }
+            
+            var dpData= "location=" + strLocation;
+            dpData+= "&author=" + $('#Author').val();
+            dpData+= "&description=" + $('#Description').val();
+            var dataParamsRow;
+                        
+            $('#ParametersTable tbody').find('tr').each(function() {
+                if( $(this).index() == 0 ) {
+                    dataParamsRow= $(this);
+                    dpData+= "&DATAPARAMS=";
+                    $(this).find('td').each( function() { if( $(this).index()>0 )
+                                                            dpData+= ($(this).index()>1?"&":"") + $(this).text().trim();
+                                                        });
+                }
+                else if( $(this).index() == 1 ) {
+                    dpData+= "&DEFAULTS=";
+                    $(this).find('td').each( function() { if( $(this).index()>0 )
+                                                            dpData+= ($(this).index()>1?"&":"") + $(this).text().trim();
+                                                        });
+                }
+                else {
+                    dpData+= "&ROW=";
+                    $(this).find('td').each( function() { if( $(this).index()>0 ) {
+                                                              if( $(this).attr("default") != 'true' )
+                                                                dpData+= ($(this).index()>1?"&":"") + dataParamsRow.find('td').eq($(this).index()).text().trim() + "=" + $(this).text().trim();
+                                                           }
+                                                        });
+                }
+            });
+
+            var bSave= true;
+            if( RunURL( "/AutoManager/DataparamFileExists?"+strLocation ) == "true" )
+                bSave= confirm( "The DataParam file already exists.  Do you want to overwrite it?\n\n"+strLocation);
+            
+            if( bSave ) {
+                var strStatus= RunURL( "/AutoManager/SaveDataparamEditor?" + escape(dpData) );
+                if( strStatus == "success" ) {
+                    $('#Location').text(strLocation);
+                    $('#DataparamTitle').text(strFileName);
+                    document.title = strFileName;
+                    //window.close();
+                }
+                else
+                    alert( strStatus );
+            }
+        }
     </script>
 </head>
 
@@ -794,12 +863,16 @@
     
     <table id="dpInfo">
         <tr>
+            <td title="this is the path">Source:</td>
+            <td id="Location"></td>
+        </tr>
+        <tr>
             <td title="this is the auther">Author:</td>
             <td><input id="Author" type="text" value="Anonymous"></td>
         </tr>
         <tr>
             <td style="vertical-align:top">Description:</td>
-            <td><textarea name="Description" id="Description" style="width:500px;height:50px;">None</textarea></td>
+            <td><textarea name="Description" id="Description" style="width:500px;height:50px;"></textarea></td>
         </tr>
     </table>
 
@@ -807,10 +880,10 @@
     <table id="ParametersTable" class="defaultTable">
     </table>
   
-    <button id="create-user">Create new data parameter</button>
-    <button id="Save">Save</button>
-    <button id="SaveAs">Save As</button>
-    <button id="Cancel" onclick="window.close()">Cancel</button>
+  <hr>
+    <button id="SaveDP"   onclick="saveDPContents('Save')">Save</button>
+    <button id="SaveAsDP" onclick="saveDPContents('SaveAs')">Save As</button>
+    <button id="CloseDP" onclick="window.close()">Cancel</button>
 
 </body>
 </html>

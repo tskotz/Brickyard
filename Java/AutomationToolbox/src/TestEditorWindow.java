@@ -223,6 +223,11 @@ public class TestEditorWindow extends JFrame {
 		        LinkedHashMap<String, String> defaultParamSet= new LinkedHashMap<String, String>();
 		        HashMap<String, String> paramType= new HashMap<String, String>();
 
+		        if( root.getChild( "Author" ) != null )
+		        	hmData.put( "Author", root.getChild( "Author" ).getValue() );
+		        if( root.getChild( "Description" ) != null )
+		        	hmData.put( "Description", root.getChild( "Description" ).getValue() );
+
 				List<?> eCommonParams= root.getChildren( "Parameter" );
 				List<?> eTestcases= root.getChildren( "Testcase" );
 

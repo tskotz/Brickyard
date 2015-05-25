@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -123,6 +123,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/DataparamEditor" )) {
 	    		strStatus= this._showDataParamEditor( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/SaveDataparamEditor" )) {
+	    		strStatus= this._saveDataParamEditor( exchange.getRequestURI().getQuery() );
+		    	responseHeaders.set("Content-Type", "text/html");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/DataparamFileExists" )) {
+	    		strStatus= this._dataParamFileExists( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/html");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/GetDirs" )) {
@@ -763,6 +771,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	private String _showDataParamEditor( String strRequestQuery ) {		
 		String strTemplateFile= this.mstrTemplateDir + "/DataparamEditor.html";
 		String strDataParamFile= null;
+		String strDataParamFileName= "untitled";
 		File fDataparamterFile= null;
         String strDataParamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getAbsolutePath();
         StringBuilder sb = new StringBuilder();
@@ -771,14 +780,16 @@ public class ToolboxHTTPServer implements HttpHandler {
 			String[] aElementInfo= strParam.split( "=" );
 			if( aElementInfo.length == 2 ) {
 				if( aElementInfo[0].equals( "dataparam" ))
-					strDataParamFile= strDataParamDir + aElementInfo[1];
+					strDataParamFile= aElementInfo[1];
 				else
 					System.out.println("Warning: Unknown REST param: " + strParam );
 			}
 		}
 
-		if( strDataParamFile != null )
-			fDataparamterFile= new File( strDataParamFile );
+		if( strDataParamFile != null ) {
+			fDataparamterFile= new File( strDataParamDir + strDataParamFile );
+			strDataParamFileName= fDataparamterFile.getName();
+		}
 		
 		BufferedReader br= null;
 	    try {
@@ -791,11 +802,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 	            if( line.equals( "<!-- Insert Header -->" ) )
 	            	sb.append( this._HeaderGenerator("Data Parameter Editor") );
 	            else if( line.contains( "<title>" ))
-	            	line= "	<title>" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "</title>";
+	            	line= "	<title>" + strDataParamFileName + "</title>";
 	            else if( line.contains( "id=\"DataparamTitle\"" ))
-	            	line= line.replace( "><", ">" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "<");
+	            	line= line.replace( "><", ">" + strDataParamFileName.split("\\.")[0] + "<");
+	            else if( line.contains( "id=\"Location\"" ))
+	            	line= line.replace( "><", ">" + strDataParamFile + "<");
 	            else if( line.contains( "id=\"Author\"" ))
-	            	line= line.replace( "value=\"\"", "value=\"" + hmData.get("Author") + "\"" );
+	            	line= line.replace( "value=\"Anonymous\"", "value=\"" + hmData.get("Author") + "\"" );
 	            else if( line.contains( "id=\"Description\"" ))
 	            	line= line.replace( "</textarea>", hmData.get("Description") + "</textarea>" );
 	            
@@ -806,7 +819,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 
 	            line = br.readLine();
 	        }
-	    } catch( IOException e ) {
+	    } catch( Exception e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
@@ -821,7 +834,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    			
 		return sb.toString();
 	}
-
+	
 	/**
 	 * ex:
 	 * http://tskotz-mac-wifi:8080/AutoManager/DataparameterEditor?dataparam=/Products/Alloy/AlloyPerfTestMac.xml
@@ -829,68 +842,96 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strRequestQuery
 	 * @return
 	 */
-	private String _showDataParamEditorV1( String strRequestQuery ) {		
-		String strTemplateFile= this.mstrTemplateDir + "/DataparamEditorProto.html";
-		String strDataParamFile= null;
-		File fDataparamterFile= null;
-        String strDataParamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getAbsolutePath();
-        StringBuilder sb = new StringBuilder();
+	private String _saveDataParamEditor( String strRequestQuery ) {	
+		String strStatus= STATUS_FAILED;
+        String[] tmpArray= strRequestQuery.split( "&", 4 );
+        String strLocation= 	tmpArray[0].split("=", 2)[1];
+        String strAuthor= 		tmpArray[1].split("=", 2)[1];
+        String strDescription= 	tmpArray[2].split("=", 2)[1];   
         
-		for( String strParam : strRequestQuery.split( "&" ) ) {
-			String[] aElementInfo= strParam.split( "=" );
-			if( aElementInfo.length == 2 ) {
-				if( aElementInfo[0].equals( "dataparam" ))
-					strDataParamFile= strDataParamDir + aElementInfo[1];
-				else
-					System.out.println("Warning: Unknown REST param: " + strParam );
-			}
-		}
+        tmpArray= tmpArray[3].split( "&DEFAULTS=", 2 );
+        String[] arrDataParams= tmpArray[0].split("=", 2)[1].split("&");
 
-		if( strDataParamFile != null )
-			fDataparamterFile= new File( strDataParamFile );
-		
-		BufferedReader br= null;
-	    try {
-	    	HashMap<String, String> hmData= TestEditorWindow._createHTML( fDataparamterFile, this.mstrWebServerURL );
-	    	
-			br= new BufferedReader(new FileReader(strTemplateFile));
-	        String line = br.readLine();
+        tmpArray= tmpArray[1].split( "&ROW=", 2 );
+        String[] arrDefaults= tmpArray[0].split("&");
+        String[] arrTestcases= tmpArray[1].split( "&ROW=" );
+        DataParameter pDataParam= null;
+            
+		File fDataparamterFile= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + strLocation);
+		RandomAccessFile rf;
+		try {
+			rf = new RandomAccessFile( fDataparamterFile, "rw");
+			try {
+				rf.setLength(0);
+				rf.writeBytes( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
+				rf.writeBytes( "<ParamsRoot>\n" );
+				rf.writeBytes( "    <Author>" + strAuthor + "</Author>\n" );
+				rf.writeBytes( "    <Description>" + strDescription + "</Description>\n" );
+				
+				for( int i=0; i<arrDataParams.length; ++i) {
+					//TODO: Fix this testcaseName hack
+					if( !arrDataParams[i].equals("Test Case Name") ) {
+						pDataParam= DatabaseMgr._DataParameters()._GetDataParameter( arrDataParams[i] );
+						rf.writeBytes( "	<Parameter name=\""+arrDataParams[i]+"\" type=\""+pDataParam.mstrType+"\"       value=\""+arrDefaults[i]+"\" />\n" );					
+					}
+				}
+				
+				for( String strRow : arrTestcases) {
+					String[] arrDPs= strRow.split( "&" );
+					
+					rf.writeBytes( "	<Testcase>\n" );
 
-	        while( line != null ) {
-	            if( line.equals( "<!-- Insert Header -->" ) )
-	            	sb.append( this._HeaderGenerator("Data Parameter Editor") );
-	            else if( line.contains( "<title>" ))
-	            	line= "	<title>" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "</title>";
-	            else if( line.contains( "id=\"DataparamTitle\"" ))
-	            	line= line.replace( "><", ">" + (strDataParamFile != null ? fDataparamterFile.getName() : "Untitled") + "<");
-	            else if( line.contains( "id=\"Author\"" ))
-	            	line= line.replace( "value=\"\"", "value=\"" + hmData.get("Author") + "\"" );
-	            else if( line.contains( "id=\"Description\"" ))
-	            	line= line.replace( "</textarea>", hmData.get("Description") + "</textarea>" );
-	            
-	            sb.append( line+"\n" );
+					for( int i=0; i<arrDPs.length; ++i ) {
+						String[] arrVals= arrDPs[i].split("=", 2);
+						//TODO: Fix this testcaseName hack
+						if( arrVals[0].equals("Test Case Name") )
+							arrVals[0]= "testcaseName";
 
-	            if( line.contains( "id=\"ParametersTable\"" ))
-	            	sb.append( hmData.get("Table") );
+						pDataParam= DatabaseMgr._DataParameters()._GetDataParameter( arrVals[0] );
+						rf.writeBytes( "		<Parameter name=\""+arrVals[0]+"\" type=\""+pDataParam.mstrType+"\"       value=\""+arrVals[1]+"\" />\n" );
+					}
+					
+					rf.writeBytes( "	</Testcase>\n" );
+				}
 
-	            line = br.readLine();
-	        }
-	    } catch( IOException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-	        try {
-	        	if( br != null )
-	        		br.close();
-			} catch( IOException e ) {
+				rf.writeBytes( "</ParamsRoot>" ); 
+				strStatus= STATUS_SUCCESS;
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				strStatus= e.getMessage();
+			} finally {
+				try {
+					rf.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					strStatus= e.getMessage();
+				}
 			}
-	    }
-	    			
-		return sb.toString();
-	}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			strStatus= e.getMessage();
+		}
 
+		return strStatus;
+	}	
+	
+	/**
+	 * ex.
+	 * http://tskotz-mac-wifi:8080/AutoManager/Contents?Platforms/BreakTweaker
+	 * 
+	 * @param strRequestQuery
+	 * @return
+	 */
+	private String _dataParamFileExists( String strRequestQuery) {		
+        File f= new File( DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + "/" + strRequestQuery );
+        if( f.exists() )
+        	return "true";
+		return "false";
+	}
+	
 	/**
 	 * ex.
 	 * http://tskotz-mac-wifi:8080/AutoManager/Contents?Platforms/BreakTweaker
