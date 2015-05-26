@@ -36,11 +36,16 @@
     <script>
         function RunURL( aUrl )
         {
-            xmlHttp = new XMLHttpRequest();
-            xmlHttp.open( "GET", aUrl, false );
-            xmlHttp.setRequestHeader('Content-type', 'text/plain; charset=UTF-8');
-            xmlHttp.send( null );
-            return xmlHttp.responseText;
+            try {
+                xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", aUrl, false );
+                xmlHttp.setRequestHeader('Content-type', 'text/plain; charset=UTF-8');
+                xmlHttp.send( null );
+                return xmlHttp.responseText;
+            }
+            catch( err ) {
+                alert( err );
+            }
         }
     </script>
     
@@ -764,9 +769,19 @@
                                                                                 //addUser();
                                                                             });
         });
-
-        function saveDPContents( strType ) {
         
+        /*
+        Document this!
+        */
+        function pack( strChunkName, strValue ) {
+            // -lengthOfString-[chunkName-]stringData
+            return "-"+strValue.length+"-" + (strChunkName?strChunkName+"-":"") + strValue;
+        }
+
+        /*
+        Document this!
+        */
+        function saveDPContents( strType ) {
             var strLocation= $('#Location').text();
             var strFileName= $('#Location').text().split('/').pop();
             if( strType=="SaveAs" ) {
@@ -781,50 +796,55 @@
                 strFileName= strNewFileName;
             }
             
-            var dpData= "location=" + strLocation;
-            dpData+= "&author=" + $('#Author').val();
-            dpData+= "&description=" + $('#Description').val();
+            var bSave= true;
+            if( RunURL( "/AutoManager/DataparamFileExists?"+strLocation ) == "true" )
+                if( !confirm( "The DataParam file already exists.  Do you want to overwrite it?\n\n"+strLocation) )
+                    return;
+                          
+            var dpData= pack("location", strLocation);
+            dpData+= pack("author", $('#Author').val());
+            dpData+= pack("description", $('#Description').val());
             var dataParamsRow;
+            var strRowData= "";
                         
             $('#ParametersTable tbody').find('tr').each(function() {
-                if( $(this).index() == 0 ) {
-                    dataParamsRow= $(this);
-                    dpData+= "&DATAPARAMS=";
-                    $(this).find('td').each( function() { if( $(this).index()>0 )
-                                                            dpData+= ($(this).index()>1?"&":"") + $(this).text().trim();
-                                                        });
+                var row= $(this);
+                if( row.index() == 0 ) {
+                    dataParamsRow= row;
+                    strRowData= "";
+                    row.find('td').each( function() { if( $(this).index()>0 && $(this).index()<row.find('td').length-1 )
+                                                          strRowData+= pack( null, $(this).text().trim() );
+                                                    });
+                    dpData+= pack("DATAPARAMS", strRowData);
                 }
-                else if( $(this).index() == 1 ) {
-                    dpData+= "&DEFAULTS=";
-                    $(this).find('td').each( function() { if( $(this).index()>0 )
-                                                            dpData+= ($(this).index()>1?"&":"") + $(this).text().trim();
-                                                        });
+                else if( row.index() == 1 ) {
+                    strRowData= "";
+                    row.find('td').each( function() { if( $(this).index()>0 && $(this).index()<row.find('td').length-1 )
+                                                          strRowData+= pack( null, $(this).text().trim() );
+                                                      });
+                    dpData+= pack("DEFAULTS", strRowData);
                 }
                 else {
-                    dpData+= "&ROW=";
-                    $(this).find('td').each( function() { if( $(this).index()>0 ) {
-                                                              if( $(this).attr("default") != 'true' )
-                                                                dpData+= ($(this).index()>1?"&":"") + dataParamsRow.find('td').eq($(this).index()).text().trim() + "=" + $(this).text().trim();
-                                                           }
-                                                        });
+                    strRowData= "";
+                    row.find('td').each( function() { if( $(this).index()>0 ) {
+                                                            // only capture non defaults
+                                                            if( $(this).attr("default") != 'true' )
+                                                                strRowData+= pack( dataParamsRow.find('td').eq($(this).index()).text().trim(), $(this).text().trim() );
+                                                        }
+                                                     });
+                    dpData+= pack("ROW", strRowData);
                 }
             });
 
-            var bSave= true;
-            if( RunURL( "/AutoManager/DataparamFileExists?"+strLocation ) == "true" )
-                bSave= confirm( "The DataParam file already exists.  Do you want to overwrite it?\n\n"+strLocation);
-            
-            if( bSave ) {
-                var strStatus= RunURL( "/AutoManager/SaveDataparamEditor?" + escape(dpData) );
-                if( strStatus == "success" ) {
-                    $('#Location').text(strLocation);
-                    $('#DataparamTitle').text(strFileName);
-                    document.title = strFileName;
-                    //window.close();
-                }
-                else
-                    alert( strStatus );
+            var strStatus= RunURL( "/AutoManager/SaveDataparamEditor?" + escape(dpData) );
+            if( strStatus == "success" ) {
+                $('#Location').text(strLocation);
+                $('#DataparamTitle').text(strFileName);
+                document.title = strFileName;
+                //window.close();
             }
+            else
+                alert( strStatus );
         }
     </script>
 </head>

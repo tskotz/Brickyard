@@ -836,6 +836,45 @@ public class ToolboxHTTPServer implements HttpHandler {
 	}
 	
 	/**
+	 * 
+	 * @param buffer
+	 * @return
+	 */
+	private String[] _unpackValue( StringBuilder buffer ) {
+		// e.g. -7-author-tskotz2
+        int i1= buffer.indexOf("-", 1);
+        int i2= buffer.indexOf("-", i1+1);
+        int iSize= Integer.parseInt(buffer.substring(1, i1)); 
+		String[] strValue= new String[2]; // name, value
+        strValue[0]= buffer.substring(i1+1, i2);
+        strValue[1]= buffer.substring(i2+1, i2+iSize+1);
+        buffer.delete(0, i2+iSize+1);
+        
+        return strValue;
+	}
+	
+	/**
+	 * 
+	 * @param buffer
+	 * @return
+	 */
+	private ArrayList<String> _unpackArray( StringBuilder buffer ) {
+		StringBuilder strbValue= new StringBuilder( this._unpackValue(buffer)[1] );
+		
+		ArrayList<String> alstr= new ArrayList<String>();
+		
+		while( strbValue.length() > 0 ) {
+			// e.g. -7-thevalue
+	        int i= strbValue.indexOf("-", 1);
+	        int iSize= Integer.parseInt(strbValue.substring(1, i)); 
+	        alstr.add( strbValue.substring(i+1, i+iSize+1) );
+	        strbValue.delete(0, i+iSize+1);
+		}
+        
+        return alstr;
+	}
+
+	/**
 	 * ex:
 	 * http://tskotz-mac-wifi:8080/AutoManager/DataparameterEditor?dataparam=/Products/Alloy/AlloyPerfTestMac.xml
 	 * 
@@ -844,17 +883,19 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 */
 	private String _saveDataParamEditor( String strRequestQuery ) {	
 		String strStatus= STATUS_FAILED;
-        String[] tmpArray= strRequestQuery.split( "&", 4 );
-        String strLocation= 	tmpArray[0].split("=", 2)[1];
-        String strAuthor= 		tmpArray[1].split("=", 2)[1];
-        String strDescription= 	tmpArray[2].split("=", 2)[1];   
+		StringBuilder strbRequest= new StringBuilder( strRequestQuery );
+		
+        String strLocation= this._unpackValue(strbRequest)[1];                
+        String strAuthor= this._unpackValue(strbRequest)[1];        
+        String strDescription= 	this._unpackValue(strbRequest)[1];   
         
-        tmpArray= tmpArray[3].split( "&DEFAULTS=", 2 );
-        String[] arrDataParams= tmpArray[0].split("=", 2)[1].split("&");
-
-        tmpArray= tmpArray[1].split( "&ROW=", 2 );
-        String[] arrDefaults= tmpArray[0].split("&");
-        String[] arrTestcases= tmpArray[1].split( "&ROW=" );
+        ArrayList<String> arrDataParams= this._unpackArray(strbRequest);
+        ArrayList<String> arrDefaults= this._unpackArray(strbRequest);
+        ArrayList<String> arrTestcases= new ArrayList<String>();
+        
+        while( strbRequest.length() > 0 )
+        	arrTestcases.add( this._unpackValue(strbRequest)[1] );
+        
         DataParameter pDataParam= null;
             
 		File fDataparamterFile= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir ) + strLocation);
@@ -868,21 +909,21 @@ public class ToolboxHTTPServer implements HttpHandler {
 				rf.writeBytes( "    <Author>" + strAuthor + "</Author>\n" );
 				rf.writeBytes( "    <Description>" + strDescription + "</Description>\n" );
 				
-				for( int i=0; i<arrDataParams.length; ++i) {
+				for( int i=0; i<arrDataParams.size(); ++i) {
 					//TODO: Fix this testcaseName hack
-					if( !arrDataParams[i].equals("Test Case Name") ) {
-						pDataParam= DatabaseMgr._DataParameters()._GetDataParameter( arrDataParams[i] );
-						rf.writeBytes( "	<Parameter name=\""+arrDataParams[i]+"\" type=\""+pDataParam.mstrType+"\"       value=\""+arrDefaults[i]+"\" />\n" );					
+					if( !arrDataParams.get(i).equals("Test Case Name") ) {
+						pDataParam= DatabaseMgr._DataParameters()._GetDataParameter( arrDataParams.get(i) );
+						rf.writeBytes( "	<Parameter name=\""+arrDataParams.get(i)+"\" type=\""+pDataParam.mstrType+"\"       value=\""+arrDefaults.get(i)+"\" />\n" );					
 					}
 				}
 				
-				for( String strRow : arrTestcases) {
-					String[] arrDPs= strRow.split( "&" );
-					
+				for( String strRow : arrTestcases) {					
 					rf.writeBytes( "	<Testcase>\n" );
 
-					for( int i=0; i<arrDPs.length; ++i ) {
-						String[] arrVals= arrDPs[i].split("=", 2);
+					StringBuilder strbRow= new StringBuilder(strRow);
+					while( strbRow.length()>0 ) {
+						String[] arrVals= this._unpackValue(strbRow);
+
 						//TODO: Fix this testcaseName hack
 						if( arrVals[0].equals("Test Case Name") )
 							arrVals[0]= "testcaseName";
