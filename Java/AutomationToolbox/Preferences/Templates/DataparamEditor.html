@@ -128,39 +128,42 @@
         });
         
         /*
-        Document this!
-        */
+         Document this!
+         */
         function getColumnDataParam( thisTD ) {
             var dpRow= $('#ParametersTable tbody').find("tr").eq(0);
             var dp= dpRow.find('td').eq(thisTD.index());
-            var info= RunURL( "/AutoManager/GetDataParameter?" + dp.text().trim() );
+                  
+            return getDataParamElement( thisTD.text(), dp.text().trim(), thisTD.attr("default") == "true" );
+        }
+
+        /*
+        Document this!
+        */
+        function getDataParamElement( strTDText, strDPName, bDefault ) {
+            var info= RunURL( "/AutoManager/GetDataParameter?" + strDPName );
             var items= info.split(";");
-            var type= items[2];
-            var value= items[1];
+            var strType= items[2];
+            var strValue= items[1];
             var bList= items[3]=="true";
-            
-            var strDisabled= "";
-            var strFontStyle= "normal";
-            if( thisTD.attr("default") == "true" )
-            {
-                strDisabled= " disabled=\"true\"";
-                strFontStyle= "italic";
-            }
-                    
-            if( type == "String" || type == "Float" || type == "Double" || type == "Int" ) {
+
+            var strDisabled=  bDefault?" disabled=\"true\"":"";
+            var strFontStyle= bDefault?"italic":"normal";
+
+            if( strType == "String" || strType == "Float" || strType == "Double" || strType == "Int" ) {
                 if( bList ) {
-                    var options= value.split(",");
+                    var options= strValue.split(",");
                     var strSelect= '<select' + strDisabled + '>\n';
                     for( var i in options)
-                          strSelect+= '<option ' + (thisTD.text() == options[i].trim() ? "selected":"")+ '>'+options[i].trim()+'</option>\n';
+                          strSelect+= '<option ' + (strTDText == options[i].trim() ? "selected":"")+ '>'+options[i].trim()+'</option>\n';
                     strSelect+= '</select>\n';
                     return strSelect;
                 }
                 else
-                    return '<input type="text" style="width:100%;font-style:'+strFontStyle+';" value="' + value + '"' + strDisabled + '>';
+                    return '<input type="text" style="width:100%;font-style:'+strFontStyle+';" value="' + strTDText + '"' + strDisabled + '>';
             }
-            else if( type == "Boolean" ) {
-                if( thisTD.text().toLowerCase() == "true" )
+            else if( strType == "Boolean" ) {
+                if( strTDText.toLowerCase() == "true" )
                     return '<select id="paramBoolVal"' + strDisabled + '><option selected>True</option><option>False</option></select>';
                 else
                     return '<select id="paramBoolVal"' + strDisabled + '><option>True</option><option selected>False</option></select>';
@@ -657,36 +660,41 @@
                 var bNewDataParam= $("#dataParamNameTextEdit").css('display') != 'none';
                 var i= $(this).data('activeTD').index();
                 var bEdit= $( "#InsertDPColumn" ).dialog( "option", "title" ).indexOf("Edit Data Parameter") == 0;
+                var strValue= $("#pvalue2").val();
+
+                var strElmnt= bNewDataParam?"pname2":"pnameslist";
 
                 if( !bNewDataParam || saveDataParameter2() ) {
                     $('#ParametersTable tbody').find('tr').each(function() {
                         var htmlData= "";
                         if( $(this).index() == 0 ) {
-                            var strElmnt= bNewDataParam?"pname2":"pnameslist";
                             htmlData= '&nbsp' + document.getElementById( strElmnt ).value + ' <img id="customImage" class="header-context-menu box menu-1" src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png" onmouseover="" style="cursor:pointer;vertical-align:middle;" height="10" width="10">&nbsp';
                         }
                         else if( $(this).index() == 1 ) {
-                            if( $("#asListcb2").is(':checked') )
-                                htmlData= getColumnDataParam( $(this).find('td').eq(i) );
+                            if( $("#asListcb2").is(':checked') ) {
+                                htmlData= getDataParamElement( $(this).find('td').eq(i).text(), $("#"+strElmnt).val(), false );
+                                strValue= strValue.split(",")[0]; // get first value
+                            }
                             else
-                                htmlData= '<b>'+$("#pvalue2").val()+'</b>';
+                                htmlData= '<b>'+strValue+'</b>';
                         }
                         else {
                             if( bEdit ) {
                                 if( $(this).find('td').eq(i).attr("default") == "true" )
-                                    $(this).find('td').eq(i).html( "<i>" + $("#pvalue2").val() + "</i>" );
+                                    $(this).find('td').eq(i).html( "<i>" + strValue + "</i>" );
                                 else
                                     htmlData= undefined; // Skip.  Don't update because it is not a default value
                             }
                             else
-                                htmlData= "<i>" + $("#pvalue2").val() + "</i>";
+                                htmlData= "<i>" + strValue + "</i>";
                         }
                         
                         if( !bEdit ) { // Insert new column with default value
-                            $(this).find('td').eq(i).after('<td>'+htmlData+'</td>');
-                            if( i > 1 )
-                                $(this).find('td').eq(i+1).attr("default", true);
-
+                            var tdClone= $(this).find('td').eq(i).clone(true, true); // Use clone to keep the event bindings
+                            tdClone.html(htmlData);
+                            if( $(this).index() > 1 )
+                                tdClone.attr("default", true);
+                            tdClone.insertAfter( $(this).find('td').eq(i) );
                         }
                         else if( htmlData ) // update existing columns 0-1 with new default value
                             $(this).find('td').eq(i).html( htmlData );
@@ -711,7 +719,7 @@
                     }
                 }
                 else if( row.index() > 1 )
-                    EditRow( row );
+                    EditRow( row, true );
         });
         
         /*
@@ -732,7 +740,8 @@
                         $(this).html('<b>' + strVal + '</b>');
                         // update the rest of the rows
                         $('#ParametersTable tbody').find('tr').each( function() {
-                            if( $(this).find('td').eq(i).attr("default") == "true" )
+                            // Skip row 0
+                            if( $(this).index() > 0 && $(this).find('td').eq(i).attr("default") == "true" )
                                 $(this).find('td').eq(i).html( "<i>" + strVal + "</i>" );
                         });
                     }
