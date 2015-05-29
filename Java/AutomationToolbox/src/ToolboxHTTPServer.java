@@ -775,10 +775,13 @@ public class ToolboxHTTPServer implements HttpHandler {
 		File fDataparamterFile= null;
         String strDataParamDir= new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getAbsolutePath();
         StringBuilder sb = new StringBuilder();
+        Boolean bNewDataparam= false;
         
 		for( String strParam : strRequestQuery.split( "&" ) ) {
 			String[] aElementInfo= strParam.split( "=" );
-			if( aElementInfo.length == 2 ) {
+			if( aElementInfo[0].equals( "new" ))
+				bNewDataparam= true;
+			else if( aElementInfo.length == 2 ) {
 				if( aElementInfo[0].equals( "dataparam" ))
 					strDataParamFile= aElementInfo[1];
 				else
@@ -793,7 +796,11 @@ public class ToolboxHTTPServer implements HttpHandler {
 		
 		BufferedReader br= null;
 	    try {
-	    	HashMap<String, String> hmData= TestEditorWindow._createHTML( fDataparamterFile, this.mstrWebServerURL );
+	    	HashMap<String, String> hmData;
+	    	if( bNewDataparam )
+	    		hmData= TestEditorWindow._createNewHTML( this.mstrWebServerURL );
+	    	else
+	    		hmData= TestEditorWindow._createHTML( fDataparamterFile, this.mstrWebServerURL );
 	    	
 			br= new BufferedReader(new FileReader(strTemplateFile));
 	        String line = br.readLine();

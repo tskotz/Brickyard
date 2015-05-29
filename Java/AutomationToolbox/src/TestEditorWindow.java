@@ -185,6 +185,14 @@ public class TestEditorWindow extends JFrame {
 	/**
 	 * 
 	 */
+	static public HashMap<String, String> _createNewHTML( String mstrWebServerURL ) {
+		//TODO: Fill this in!
+		return _createHTML( null, mstrWebServerURL );
+	}
+
+	/**
+	 * 
+	 */
 	static public HashMap<String, String> _createHTML( File fXMLFile, String mstrWebServerURL ) {
         HashMap<String, String> hmData= new HashMap<String, String>();
 		String strHTMLData= "";
@@ -215,7 +223,18 @@ public class TestEditorWindow extends JFrame {
 			String strTestCases= 
 			        "	<!-- the real start of the testcases -->\n";
 
-			if( fXMLFile != null ) {
+			if( fXMLFile == null ) {
+				// New Data Parameter File editor
+    			strTableHeader+= "		<th></th> <!-- type header -->\n	<tr>\n"; 
+    			strDataParamNames+= "		<td id=\"lastCol\"> <img class=\"headerLast-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\"></td>\n";
+    			strDefaultValues+= 	"		<td></td>\n";
+        		strTestCases+= 
+        				"	<tr id=\"TheTableRow\" style=\"white-space:nowrap;\" align=\"center\">\n" +
+    			        "		<td style=\"vertical-align: middle;\"> <img id=\"customImage\" class=\"row-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor:pointer;vertical-align:middle;\" height=\"10\" width=\"10\"></td>\n" +
+        				"		<td>Untitled TC</td>\n" +
+    			        "		<td default=\"true\"></td>\n";
+			}
+			else {
 				doc= builder.build( fXMLFile );
 			    // Get the root element
 		        Element root= doc.getRootElement();
@@ -269,10 +288,6 @@ public class TestEditorWindow extends JFrame {
 		        		strDataParamNames+= "		<td id=\"" + parameterName + "\">&nbsp" + parameterName + " <img class=\"header-context-menu box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\">&nbsp</td>\n";
 			        	strTableHeader+= "    	<th></th>\n";
 			        	// Set default values
-			            //if( paramType.get( parameterName ).equalsIgnoreCase("Boolean"))
-			            //	strDefaultValues+= 	"		<td><select><option " + (parameterValue.equalsIgnoreCase("true")?"selected":"") + ">True</option><option " + (!parameterValue.equalsIgnoreCase("true")?"selected":"") + " disabled>False</option></select></td>\n";
-			           	//else
-			            //	strDefaultValues+= 	"		<td><input type=\"text\" style=\"width: 100%;\" id=\"paramvalue\" value=\"" + parameterValue + "\"></td>\n";
 			        	strDefaultValues+= "<td><b>" + parameterValue + "</b></td>\n";
 			        	
 			        	// Now make all the default values italicized
@@ -310,9 +325,9 @@ public class TestEditorWindow extends JFrame {
 			}
 	        
 			// Close out the table header
-			strTableHeader+= "		<th></th> <!-- type header -->\n	<tr>\n</thead\n"; 
-			strDataParamNames+= "		<td> <img class=\"context-menu-one box menu-1\" src=\""+mstrWebServerURL+"/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/optbutton.png\" onmouseover=\"\" style=\"cursor: pointer;\" height=\"10\" width=\"10\"></td>\n	</tr>\n";
-			strDefaultValues+= 	"		<td></td>\n	</tr>\n";
+			strTableHeader+= "	<tr>\n</thead\n"; 
+			strDataParamNames+= "	</tr>\n";
+			strDefaultValues+= 	"	</tr>\n";
 	        
 	        // Now piece together the full table data
 	        strHTMLData= strTableHeader + "<tbody>\n" + strDataParamNames + strDefaultValues + strTestCases;

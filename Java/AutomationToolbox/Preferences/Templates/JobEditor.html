@@ -452,6 +452,20 @@
         window.open( strUrl );  	
      }
 
+    function EditNewDataparameter()
+    {
+        var strLocation= "";
+        var menus= document.getElementById( "TestCategoryDiv" ).getElementsByTagName( "select" );
+        
+        for( i=0; i<menus.length; i++)
+        {
+            if( menus[i].options[ menus[i].selectedIndex ].text != "--Select--" )
+                strLocation+= "/" + menus[i].options[ menus[i].selectedIndex ].text;
+        }
+        
+        window.open( "/AutoManager/DataparamEditor?new&dataparam=" + strLocation + "/New Data Parameter File" );
+    }
+
     function QueueTest( strTestPath )
     {
     	gQueuedCounter+= 1;
@@ -720,11 +734,12 @@
 </div>
 
 <div id="SelectTestsPanelDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
-	<div id="TestCategoryDiv" >
+	<div id="TestCategoryDiv" style="display: inline" >
 		<b>Choose Tests:</b>
 		<select id="TestsRoot" onchange="ApplyTestSelection({id:'TestsRoot'})" >
 		</select>
 	</div>
+    <button type="button" id="NewDataParamButton" onclick="EditNewDataparameter()">New</button>
 	
 	<div id="AvailableTestsDiv" style="padding:10px; color: black; background-color: #eeeeee; border: black 1px solid" >
 	</div>
