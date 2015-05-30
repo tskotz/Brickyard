@@ -97,6 +97,11 @@
          Document this!
          */
         function getColumnDataParam( thisTD ) {
+            if( thisTD.attr("bEditInProgress") )
+                return;
+
+            thisTD.attr("bEditInProgress", true );
+
             var dpRow= $('#ParametersTable tbody').find("tr").eq(0);
             var dp= dpRow.find('td').eq(thisTD.index());
                   
@@ -157,6 +162,11 @@
          document this
          */
         function EditRow( theRow, bEditInPlace ) {
+            if( theRow.attr("bEditInProgress") )
+                return;
+            else
+                theRow.attr("bEditInProgress", true);
+            
             if( bEditInPlace )
                 theRow.attr("bEditInPlace", true);
 
@@ -197,6 +207,7 @@
          */
         function ApplyRowEdits( theRow ) {
             if( confirm( "Click OK to apply changes" ) ) {
+                theRow.removeAttr("bEditInProgress");
                 theRow.css({backgroundColor: ''});
                 theRow.children('td').each( function() {
                     if( $(this).index() == 0 ) {
@@ -233,6 +244,7 @@
          Document this!
          */
         function RevertRowToOrig( theRow ) {
+            theRow.removeAttr("bEditInProgress");
             theRow.css({backgroundColor: ''});
             theRow.children('td').each( function() {
                 if( $(this).index() == 0 ) {
@@ -729,9 +741,11 @@
                 var row= $(this).parents("tr:first");
                 // Check if defaults row
                 if( row.index() == 1 ) {
+                    // Make sure we are not n the testcase name default cell
                     if( $(this).index() > 1 ) {
+                        $(this).removeAttr("bEditInProgress");
                         var i= $(this).index();
-                        var strVal;//= $(this).find('input').eq(0).val();
+                        var strVal;
                         if( $(this).find('option:selected').text() )
                             strVal= $(this).find('option:selected').text();
                         else if( $(this).children(':text') )

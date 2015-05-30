@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ParamsRoot>
+    <Author>tskotz</Author>
+    <Description>This plugin gets latest git repo commits</Description>
+	<Parameter name="GitURL" type="String"       value="https://github.com/tskotz/Brickyard.git" />
+	<Parameter name="GitRepoDir" type="String"       value="your local repo dir" />
+	<Parameter name="GitCloneIfNecessary" type="Boolean"       value="true" />
+	<Parameter name="GitTag" type="String"       value="" />
+	<Parameter name="GitBranch" type="String"       value="master" />
+	<Testcase>
+		<Parameter name="testcaseName" type="String"       value="Brickyard_CI" />
+		<Parameter name="GitRepoDir" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI" />
+		<Parameter name="GitClean" type="Boolean"       value="True" />
+	</Testcase>
+</ParamsRoot>
