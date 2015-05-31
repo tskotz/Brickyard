@@ -43,12 +43,6 @@ public abstract class Test implements Runnable {
      */
 	protected Test( String[] args ) throws Exception {		
 		this.m_TestParams= new TestParameters( args );
-
-        // Add this test to hopper
-        this.m_HopperTestId= Hopper.AddTest( this._GetCommonParams()._GetMainClass(), this._GetCommonParams()._GetTestbed(),
-                this._GetCommonParams()._GetBool("isDev", true), this._GetCommonParams()._GetString("team", "No Team") );
-
-        //this._GetCommonParams()._PostToHopper( "testset", this.m_HopperTestId );
 	}
 
 	/**
@@ -248,43 +242,12 @@ public abstract class Test implements Runnable {
 					this._Logs()._ResultLog()._logTestInfo( this.m_ActiveTCParams );
 
                 this._SetupTestCase( this.m_ActiveTCParams );
-
-                int uPrevErrCnt= this._Logs()._ResultLog()._GetErrorCount();
-                int uPrevWarnCnt= this._Logs()._ResultLog()._GetWarningCount();
-
-                // Add this testcase to hopper
-//                if( this._GetTestbeds().length > 0 /*&& this._Testbed()._GetHostApps().length > 0 && this._Testbed()._HostApp()._GetPlugins().length > 0*/ ) {
-//                	String strPluginName= "None";
-//                	String strPluginVersion= "0.0.0b0";
-//
-//                	if( this._Testbed()._GetHostApps().length > 0 && this._Testbed()._HostApp()._GetPlugins().length > 0 ) {
-//                		strPluginName= this._Testbed()._GetHostApps().length > 0 ? _PluginInfo().m_strFullName : "";
-//                		strPluginVersion= _PluginInfo()._GetVersionString();
-//                	}
-//                		
-//                	this.m_HopperTestCaseId= Hopper.AddTestCase( this.m_ActiveTCParams._GetTestCaseName(), this.m_HopperTestId, strPluginName, strPluginVersion );
-//                	this.m_ActiveTCParams._PostUnigueParamsToHopper( "testcase", this.m_HopperTestCaseId, _GetCommonParams() );
-//                }
                 
                 // Run test case
 				this._TestCase( this.m_ActiveTCParams );
-
-                // Tell hopper we finished
-                String strStatus=  Hopper.STATUS_PASSED;
-                if( this._Logs()._ResultLog()._GetErrorCount() != uPrevErrCnt ) 
-                	strStatus= Hopper.STATUS_FAILED;
-                else if( this._Logs()._ResultLog()._GetWarningCount() != uPrevWarnCnt ) 
-                	strStatus= Hopper.STATUS_WARNING;
-                //Hopper.FinishedTestCase( this.m_HopperTestCaseId, strStatus );
-
-                if( strStatus == Hopper.STATUS_FAILED )
-                	this.m_strEmailErrorMessages += "<br>" + this.m_ActiveTCParams._GetTestCaseName() + " - Status: Failed.";
-
 			} catch( Exception e ) {
-                //Hopper.FinishedTestCase( this.m_HopperTestCaseId, Hopper.STATUS_NONE );  // Set to 'none' because we errored out
 				this._Logs()._ResultLog()._LogException( e, true );
 				this.m_strEmailErrorMessages += "<br>" + this.m_ActiveTCParams._GetTestCaseName() + " - " + e.getMessage();
-                //this._postTestCaseParam( "ErrorMsg", e.getMessage() );
 				this._OnTestCaseException( this.m_ActiveTCParams, e );
 			}
 		}

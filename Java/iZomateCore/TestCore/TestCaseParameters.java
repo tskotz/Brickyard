@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import iZomateCore.TestCore.Hopper;
 import iZomateCore.TestCore.TestParameter;
 
 public class TestCaseParameters {
@@ -30,33 +29,6 @@ public class TestCaseParameters {
 	    }
 	    return str;
 	}
-
-    public void _PostToHopper(String strOwnerType, int idOwner) throws Exception {
-        if( !Hopper.IsEnabled() )return;
-
-        System.out.print( _ToString("PostToHopper") );
-        Iterator<Entry<String, TestParameter>> it = this.m_TestcaseParams.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, TestParameter> pairs = (Map.Entry<String, TestParameter>)it.next();
-            Hopper.PostValue( strOwnerType, idOwner, "parameter", pairs.getKey(), pairs.getValue().m_strType, pairs.getValue().m_strValue );
-        }
-    }
-
-    // Post params that are different from fitlerParams
-    public void _PostUnigueParamsToHopper(String strOwnerType, int idOwner, TestCaseParameters filterParams) throws Exception {
-        if( !Hopper.IsEnabled() )return;
-
-        System.out.print( _ToString("PostToHopper") );
-        Iterator<Entry<String, TestParameter>> it = this.m_TestcaseParams.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, TestParameter> param = (Map.Entry<String, TestParameter>)it.next();
-            if( filterParams._HasParam(param.getKey()) && filterParams._GetParam(param.getKey())._Equals(param.getValue()) ) {
-                 continue;
-            }
-
-            Hopper.PostValue( strOwnerType, idOwner, "parameter", param.getKey(), param.getValue().m_strType, param.getValue().m_strValue );
-        }
-    }
 	
 	/////////////////////////////////////////////////////////////////////////////////
 	// Generic Get Methods

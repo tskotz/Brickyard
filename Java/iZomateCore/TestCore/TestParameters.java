@@ -1,7 +1,6 @@
 package iZomateCore.TestCore;
 
 import iZomateCore.UtilityCore.TimeUtils;
-import iZomateCore.TestCore.Hopper;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -39,16 +38,6 @@ public class TestParameters {
 			else // treat everything else as a boolean
 				this._addCommonParam(args[i].substring( 1 ), true);
 		}
-
-        // Should we post to hopper?
-        if( this.m_CommonParams.containsKey( "nohopper") ){
-            Hopper.SetEnabled( !this.m_CommonParams.get( "nohopper" )._GetBoolValue() );
-        }
-
-        // Set the url for hopper to post to. Default is hopper.izotope.int
-        if( this.m_CommonParams.containsKey( "hopperurl") ){
-            Hopper.SetUrl( this.m_CommonParams.get( "hopperurl" )._GetStrValue() );
-        }
 
         // Set the default timeout
 		if( this.m_CommonParams.containsKey( "defaultTimeout") ) {
