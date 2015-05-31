@@ -55,9 +55,9 @@ public class GitRepoManager extends Test {
 		if( bGitClean )
 			this._RunCommand( "Cleaning repo: " + strGitRepo, new String[]{"git","clean","-fdx"}, strGitRepo );
 				
-		this._RunCommand( "Commits: " + strGitRepo, new String[]{"git","log", "HEAD.."+strGitBranch, "--pretty=format:\"%h   %aD   %an   %s\""}, strGitRepo );
-
 		this._RunCommand( "Fetching: ", new String[]{"git","fetch"}, strGitRepo );
+
+		this._RunCommand( "Commits: " + strGitRepo, new String[]{"git","log", "HEAD..origin/"+strGitBranch, "--pretty=format:\"%h   %aD   %an   %s\""}, strGitRepo );
 
 		this._RunCommand( "Pulling: ", new String[]{"git","pull"}, strGitRepo );
 	}
