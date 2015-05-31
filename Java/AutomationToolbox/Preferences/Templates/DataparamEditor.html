@@ -833,14 +833,14 @@
                 if( row.index() == 0 ) {
                     dataParamsRow= row;
                     strRowData= "";
-                    row.find('td').each( function() { if( $(this).index()>0 && $(this).index()<row.find('td').length-1 )
+                    row.find('td').each( function() { if( $(this).index()>0 )
                                                           strRowData+= pack( null, $(this).text().trim() );
                                                     });
                     dpData+= pack("DATAPARAMS", strRowData);
                 }
                 else if( row.index() == 1 ) {
                     strRowData= "";
-                    row.find('td').each( function() { if( $(this).index()>0 && $(this).index()<row.find('td').length-1 )
+                    row.find('td').each( function() { if( $(this).index()>0 )
                                                           strRowData+= pack( null, $(this).text().trim() );
                                                       });
                     dpData+= pack("DEFAULTS", strRowData);
