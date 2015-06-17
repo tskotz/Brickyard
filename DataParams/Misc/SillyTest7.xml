@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ParamsRoot>
+    <Author>Anonymous</Author>
+    <Description>None</Description>
+	<Parameter name="SillyTestMessage" type="String"       value="" />
+	<Parameter name="mainClass" type="String"       value="iZomateCore.iZTests.SillyTest" />
+	<Parameter name="app" type="String"       value="C:/Program Files/Avid/Pro Tools/ProTools.exe" />
+	<Parameter name="plugin" type="String"       value="" />
+	<Parameter name="logDir" type="String"       value="~/TestAutomation/Projects/Ozone/AutomationResultsWin" />
+	<Parameter name="dataDir" type="String"       value="~/TestAutomation/Projects/Ozone/GraphData" />
+	<Parameter name="echo" type="Boolean"       value="true" />
+	<Parameter name="//defaultTimeout" type="Int"       value="500" />
+	<Testcase>
+		<Parameter name="testcaseName" type="String"       value="Silly 7" />
+		<Parameter name="SillyTestMessage" type="String"       value="SillyTest7" />
+	</Testcase>
+</ParamsRoot>

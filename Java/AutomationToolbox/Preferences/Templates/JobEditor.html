@@ -1,10 +1,9 @@
 <html>
 <head>
   <title>Job Editor</title>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-  <link rel="stylesheet" href="/resources/demos/style.css">
+  <link rel="stylesheet" type="text/css" href="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery-ui.css">
+  <script type="text/javascript" src="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery.js"></script>
+  <script type="text/javascript" src="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery-ui.js"></script>
   <style>
 	#QueueTestsList { list-style-type: none; margin: 0; padding: 0; width: 60%; }
 	#QueueTestsList li span { position: absolute; margin-left: -1.3em; }
@@ -276,7 +275,7 @@
 
 	    dependencyDialog = $( "#DependencyEditorDialog" ).dialog({
 	        autoOpen: false,
-	        height: 180,
+	        height: 230,
 	        width: 500,
 	        modal: true,
 	        buttons: {
@@ -339,6 +338,8 @@
     			var strOption= tests[i].getAttribute( "testpath" ) + " : " + tests[i].getAttribute( "testbed" );
         		strOptions+= "<option id=\"" + strOption + "\" value=\"" + strOption + "\">" + strOption + "</option>\n";
         	}
+            else
+              document.getElementById( "dependencyItem" ).innerHTML= "&nbsp&nbsp" + tests[i].getAttribute( "testpath" ) + " : " + tests[i].getAttribute( "testbed" );
     	}
         document.getElementById( "dependencySelection" ).innerHTML= strOptions;
 
@@ -717,6 +718,8 @@
 
 <div id="DependencyEditorDialog" title="Add Dependency" style="font-size:62.5%;">
   <form><fieldset>
+    <h3>Test:</h3>
+    <div id="dependencyItem"></div>
   	<h3>Run only upon successful execution of:</h3>
 		<select id="dependencySelection" >
 		</select>

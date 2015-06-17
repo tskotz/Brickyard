@@ -357,6 +357,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 				System.out.println( strResult );
 				pTBDescr= new TestbedDescriptor( strResult );
 			}
+			
 			// If we still don't have a testbed descriptor then get it locally
 			if(  pTBDescr == null )
 				pTBDescr= DatabaseMgr._Testbeds()._GetTestbedDescriptor( strTestbedOrGroup );
@@ -365,11 +366,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 				throw new Exception(  strTestbedOrGroup + " could not be found!");
 			
 			String strTestbedLookupValue= pTBDescr.mstrValue;
-			
+			int nID= 1;
+
 			// i.e. Check if it is a Group : "machine1, machine2, machine3, machine4, machine5"
 			for( String strThisTestbed : strTestbedLookupValue.split(",")) {
 				Element aElement= new Element( JobTags.DataParamFile.name() );
 				aElement.setText( strDataparamFile );
+				aElement.setAttribute( "id", String.valueOf(nID++) );
+				//aElement.setAttribute( "testbed", strThisTestbed.trim().substring(0, strThisTestbed.indexOf(":")) );
 				aElement.setAttribute( "testbed", strThisTestbed.trim() );
 				if( strTestbedLookupValue != strThisTestbed )
 					aElement.setAttribute( "group", strTestbedOrGroup );
@@ -732,13 +736,15 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 */
 	private String _getResultData( String strRequestQuery ) {
 		String strResultFile= strRequestQuery;
+	    String ls = System.getProperty("line.separator");
+
 		BufferedReader br= null;
         StringBuilder sb= new StringBuilder();
 		try {
 			br = new BufferedReader(new FileReader(strResultFile));
 		    String line= br.readLine();
 		    while( line != null ) {
-			   sb.append( line );
+			   sb.append( line ).append(ls);
 			   line= br.readLine();
 		    }
 		   
@@ -1038,7 +1044,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 			// Find the resultslog.html files
 			for( JobData.DataparamFileInfo dpinfo : jobData.m_fTests ) {
 				System.out.println(dpinfo._GetFile().getAbsolutePath());
-				File fResDir= new File( fDir.getAbsolutePath() + "/" + JobRunner.GetResultsDirFromTest( dpinfo._GetFile(), dpinfo._GetTestbed() ) );
+				File fResDir= new File( fDir.getAbsolutePath() + "/" + JobRunner.GetResultsDirFromTest( dpinfo._GetFile(), dpinfo._GetTestbed(), dpinfo._ID() ) );
 				File[] aResFiles= fResDir.listFiles( new FilenameFilter() {
 				    public boolean accept(File dir, String name) {
 				        return name.toLowerCase().endsWith("_resultlog.html");

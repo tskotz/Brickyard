@@ -50,6 +50,7 @@ public abstract class Test implements Runnable {
 	 */
 	@Override
 	public final void run() {
+		int nExitCode= 0;
 		try {
 			// _Setup, StartUp, TestCase, ShutDown, _Cleanup
 			this._setup();
@@ -58,12 +59,18 @@ public abstract class Test implements Runnable {
 
 			this._doPhase( TestPhase.SHUTDOWN );
 			this._cleanup();
+			
+			nExitCode= this._Logs()._ResultLog()._GetErrorCount();
 
 		} catch( Throwable t ) {
+			nExitCode= -1;
 			System.out.println( "Exception encountered while running test...\n" + t.getMessage() );
             this.m_strEmailErrorMessages += "<br>Exception in run() - " + t.getMessage();
 			t.printStackTrace();
 		}
+		
+		if( nExitCode != 0 )
+			System.exit( nExitCode );
 	}
 
 	/**

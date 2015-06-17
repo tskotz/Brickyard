@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <title></title>
     
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery.contextMenu.css"/>
     <link rel="stylesheet" type="text/css" href="GetResource?AutomationToolbox/Preferences/Templates/Resources/dragtable-default.css"/>
   
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.2.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery.js"></script>
+    <script type="text/javascript" src="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery-ui.js"></script>
     <script type="text/javascript" src="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery.contextMenu.js"></script>
     <script type="text/javascript" src="GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery.dragtable.js"></script>
 
@@ -741,7 +741,7 @@
                 var row= $(this).parents("tr:first");
                 // Check if defaults row
                 if( row.index() == 1 ) {
-                    // Make sure we are not n the testcase name default cell
+                    // Make sure we are not in the testcase name default cell
                     if( $(this).index() > 1 ) {
                         $(this).removeAttr("bEditInProgress");
                         var i= $(this).index();
@@ -827,9 +827,11 @@
             dpData+= pack("description", $('#Description').val());
             var dataParamsRow;
             var strRowData= "";
+            var strStatus= "";
                         
             $('#ParametersTable tbody').find('tr').each(function() {
                 var row= $(this);
+                
                 if( row.index() == 0 ) {
                     dataParamsRow= row;
                     strRowData= "";
@@ -841,23 +843,39 @@
                 else if( row.index() == 1 ) {
                     strRowData= "";
                     row.find('td').each( function() { if( $(this).index()>0 )
-                                                          strRowData+= pack( null, $(this).text().trim() );
-                                                      });
+                                                        {
+                                                            // Check for any active edits
+                                                            if( $(this).attr("bEditInProgress") )
+                                                                strStatus= "You must complete all 'Defaults' row edits before you can save.";
+                                                            else
+                                                              strRowData+= pack( null, $(this).text().trim() );
+                                                        }
+                                                    });
                     dpData+= pack("DEFAULTS", strRowData);
                 }
                 else {
-                    strRowData= "";
-                    row.find('td').each( function() { if( $(this).index()>0 ) {
-                                                            // only capture non defaults
-                                                            if( $(this).attr("default") != 'true' )
-                                                                strRowData+= pack( dataParamsRow.find('td').eq($(this).index()).text().trim(), $(this).text().trim() );
-                                                        }
-                                                     });
-                    dpData+= pack("ROW", strRowData);
+                    // Check for any active edits
+                    if( row.attr("bEditInProgress") )
+                        strStatus= "You must complete all testcase row edits before you can save.";
+                    else {
+                        strRowData= "";
+                        row.find('td').each( function() { if( $(this).index()>0 )
+                                                            {
+                                                                // only capture non defaults
+                                                                if( $(this).attr("default") != 'true' )
+                                                                    strRowData+= pack( dataParamsRow.find('td').eq($(this).index()).text().trim(), $(this).text().trim() );
+                                                            }
+                                                         });
+                        dpData+= pack("ROW", strRowData);
+                    }
                 }
+                
+                return( strStatus == "" );
             });
 
-            var strStatus= RunURL( "/AutoManager/SaveDataparamEditor?" + escape(dpData) );
+            if( strStatus == "" )
+                strStatus= RunURL( "/AutoManager/SaveDataparamEditor?" + escape(dpData) );
+                
             if( strStatus == "success" ) {
                 $('#Location').text(strLocation);
                 $('#DataparamTitle').text(strFileName);

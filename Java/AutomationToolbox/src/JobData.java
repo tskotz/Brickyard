@@ -105,6 +105,10 @@ public class JobData {
 			return m_f;
 		}
 
+		public String _ID() {
+			return m_E.getAttributeValue("id");
+		}
+
 		public String _GetTestbed() {
 			return m_E.getAttributeValue("testbed");
 		}

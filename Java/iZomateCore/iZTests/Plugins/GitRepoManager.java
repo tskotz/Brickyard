@@ -1,9 +1,8 @@
-package Plugins;
+package iZomateCore.iZTests.Plugins;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import iZomateCore.LogCore.ResultLog.ResultLog;
 import iZomateCore.ServerCore.RPCServer.RemoteServer.RemoteServer;
 import iZomateCore.TestCore.Test;
 import iZomateCore.TestCore.TestCaseParameters;
@@ -20,7 +19,6 @@ public class GitRepoManager extends Test {
 
 	@Override
 	protected void _StartUp(TestCaseParameters pCommonParameters) throws Exception {
-		this._Testbed( pCommonParameters._GetTestbed() );		
 	}
 
 	@Override
@@ -30,8 +28,10 @@ public class GitRepoManager extends Test {
 
 	@Override
 	protected void _TestCase(TestCaseParameters pTestcaseParameters) throws Exception {		
+		this._Testbed( pTestcaseParameters._GetTestbed() );		
+
 		String strGitURL= pTestcaseParameters._GetString("GitURL");
-		String strGitRepo= pTestcaseParameters._GetString("GitRepoDir");
+		String strGitRepo= pTestcaseParameters._GetString(this._Testbed()._RemoteServer()._SysInfo()._isMac()?"GitRepoDirMac":"GitRepoDirWin");
 		String strGitBranch= pTestcaseParameters._GetString("GitBranch");
 		//String strGitTag= pTestcaseParameters._GetString("GitTag");
 		Boolean bGitClean= pTestcaseParameters._GetBool("GitClean");
@@ -39,7 +39,9 @@ public class GitRepoManager extends Test {
 		ArrayList<String> arrCmds= new ArrayList<String>();
 		
 		RemoteServer pRemoteServer= this._Testbed()._RemoteServer();
-		
+
+		this._Logs()._ResultLog()._logLine("<b>Local GIT Repo: "+strGitRepo+"</b><br>");
+
 		if( bGitClone && !pRemoteServer._createRemoteFile(strGitRepo)._exists() ) {
 			arrCmds.addAll(Arrays.asList("git", "clone", strGitURL, strGitRepo));
 					

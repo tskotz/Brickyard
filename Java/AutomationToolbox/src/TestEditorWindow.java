@@ -210,7 +210,7 @@ public class TestEditorWindow extends JFrame {
 					"		<th></th> <!-- name header -->\n";	
 			
 			String strDataParamNames= 
-					"	<tr class=\"ui-widget-header\" style=\"white-space:nowrap;text-align:center;font-size:13px;\">\n" +
+					"	<tr class=\"xui-widget-header\" style=\"background-color:#CCCCCC;font-weight:bold;white-space:nowrap;text-align:center;font-size:13px;\">\n" +
 			        "		<td></td>\n" +
 			        "		<td>&nbspTest Case Name&nbsp</td>\n";
 	      

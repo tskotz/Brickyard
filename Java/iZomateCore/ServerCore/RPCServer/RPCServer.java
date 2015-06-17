@@ -45,6 +45,10 @@ public class RPCServer
     private	int					mMinRPCServerVers= 7;
 
 	public RPCServer(String host, String appName, Logs logs) throws Exception {
+		// Remove the webserver port if in host address
+		if( host.contains(":") )
+			host= host.substring(0, host.indexOf(":"));
+		
 		this.mHostIP = java.net.InetAddress.getByName(host).getHostAddress();
 		this.mHostName = java.net.InetAddress.getByName(host).getHostName();
 		this.mRPCServerID = appName;
