@@ -70,7 +70,6 @@ public class LayoutValidationTest extends Test {
 
 	@Override
 	protected void _ShutDown( TestCaseParameters pCommonParameters ) throws Exception {
-		this._Logs()._ResultLog()._printSummary();
 		// TODO Auto-generated method stub
 	}
 

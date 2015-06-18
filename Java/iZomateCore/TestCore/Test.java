@@ -60,6 +60,7 @@ public abstract class Test implements Runnable {
 			this._doPhase( TestPhase.SHUTDOWN );
 			this._cleanup();
 			
+			this._Logs()._ResultLog()._printSummary();
 			nExitCode= this._Logs()._ResultLog()._GetErrorCount();
 
 		} catch( Throwable t ) {

@@ -4,8 +4,6 @@
     <Description>Runs the specified AntBuildFile with org.eclipse.ant.core.antRunner and the installed /Applications/eclipse/plugins/org.eclipse.equinox.launcher*.jar file.</Description>
 	<Parameter name="AntBuildFile" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/Java/iZomateCore/build_Core.xml" />
 	<Parameter name="mainClass" type="String"       value="iZomateCore.iZTests.Plugins.EclipseAntBuilder" />
-	<Parameter name="testbed" type="String"       value="terrys-mbp.home" />
-	<Parameter name="logDir" type="String"       value="/Users/terryskotz/GitHub/Brickyard Auto Runs Logs" />
 	<Testcase>
 		<Parameter name="testcaseName" type="String"       value="Build Toolbox Jar" />
 		<Parameter name="AntBuildFile" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/Java/AutomationToolbox/build_Toolbox.xml" />

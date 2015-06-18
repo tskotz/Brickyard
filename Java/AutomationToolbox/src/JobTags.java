@@ -11,6 +11,7 @@ public enum JobTags {
 	Job( "Job" ),
 	JobName( "JobName" ),
 	JobTemplate( "JobTemplate" ),
+	JobUID( "JobUID" ),
 	Timestamp( "Timestamp" ),
 	User( "User" ),
 	Platform( "Platform" ), // obsolete

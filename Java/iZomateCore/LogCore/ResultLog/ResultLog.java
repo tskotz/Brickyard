@@ -13,6 +13,8 @@ import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ResultLog extends Log
 {
@@ -29,6 +31,7 @@ public class ResultLog extends Log
 	private RemoteServer	mRemoteServer= null;
 	private TransactionLog	mTransactionLog= null;
 	private int				mTCCount= 0;
+	private Set<Integer> 			mTCFailureSet = new HashSet<Integer>();
 	
     /**
      * Creates a new test results log file.
@@ -83,7 +86,7 @@ public class ResultLog extends Log
 	 * @throws Exception 
 	 */
 	public void _printSummary() throws Exception {
-		String summary= "<b>" + this.mTCCount + "</b> Testcases Run<br>";
+		String summary= "<b>" + this.mTCCount + "</b> Testcase" + (this.mTCCount>1?"s":"")+ " Run<br>";
 		
 		String format = String.format("%%0%dd", 2);  
 	    long elapsedTime = (System.currentTimeMillis() - this.mStartTime)/1000;  
@@ -93,11 +96,11 @@ public class ResultLog extends Log
 	    String time =  hours + ":" + minutes + ":" + seconds;
 	    
 		if( this.mErrors > 0 )
-			summary+= "<b>" + this.mErrors + "</b> <FONT color=\"RED\">Error(s)</FONT> were detected<br>";
+			summary+= "<b>" + this.mTCFailureSet.size() + "</b> Testcase" + (this.mTCFailureSet.size()>1?"s":"")+ " failed with <b>" + this.mErrors + "</b> <FONT color=\"RED\">Error" + (this.mErrors>1?"s":"")+ "</FONT> were detected<br>";
 		if( this.mWarnings > 0 )
 			summary+= "<b>" + this.mWarnings + "</b> <FONT color=\"ORANGE\">Warning(s)</FONT> were detected<br>";
 			
-		this._logString("\n<HR></pre><H2>Test Summary</H2>" + summary + "<br>Elapsed Run Time: " + time);
+		this._logString("\n<HR></pre>\n<H2>Test Summary</H2>\n" + summary + "<br>Elapsed Run Time: " + time);
 	} 
 	
 	/**
@@ -114,6 +117,7 @@ public class ResultLog extends Log
 	 */
 	public void _incrErrorCount() {
 		this.mErrors++;
+		this.mTCFailureSet.add(this.mTCCount);
 	}
 
 	/**

@@ -15,6 +15,7 @@ public class JobData {
 	public String m_strTimestamp;
 	public String m_strJobName;
 	public String m_strJobTemplate;
+	public String m_strJobUID;
 	public String m_strUser;
 	public String m_strCmdLineArgs= "";
 	public String m_strDataparamsDir= "";
@@ -46,6 +47,7 @@ public class JobData {
         this.m_strJobName= 		this._getChildText( JobTags.JobName.toString(), root, null );
 	    this.m_strUser= 	 	this._getChildText( JobTags.User.toString(), root, null );
 	    this.m_strJobTemplate= 	this._getChildText( JobTags.JobTemplate.toString(), root, null );
+	    this.m_strJobUID=	 	this._getChildText( JobTags.JobUID.toString(), root, null );
 	    this.m_strDataparamsDir=this._getChildText( JobTags.DataParamsDir.toString(), root, null );
 	        
 		List<?> strItems= root.getChildren( JobTags.CommandLineArgs.toString() );

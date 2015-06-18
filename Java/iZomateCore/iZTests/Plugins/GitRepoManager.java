@@ -82,6 +82,9 @@ public class GitRepoManager extends Test {
 		this._Testbed()._RemoteServer()._commandLine(sCmds, null, strWorkingDir, stdOut, stdErr, bWaitFor, iTimeout);
 		this._Logs()._ResultLog()._logData(stdOut.toString());
 		this._Logs()._ResultLog()._logData(stdErr.toString());
+		//TODO: Figure out how to tell real errors from general status
+		//if( stdErr.length() > 0 )
+		//	this._Logs()._ResultLog()._logError(stdErr.toString(), true);
 	}
 
 	@Override

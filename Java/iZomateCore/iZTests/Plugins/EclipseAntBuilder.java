@@ -41,7 +41,8 @@ public class EclipseAntBuilder extends Test {
 		this._Logs()._ResultLog()._logData("Command Args: " + Arrays.toString(sCmds));			
 		this._Testbed()._RemoteServer()._commandLine(sCmds, stdOut, stdErr, bWaitFor);
 		this._Logs()._ResultLog()._logData(stdOut.toString());
-		this._Logs()._ResultLog()._logData(stdErr.toString());
+		if( stdErr.length() > 0 )
+			this._Logs()._ResultLog()._logError(stdErr.toString(), true);
 	}
 
 	@Override

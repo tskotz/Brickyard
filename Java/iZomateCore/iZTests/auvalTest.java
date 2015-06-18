@@ -80,9 +80,7 @@ public class auvalTest {
 		plugins.close();
 		
 		if( testCount == 0 )
-			logs._ResultLog()._logError( "No iZotope plugins were detected!", false );
-		
-		logs._ResultLog()._printSummary();
+			logs._ResultLog()._logError( "No iZotope plugins were detected!", false );		
 	}
 
 }

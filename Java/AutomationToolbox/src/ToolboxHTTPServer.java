@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -87,6 +88,10 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    	
 	    	if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/RunJob" )) {
 	    		strStatus= this._runJob( exchange );
+		    	responseHeaders.set("Content-Type", "text/plain");
+	    	}
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/WaitForJob" )) {
+	    		strStatus= this._waitForJob( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/JobEditor" )) {
@@ -284,9 +289,11 @@ public class ToolboxHTTPServer implements HttpHandler {
 
 				// root element
 				Element eJob = new Element("Job");
+				UUID uid= UUID.randomUUID();
 
 				// Insert the Timestamp Element
 				eJob.addContent( new Element( JobTags.Timestamp.name() ).setText( TimeUtils.getDateTime().replace( "-", "/" ) ) );
+				eJob.addContent( new Element( JobTags.JobUID.name() ).setText( uid.toString() ) );
 				eJob.addContent( new Element( JobTags.DataParamsDir.name() ).setText( new File(DatabaseMgr._Preferences()._GetPref( Preferences.DataparamsRootDir )).getCanonicalPath() ) );
 				
 				for( String strParam : strRequestQuery.split( "&" ) ) {
@@ -322,6 +329,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 				Document doc= new Document( eJob );
 				xmlOutput.output( doc, new FileWriter( strFileName ) );
 				xmlOutput.output( doc, System.out );
+				
+				strStatus+= "?UID="+uid.toString();
 				
 			} catch( Exception e ) {
 				// TODO Auto-generated catch block
@@ -503,7 +512,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strRequestQuery
 	 * @return
 	 */
-	private String _showStatusPage( String strRequestQuery ) {		
+	private String _showStatusPage( String strRequestQuery ) {
 		String 	strTemplateFile= this.mstrTemplateDir + "/Status.html";
         StringBuilder sb = new StringBuilder();
     	int count= 0;
@@ -558,6 +567,57 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    }
 	    			
 		return sb.toString();
+	}
+	
+	/**
+	 * 
+	 * @param strUID
+	 * @return
+	 */
+	private String _waitForJob( String strRequestQuery ) {
+		String strUID= null;
+		
+		if( strRequestQuery != null ) {
+			for( String strParam : strRequestQuery.split( "&" ) ) {
+				String[] aElementInfo= strParam.split( "=" );
+				if( aElementInfo.length == 2 ) {
+					if( aElementInfo[0].equals( "uid" ))
+						strUID= aElementInfo[1];
+					else
+						System.out.println("Warning: Unknown REST param: " + strParam );
+				}
+			}
+		}
+		
+		int nWait= 10;
+		while( nWait-- > 0 ) {
+			for( File fStagingDir : new File[]{ToolboxWindow._RunningDir(), ToolboxWindow._CompletedDir()} ) {
+	        	File[] lFiles= fStagingDir.listFiles();            
+	        	for( File f : lFiles ) {
+	        		if( f.isDirectory() ) {
+	        			for( File f2 : f.listFiles() ) {
+	        				if( f2.getName().endsWith( ".job.xml") ) {
+	        					try {
+	        						if( strUID.equals( new JobData( f2 ).m_strJobUID) )
+	        							return STATUS_SUCCESS;
+	        					} catch (Exception e) {
+	        						// TODO Auto-generated catch block
+	        						e.printStackTrace();
+	        					}
+	        				}
+	        			}
+	        		}
+	        	}
+	        }
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		return "Timed out waiting for job to start";
 	}
 
 	/**
@@ -1033,14 +1093,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 		}
 		
 		if( jobData != null ) {
-			String strJobEditorLink= "<a href=\"" + this.mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
-			sb.append( "<tr class=d" + (jobNum % 2) + ">\n" );
-			sb.append( "<td><input type=\"checkbox\"></td>\n" );
-			sb.append( "<td><table style=\"width:100%; border:0px\">\n" );
-			sb.append( "	<tr><td jobid=\"" + strJobID + "\">Job: " + strJobEditorLink + "<br>User: " + jobData.m_strUser + "<br>" +
-							"Platforms: " + jobData.m_strPlatforms.toString().replace("[", "").replace("]", "") + "</td></tr>" );
-			sb.append( "</table></td>" );
-			sb.append( "<td>" );
+			String strJobColor= "";
+			StringBuilder sbJobResults= new StringBuilder();
 			// Find the resultslog.html files
 			for( JobData.DataparamFileInfo dpinfo : jobData.m_fTests ) {
 				System.out.println(dpinfo._GetFile().getAbsolutePath());
@@ -1051,15 +1105,65 @@ public class ToolboxHTTPServer implements HttpHandler {
 				    }
 				});
 				
-				sb.append( "<input type=\"checkbox\">" );
-				if( aResFiles != null && aResFiles.length > 0 )
-					sb.append( "<a style=\"color:black;\" href=\"GetResultData?" + aResFiles[0].getAbsolutePath() + "\">" + dpinfo._GetFile().getName().replace(".xml", "") + "</a> (" + dpinfo._GetTestbedAndGroup() + ")<br>" );
+				sbJobResults.append( "<input type=\"checkbox\">" );
+				if( aResFiles != null && aResFiles.length > 0 ) {
+					Boolean bErrors= this._AreThereErrors(aResFiles[0]);
+					if( bErrors != null && bErrors == true )
+						strJobColor= "background-color:red";
+					String strColor= bErrors == null?"black":(bErrors==true?"red":"#0B3B24");
+					sbJobResults.append( "<a style=\"color:"+strColor+";\" href=\"GetResultData?" + aResFiles[0].getAbsolutePath() + "\">" + dpinfo._GetFile().getName().replace(".xml", "") + "</a> (" + dpinfo._GetTestbedAndGroup() + ")<br>" );
+				}
 				else
-					sb.append( "<i>" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</i><br>" );
+					sbJobResults.append( "<i>" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</i><br>" );
 
 			}
+			String strJobEditorLink= "<a href=\"" + this.mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
+			sb.append( "<tr class=d" + (jobNum % 2) + ">\n" );
+			sb.append( "<td><input type=\"checkbox\"></td>\n" );
+			sb.append( "<td><table style=\""+strJobColor+";width:100%; border:0px\">\n" );
+			sb.append( "	<tr><td jobid=\"" + strJobID + "\">Job: " + strJobEditorLink + "<br>User: " + jobData.m_strUser + "<br>" +
+							"Platforms: " + jobData.m_strPlatforms.toString().replace("[", "").replace("]", "") + "</td></tr>" );
+			sb.append( "</table></td>" );
+			sb.append( "<td>" );
+			sb.append( sbJobResults );
 			sb.append( "</td></tr>" );
 		}
+	}
+	
+	/**
+	 * 
+	 * @param aResultFile
+	 * @return
+	 */
+	private Boolean _AreThereErrors( File aResultFile ) {
+		//TODO: Store these results in a database so we dont have to parse it every time and we can use the database for presenting metrics
+		BufferedReader br= null;
+		try {
+			br= new BufferedReader(new FileReader(aResultFile));
+	        String line = br.readLine();
+
+	        while (line != null) {
+	        	if( line.startsWith("<H2>Test Summary</H2>")) {
+	        		line = br.readLine();
+	        			return line.contains("Error(s)</FONT> were detected");
+	        	}
+	        	line = br.readLine();
+	        }
+		}
+		catch( Exception e ) {
+			;
+		}
+		finally {
+			if( br != null ) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**

@@ -399,7 +399,7 @@
 	        alert( "Job REST Request URL:\n\n" + strURL );
 	    else {
 	        var strReply= RunURL( strURL );
-	        if( strReply.toLowerCase() != "success" ) {
+	        if( strReply.indexOf( "success" ) != 0 ) {
 	        	if( strType == "SaveJob" ) {
 	        		// Check to see if it failed because it already exists
 	        		if( strReply.indexOf("already exists") != -1 ) {
@@ -426,8 +426,11 @@
 		        	alert( "Failed to start job: " + strReply );	        	
 	        }
 		    else if( strType == "RunJob" ) {
-		        var strStatusURL = "/AutoManager/Status";
-        		window.location= strStatusURL;  	
+                strReply= RunURL( "/AutoManager/WaitForJob?uid=" + strReply.substring(12) );
+                if( strReply == "success" )
+                    window.location= "/AutoManager/Status";
+                else
+                    alert( strReply );
 		    }
 	    }
     }
@@ -486,7 +489,7 @@
 							  "<div style=\"display:block;float:right;\">" +
 							  "<label id=\"label_" + strNewElementID + "\">" + strTestbed + "</label>" +
 							  "<button onclick=\"SetQueuedTestbed('" + strNewElementID + "')\">Use Selected Testbed</button>&nbsp&nbsp" +
-							  "<button onclick=\"ShowDependencyModalDialog('" + strNewElementID + "', this)\" style=\"color:#CCCCCC;\"><i>D</i></button>&nbsp&nbsp" +
+							  "<button onclick=\"ShowDependencyModalDialog('" + strNewElementID + "', this)\"><i>D</i></button>&nbsp&nbsp" +
 							  "<input type=\"checkbox\" onclick=\"SetParallelizedAttr('" + strNewElementID + "', this)\">Parallelize" +
 							  "</div>";     				  
         document.getElementById( "QueueTestsList" ).appendChild( newElement );      
@@ -660,7 +663,7 @@
 	   			    	gQueuedCounter+= 1;
 	   			        var strNewElementID= "QueuedTest_" + gQueuedCounter;  
 		        		var newElement = document.createElement("li");
-		        		var strDependencyColor= strDependency?"#FF0000":"#CCCCCC";
+		        		var strDependencyColor= strDependency?"#FF0000":"#000000";
 		                //TODO: Warning Warning Major code duplication!!
 		        		newElement.setAttribute( "id", strNewElementID );
 		                newElement.setAttribute( "testpath", strTestPath );
