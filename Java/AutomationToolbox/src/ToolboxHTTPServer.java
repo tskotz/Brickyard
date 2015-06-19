@@ -1097,15 +1097,22 @@ public class ToolboxHTTPServer implements HttpHandler {
 				
 				sbJobResults.append( "<input type=\"checkbox\">" );
 				if( aResFiles != null && aResFiles.length > 0 ) {
-					Boolean bErrors= this._AreThereErrors(aResFiles[0]);
-					strJobColor= bErrors == null?"":(bErrors==true?"background-color:red":"background-color:#00BB00");
+					Boolean bErrors= this._AreThereErrors(aResFiles[0]); //tri-state Boolean: null,true,false
 					String strColor= bErrors == null?"black":(bErrors==true?"red":"#0B3B24");
 					sbJobResults.append( "<a style=\"color:"+strColor+";\" href=\"GetResultData?" + aResFiles[0].getAbsolutePath() + "\">" + dpinfo._GetFile().getName().replace(".xml", "") + "</a> (" + dpinfo._GetTestbedAndGroup() + ")<br>" );
+
+					if( !strJobColor.equals("background-color:red") ) {
+						if( fResDir.getAbsolutePath().startsWith(ToolboxWindow._RunningDir().getAbsolutePath() ) ) {
+							if( bErrors != null && bErrors==true )
+								strJobColor= "background-color:red";
+						}
+						else
+							strJobColor= bErrors == null?"":(bErrors==true?"background-color:red":"background-color:#00BB00");
+					}
 				}
 				else {
 					String strColor= fResDir.getAbsolutePath().startsWith(ToolboxWindow._CompletedDir().getAbsolutePath())?"grey":"black";
 					sbJobResults.append( "<i><font style=\"color:"+strColor+"\">" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</font></i><br>" );
-					//sbJobResults.append( "<i>" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</i><br>" );
 				}
 			}
 			String strJobEditorLink= "<a href=\"" + this.mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
