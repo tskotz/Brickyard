@@ -425,17 +425,30 @@
 	        	else // runJob
 		        	alert( "Failed to start job: " + strReply );	        	
 	        }
-		    else if( strType == "RunJob" ) {
-                strReply= RunURL( "/AutoManager/WaitForJob?uid=" + strReply.substring(12) );
-                if( strReply == "success" )
-                    window.location= "/AutoManager/Status";
-                else
-                    alert( strReply );
-		    }
+		    else if( strType == "RunJob" )
+                WaitForJob( strReply.substring(12) );
 	    }
     }
+  
+    var waitForJobTimer;
+    function WaitForJob( strJobID ) {
+        var i= 0;
+        waitForJobTimer = setInterval(
+            function() {
+                strJobStarted= RunURL( "/AutoManager/DoesJobExist?uid=" + strJobID );
+                if( strJobStarted == "success" ) {
+                    clearInterval(waitForJobTimer);
+                    window.location= "/AutoManager/Status";
+                }
+                else if( i > 20 ) {
+                    clearInterval(waitForJobTimer);
+                    alert( "Timed out waiting for job to start" );
+                }
+                i++;
+           }, 500 );
+    }
 
-    function RunURL( aUrl ) 
+    function RunURL( aUrl )
     {
         xmlHttp = new XMLHttpRequest(); 
         xmlHttp.open( "GET", aUrl, false );

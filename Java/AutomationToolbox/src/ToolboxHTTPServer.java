@@ -90,8 +90,8 @@ public class ToolboxHTTPServer implements HttpHandler {
 	    		strStatus= this._runJob( exchange );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
-	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/WaitForJob" )) {
-	    		strStatus= this._waitForJob( exchange.getRequestURI().getQuery() );
+	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/DoesJobExist" )) {
+	    		strStatus= this._doesJobExist( exchange.getRequestURI().getQuery() );
 		    	responseHeaders.set("Content-Type", "text/plain");
 	    	}
 	    	else if( exchange.getRequestURI().getPath().equalsIgnoreCase( "/AutoManager/JobEditor" )) {
@@ -574,7 +574,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	 * @param strUID
 	 * @return
 	 */
-	private String _waitForJob( String strRequestQuery ) {
+	private String _doesJobExist( String strRequestQuery ) {
 		String strUID= null;
 		
 		if( strRequestQuery != null ) {
@@ -589,35 +589,25 @@ public class ToolboxHTTPServer implements HttpHandler {
 			}
 		}
 		
-		int nWait= 10;
-		while( nWait-- > 0 ) {
-			for( File fStagingDir : new File[]{ToolboxWindow._RunningDir(), ToolboxWindow._CompletedDir()} ) {
-	        	File[] lFiles= fStagingDir.listFiles();            
-	        	for( File f : lFiles ) {
-	        		if( f.isDirectory() ) {
-	        			for( File f2 : f.listFiles() ) {
-	        				if( f2.getName().endsWith( ".job.xml") ) {
-	        					try {
-	        						if( strUID.equals( new JobData( f2 ).m_strJobUID) )
-	        							return STATUS_SUCCESS;
-	        					} catch (Exception e) {
-	        						// TODO Auto-generated catch block
-	        						e.printStackTrace();
-	        					}
-	        				}
-	        			}
-	        		}
-	        	}
+		for( File fStagingDir : new File[]{ToolboxWindow._RunningDir(), ToolboxWindow._CompletedDir()} ) {
+        	File[] lFiles= fStagingDir.listFiles();            
+        	for( File f : lFiles ) {
+        		if( f.isDirectory() ) {
+        			for( File f2 : f.listFiles() ) {
+        				if( f2.getName().endsWith( ".job.xml") ) {
+        					try {
+        						if( strUID.equals( new JobData( f2 ).m_strJobUID) )
+        							return STATUS_SUCCESS;
+        					} catch (Exception e) {
+        						// TODO Auto-generated catch block
+        						e.printStackTrace();
+        					}
+        				}
+        			}
+        		}
 	        }
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 		}
-		return "Timed out waiting for job to start";
+		return STATUS_FAILED;
 	}
 
 	/**
@@ -1108,14 +1098,15 @@ public class ToolboxHTTPServer implements HttpHandler {
 				sbJobResults.append( "<input type=\"checkbox\">" );
 				if( aResFiles != null && aResFiles.length > 0 ) {
 					Boolean bErrors= this._AreThereErrors(aResFiles[0]);
-					if( bErrors != null && bErrors == true )
-						strJobColor= "background-color:red";
+					strJobColor= bErrors == null?"":(bErrors==true?"background-color:red":"background-color:#00BB00");
 					String strColor= bErrors == null?"black":(bErrors==true?"red":"#0B3B24");
 					sbJobResults.append( "<a style=\"color:"+strColor+";\" href=\"GetResultData?" + aResFiles[0].getAbsolutePath() + "\">" + dpinfo._GetFile().getName().replace(".xml", "") + "</a> (" + dpinfo._GetTestbedAndGroup() + ")<br>" );
 				}
-				else
-					sbJobResults.append( "<i>" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</i><br>" );
-
+				else {
+					String strColor= fResDir.getAbsolutePath().startsWith(ToolboxWindow._CompletedDir().getAbsolutePath())?"grey":"black";
+					sbJobResults.append( "<i><font style=\"color:"+strColor+"\">" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</font></i><br>" );
+					//sbJobResults.append( "<i>" + dpinfo._GetFile().getName().replace(".xml", "") + " (" + dpinfo._GetTestbedAndGroup() + ")</i><br>" );
+				}
 			}
 			String strJobEditorLink= "<a href=\"" + this.mstrWebServerURL + "/AutoManager/JobEditor?loadtemplate=" + jobData.m_strJobTemplate + "\">" + jobData.m_strJobTemplate + "</a>";
 			sb.append( "<tr class=d" + (jobNum % 2) + ">\n" );
@@ -1145,7 +1136,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 	        while (line != null) {
 	        	if( line.startsWith("<H2>Test Summary</H2>")) {
 	        		line = br.readLine();
-	        			return line.contains("Error(s)</FONT> were detected");
+	        			return line.contains("failed");
 	        	}
 	        	line = br.readLine();
 	        }
