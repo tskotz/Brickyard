@@ -791,13 +791,18 @@ public class ToolboxHTTPServer implements HttpHandler {
 		BufferedReader br= null;
         StringBuilder sb= new StringBuilder();
 		try {
-			br = new BufferedReader(new FileReader(strResultFile));
-		    String line= br.readLine();
-		    while( line != null ) {
-			   sb.append( line ).append(ls);
-			   line= br.readLine();
-		    }
-		   
+			File fResFile= new File(strResultFile);
+			if( !fResFile.exists() && strResultFile.startsWith( ToolboxWindow._RunningDir().getAbsolutePath() ) )
+				fResFile= new File( strResultFile.replace(ToolboxWindow._RunningDir().getAbsolutePath(), ToolboxWindow._CompletedDir().getAbsolutePath()) );
+			
+			if( fResFile.exists() ) {
+				br = new BufferedReader(new FileReader(fResFile));
+			    String line= br.readLine();
+			    while( line != null ) {
+				   sb.append( line ).append(ls);
+				   line= br.readLine();
+			    }
+			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
