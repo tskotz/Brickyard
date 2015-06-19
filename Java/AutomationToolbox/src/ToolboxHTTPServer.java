@@ -792,8 +792,11 @@ public class ToolboxHTTPServer implements HttpHandler {
         StringBuilder sb= new StringBuilder();
 		try {
 			File fResFile= new File(strResultFile);
-			if( !fResFile.exists() && strResultFile.startsWith( ToolboxWindow._RunningDir().getAbsolutePath() ) )
+			if( !fResFile.exists() && strResultFile.startsWith( ToolboxWindow._RunningDir().getAbsolutePath() ) ) {
 				fResFile= new File( strResultFile.replace(ToolboxWindow._RunningDir().getAbsolutePath(), ToolboxWindow._CompletedDir().getAbsolutePath()) );
+				if( !fResFile.exists() )
+					fResFile= new File( strResultFile.replace(ToolboxWindow._RunningDir().getAbsolutePath(), ToolboxWindow._RetiredDir().getAbsolutePath()) );
+			}
 			
 			if( fResFile.exists() ) {
 				br = new BufferedReader(new FileReader(fResFile));
