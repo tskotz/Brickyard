@@ -3,19 +3,43 @@
     <Author>tskotz</Author>
     <Description>None</Description>
 	<Parameter name="xcodebuild" type="String"       value="xcodebuild" />
-	<Parameter name="xcodeProject" type="String"       value="" />
+	<Parameter name="xcodeProject" type="String"       value="The Xcode project to build" />
 	<Parameter name="xcodeScheme" type="String"       value="" />
 	<Parameter name="mainClass" type="String"       value="iZomateCore.iZTests.Plugins.XcodeBuilder" />
 	<Testcase>
 		<Parameter name="testcaseName" type="String"       value="RPCServer Release" />
 		<Parameter name="xcodebuild" type="String"       value="/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" />
-		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
+		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
 		<Parameter name="xcodeScheme" type="String"       value="RPCServer Release" />
 	</Testcase>
 	<Testcase>
 		<Parameter name="testcaseName" type="String"       value="RPCServer Debug" />
 		<Parameter name="xcodebuild" type="String"       value="/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" />
-		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
+		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
+		<Parameter name="xcodeScheme" type="String"       value="RPCServer Debug" />
+	</Testcase>
+	<Testcase>
+		<Parameter name="testcaseName" type="String"       value="RPCServer Release - 2" />
+		<Parameter name="xcodebuild" type="String"       value="/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" />
+		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
+		<Parameter name="xcodeScheme" type="String"       value="RPCServer Release" />
+	</Testcase>
+	<Testcase>
+		<Parameter name="testcaseName" type="String"       value="RPCServer Debug 2" />
+		<Parameter name="xcodebuild" type="String"       value="/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" />
+		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
+		<Parameter name="xcodeScheme" type="String"       value="RPCServer Debug" />
+	</Testcase>
+	<Testcase>
+		<Parameter name="testcaseName" type="String"       value="RPCServer Release - 3" />
+		<Parameter name="xcodebuild" type="String"       value="/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" />
+		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
+		<Parameter name="xcodeScheme" type="String"       value="RPCServer xRelease" />
+	</Testcase>
+	<Testcase>
+		<Parameter name="testcaseName" type="String"       value="RPCServer Debug - 3" />
+		<Parameter name="xcodebuild" type="String"       value="/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" />
+		<Parameter name="xcodeProject" type="String"       value="/Users/terryskotz/GitHub/Brickyard_CI/C++/RPCServer/build/mac_xcode/RPCServer.xcodeproj" />
 		<Parameter name="xcodeScheme" type="String"       value="RPCServer Debug" />
 	</Testcase>
 </ParamsRoot>

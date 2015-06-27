@@ -433,15 +433,18 @@
     var waitForJobTimer;
     function WaitForJob( strJobID ) {
         var i= 0;
+        $("#divLoading").html('<image src="/AutoManager/GetImage?AutomationToolbox/Preferences/Templates/Images/spinner.gif" alt="Loading, please wait" />');
         waitForJobTimer = setInterval(
             function() {
                 strJobStarted= RunURL( "/AutoManager/DoesJobExist?uid=" + strJobID );
                 if( strJobStarted == "success" ) {
                     clearInterval(waitForJobTimer);
+                    $("#divLoading").html("");
                     window.location= "/AutoManager/Status";
                 }
                 else if( i > 20 ) {
                     clearInterval(waitForJobTimer);
+                    $("#divLoading").html("");
                     alert( "Timed out waiting for job to start" );
                 }
                 i++;
@@ -792,7 +795,8 @@
 	<br>
 	<button type="button" onclick="RunJob('RunJob')">Run</button>
 	<button type="button" onclick="RunJob('SaveJob')">Save</button>
-	<button type="button" onclick="RunJob('REST')">View REST</button><br>
+	<button type="button" onclick="RunJob('REST')">View REST</button>
+    <div id="divLoading" style="display:inline-block"></div><br>
 </div>
 
 </body>

@@ -19,6 +19,7 @@ public class GitRepoManager extends Test {
 
 	@Override
 	protected void _StartUp(TestCaseParameters pCommonParameters) throws Exception {
+		this._Testbed( pCommonParameters._GetTestbed() );		
 	}
 
 	@Override
@@ -28,8 +29,6 @@ public class GitRepoManager extends Test {
 
 	@Override
 	protected void _TestCase(TestCaseParameters pTestcaseParameters) throws Exception {		
-		this._Testbed( pTestcaseParameters._GetTestbed() );		
-
 		String strGitURL= pTestcaseParameters._GetString("GitURL");
 		String strGitRepo= pTestcaseParameters._GetString(this._Testbed()._RemoteServer()._SysInfo()._isMac()?"GitRepoDirMac":"GitRepoDirWin");
 		String strGitBranch= pTestcaseParameters._GetString("GitBranch");
@@ -51,9 +50,11 @@ public class GitRepoManager extends Test {
 			this._RunCommand( "Cloning Repo: " + strGitURL, arrCmds.toArray(new String[arrCmds.size()]), null );
 		}
 		
-		if( strGitBranch != null && !strGitBranch.isEmpty() )
+		if( strGitBranch != null && !strGitBranch.isEmpty() ) {
 			this._RunCommand( "Checking out branch: " + strGitBranch, new String[]{"git","checkout","-f", strGitBranch}, strGitRepo );
-
+			this._Logs()._ResultLog()._logLine("");
+		}
+		
 		if( bGitClean )
 			this._RunCommand( "Cleaning repo: " + strGitRepo, new String[]{"git","clean","-fdx"}, strGitRepo );
 				
@@ -78,10 +79,10 @@ public class GitRepoManager extends Test {
 		int iTimeout= 120;
 
 		this._Logs()._ResultLog()._logLine("<b>"+strDescription+"</b>");
-		this._Logs()._ResultLog()._logData("Command Args: " + Arrays.toString(sCmds));			
+		this._Logs()._ResultLog()._logLine("Command Args: " + Arrays.toString(sCmds));			
 		this._Testbed()._RemoteServer()._commandLine(sCmds, null, strWorkingDir, stdOut, stdErr, bWaitFor, iTimeout);
-		this._Logs()._ResultLog()._logData(stdOut.toString());
-		this._Logs()._ResultLog()._logData(stdErr.toString());
+		this._Logs()._ResultLog()._logLine(stdOut.toString());
+		this._Logs()._ResultLog()._logLine(stdErr.toString());
 		//TODO: Figure out how to tell real errors from general status
 		//if( stdErr.length() > 0 )
 		//	this._Logs()._ResultLog()._logError(stdErr.toString(), true);

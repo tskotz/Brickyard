@@ -84,7 +84,7 @@ public class RXPerformanceTest extends Test {
 		// Start Cycling through presets
 		String[] strModule= new String[]{"Declip", "Declick & Decrackle", "Remove Hum", "Denoise", "Spectral Repair", "Gain", "EQ", "Channel Operations", "Spectrum Analyzer"};
 		for( int i=0; i < 8; ++i ) {
-			this._Logs()._ResultLog()._logLine( "</pre><H4>Testing Submodule: " + strModule[i] + ":</H4><pre>");
+			this._Logs()._ResultLog()._logLine( "<H4>Testing Submodule: " + strModule[i] + ":</H4>");
 			this._Testbed()._HostApp()._Plugin()._Controls()._Button( "Element Panel Button " + i )._setState( ButtonState.ON );
 			Vector<String> presets= this._Testbed()._HostApp()._Plugin()._Controls()._ComboBox( strModule[i] + " Preset Manager|Preset ComboBox" )._info().mCBoxItems;
 			for( String preset : presets )

@@ -18,6 +18,7 @@ public class EclipseAntBuilder extends Test {
 
 	@Override
 	protected void _StartUp(TestCaseParameters pCommonParameters) throws Exception {
+		this._Testbed( pCommonParameters._GetTestbed() );				
 	}
 
 	@Override
@@ -33,7 +34,6 @@ public class EclipseAntBuilder extends Test {
 		StringBuffer stdErr= new StringBuffer();
 		Boolean bWaitFor= true;
 
-		this._Testbed( pTestcaseParameters._GetTestbed() );				
 		String strAntFile= pTestcaseParameters._GetString( "AntBuildFile" );
 		
 		String[] sCmds= new String[]{"java", "-jar", "/Applications/eclipse/plugins/org.eclipse.equinox.launcher_1.3.0.v20140415-2008.jar", "-application", "org.eclipse.ant.core.antRunner", "-buildfile", strAntFile };

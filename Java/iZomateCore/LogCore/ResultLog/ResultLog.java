@@ -4,7 +4,9 @@ import iZomateCore.AppCore.PluginInfo;
 import iZomateCore.LogCore.Log;
 import iZomateCore.LogCore.TransactionLog;
 import iZomateCore.ServerCore.RPCServer.RemoteServer.RemoteServer;
+import iZomateCore.ServerCore.RPCServer.RemoteServer.SystemInfo;
 import iZomateCore.TestCore.TestCaseParameters;
+import iZomateCore.TestCore.Testbed;
 import iZomateCore.UtilityCore.TimeUtils;
 
 import java.io.File;
@@ -12,8 +14,12 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class ResultLog extends Log
@@ -31,7 +37,9 @@ public class ResultLog extends Log
 	private RemoteServer	mRemoteServer= null;
 	private TransactionLog	mTransactionLog= null;
 	private int				mTCCount= 0;
-	private Set<Integer> 			mTCFailureSet = new HashSet<Integer>();
+	private Set<Integer> 	mTCFailureSet = new HashSet<Integer>();
+	private Map<String, ArrayList<Metric>> mMetrics= new HashMap<String, ArrayList<Metric>>();
+
 	
     /**
      * Creates a new test results log file.
@@ -46,7 +54,9 @@ public class ResultLog extends Log
      */
 	public ResultLog( String logName, String logDir, int testCases, boolean echo ) throws Exception {
 		super( logName, logDir, ".html", false, echo);
-		this.log( "<pre>\n");
+		this.log( "<html>\n<HEAD>\n\t<meta charset=\"UTF-8\">\n\t<TITLE>"+logName+"</TITLE>\n" +
+					"<style type=\"text/css\">\n\tBODY { font-family:Courier;font-size:13; }\n\tH1,H2,H3,H4,H5 { font-family:Ariel; }\n\tFOOTER { font-family:Ariel;font-size:16; }\n</style>\n"+
+				"</HEAD>\n<body>\n");
 	}
 	
 	public void _setRemoteServer( RemoteServer rs ) {
@@ -62,11 +72,19 @@ public class ResultLog extends Log
 	 * @param params
 	 * @throws Exception
 	 */
-	public void _logTestInfo( TestCaseParameters params ) throws Exception {
-		String strPlugin= (params._GetPlugin()==null || params._GetPlugin().isEmpty()) ? "" : (" Plugin: <i>" + params._GetPlugin() + "</i>\n");
-		this.log( "<HR></pre><H2>" + ++this.mTCCount + ". " + params._GetTestCaseName() + "</H2><pre>\n" + strPlugin + 
-				  "Host App: <i>" + params._GetApp() + "</i>\n" +
-				  " Testbed: <i>" + params._GetTestbed() + "</i>\n\n" );
+	public void _logTestCaseStartupInfo( TestCaseParameters params ) throws Exception {
+		String strPlugin= (params._GetPlugin()==null || params._GetPlugin().isEmpty()) ? "" : (" Plugin: <i>" + params._GetPlugin() + "</i><br>\n");
+		this.log( "<HR><H2>" + ++this.mTCCount + ". " + params._GetTestCaseName() + "</H2>\n" + 
+				  "   Start: <i>" + TimeUtils.getDateTime() + "</i><br>\n" + 
+					strPlugin + 
+				  "Host App: <i>" + params._GetApp() + "</i><br>\n" +
+				  " Testbed: <i>" + params._GetTestbed() + "</i><br>\n<br>\n" );
+		
+		this._logMetric("testcase", String.valueOf(this.mTCCount));
+	}
+	
+	public void _logTestCaseFinishInfo() throws Exception {
+		this._logMetric("testcase", String.valueOf(this.mTCCount));
 	}
 	
 	/**
@@ -75,32 +93,42 @@ public class ResultLog extends Log
 	 * @throws Exception
 	 */
 	public void _LogPluginInfo( PluginInfo info ) throws Exception {
-		this.log( "</pre><H4>Plugin Info</H4><pre>\n" +
-				  " Full Name: <i>" + info.m_strFullName + "</i>\n" + 
-				  "Short Name: <i>" + info.m_strShortName + "</i>\n" + 
-				  "     Build: <i>" + info.m_nBuildNumber + "</i>\n" + 
-				  "   Version: <i>" + info.m_nVersionNumber + "</i>\n\n" );
+		this.log( "<H4>Plugin Info</H4>\n" +
+				  " Full Name: <i>" + info.m_strFullName + "</i><br>\n" + 
+				  "Short Name: <i>" + info.m_strShortName + "</i><br>\n" + 
+				  "     Build: <i>" + info.m_nBuildNumber + "</i><br>\n" + 
+				  "   Version: <i>" + info.m_nVersionNumber + "</i><br>\n<br>\n" );
 	}
-
+	
 	/**
 	 * @throws Exception 
 	 */
-	public void _printSummary() throws Exception {
-		String summary= "<b>" + this.mTCCount + "</b> Testcase" + (this.mTCCount>1?"s":"")+ " Run<br>";
-		
+	public void _printSummary() throws Exception {		
 		String format = String.format("%%0%dd", 2);  
-	    long elapsedTime = (System.currentTimeMillis() - this.mStartTime)/1000;  
+	    long elapsedTime = System.currentTimeMillis() - this.mStartTime;  
+	    String ms = String.format(format, elapsedTime % 1000);  
+	    elapsedTime = elapsedTime / 1000;  
 	    String seconds = String.format(format, elapsedTime % 60);  
 	    String minutes = String.format(format, (elapsedTime % 3600) / 60);  
-	    String hours = String.format(format, elapsedTime / 3600);  
-	    String time =  hours + ":" + minutes + ":" + seconds;
+	    String hours = String.format(format, elapsedTime / 360);  
+	    String time =  hours + ":" + minutes + ":" + seconds + "." + ms;
 	    
-		if( this.mErrors > 0 )
-			summary+= "<b>" + this.mTCFailureSet.size() + "</b> Testcase" + (this.mTCFailureSet.size()>1?"s":"")+ " failed with <b>" + this.mErrors + "</b> <FONT color=\"RED\">Error" + (this.mErrors>1?"s":"")+ "</FONT> were detected<br>";
-		if( this.mWarnings > 0 )
+	    String strImg= "AutomationToolbox/Preferences/Templates/Images/GreenDot.png";
+		String summary= "<b>" + this.mTCCount + "</b> Testcase" + (this.mTCCount>1?"s":"")+ " Run<br>";
+		if( this.mErrors > 0 ) {
+			summary+= "<b>" + this.mTCFailureSet.size() + "</b> Testcase" + (this.mTCFailureSet.size()>1?"s":"")+ " failed.  <b>" + this.mErrors + "</b> <FONT color=\"RED\">Error" + (this.mErrors>1?"s":"")+ "</FONT> detected<br>";
+			strImg= "AutomationToolbox/Preferences/Templates/Images/RedDot.png";
+		}
+		if( this.mWarnings > 0 ) {
 			summary+= "<b>" + this.mWarnings + "</b> <FONT color=\"ORANGE\">Warning(s)</FONT> were detected<br>";
+			if( this.mErrors == 0 )
+				strImg= "AutomationToolbox/Preferences/Templates/Images/YellowDot.png";
+		}
 			
-		this._logString("\n<HR></pre>\n<H2>Test Summary</H2>\n" + summary + "<br>Elapsed Run Time: " + time);
+		// Important:  Make sure <H2>Test Summary</H2> and summary are not on the same line so we don't break status page Pass/Fail test
+		this._logString("\n</body>\n<footer><br>\n<HR>\n\t<H2><img src=\"/AutoManager/GetImage?"+strImg+"\" height=\"15\" width=\"15\"> Test Summary</H2>\n" + summary + "<br>Elapsed Run Time: " + time + "\n");
+		this._logString( this._insertMetricsPerfGraph() );
+		this._logString("</footer>\n</html>");
 	} 
 	
 	/**
@@ -114,10 +142,12 @@ public class ResultLog extends Log
 	/**
 	 * 
 	 * @return
+	 * @throws Exception 
 	 */
-	public void _incrErrorCount() {
+	public void _incrErrorCount() throws Exception {
 		this.mErrors++;
 		this.mTCFailureSet.add(this.mTCCount);
+		this._logMetric("ERROR", "1");
 	}
 
 	/**
@@ -131,9 +161,11 @@ public class ResultLog extends Log
 	/**
 	 * 
 	 * @return
+	 * @throws Exception 
 	 */
-	public void _incrWarningCount() {
+	public void _incrWarningCount() throws Exception {
 		this.mWarnings++;
+		this._logMetric("WARNING", "1");
 	}
 
 	/**
@@ -364,9 +396,9 @@ public class ResultLog extends Log
     public void _logLine(String str, boolean bTimeStamp) throws Exception {
     	//this.startLine();
     	if( bTimeStamp )
-    		this.log(TimeUtils.getTime() + "  " + str+"\n");
+    		this.log(TimeUtils.getTime() + "  " + str+"<br>\n");
     	else
-    		this.log(str+"\n");
+    		this.log(str+"<br>\n");
     		
         //this.startLine();
     }
@@ -401,6 +433,7 @@ public class ResultLog extends Log
     {
     	this._logGeneric(str, "performance");
     }
+    
     /**
      * Outputs a newline if we're not already at the beginning of a line.
      *
@@ -438,9 +471,138 @@ public class ResultLog extends Log
         if( this.mTransactionLog != null ) {
             String strXLinkID= "xlink" + (++this.mXLinkID);
             this.mTransactionLog._log( "<A href=\"" + this.getFileName() + "#" + strXLinkID + "\" name=\"" + strXLinkID + "\"><FONT color=\"" + strColor + "\">RESULT LOG: " + strAnchor + "</FONT></A>" );
-            strAnchor= "<A href=\"" + this.mTransactionLog.getFileName() + "#" + strXLinkID + "\" name=\"" + strXLinkID + "\"><FONT color=\"" + strColor + "\">" + strAnchor + "</FONT></A>\n";        	
+            strAnchor= "<A href=\"GetResultData?" +this.getLogDir() + "/" + this.mTransactionLog.getFileName() + "#" + strXLinkID + "\" name=\"" + strXLinkID + "\"><FONT color=\"" + strColor + "\">" + strAnchor + "</FONT></A>\n";        	
         }
         return strAnchor;
+    }
+    
+    /**
+     * Writes a Metric element to the log file with a <Metric> tag.
+     *
+     * @param str the string to be written
+     * @throws Exception
+     */
+    public void _logMetric(String strType, String strData) throws Exception
+    {
+    	if( !this.mMetrics.containsKey(strType) )
+    		this.mMetrics.put(strType, new ArrayList<Metric>());
+
+    	this.mMetrics.get(strType).add( new Metric(strData) );
+    	this._logString("<Metric timestamp=\"" + TimeUtils.getDateTime() + "\" type=\"" + strType + "\" data=\"" + strData + "\"></Metric>\n");
+    }
+
+    /**
+     * 
+     * @param pTestbed
+     * @throws Exception
+     */
+    public void _logTestbedSystemMetrics( Testbed pTestbed ) throws Exception {
+    	SystemInfo sysInfo= pTestbed._SysInfo()._getSystemInfo();
+    	this._logMetric("MemUsed", String.valueOf(sysInfo.mMemUsed));
+    	this._logMetric("SysTime", String.valueOf(sysInfo.mSysTime));
+    }
+    
+	/**
+	 * 
+	 * @return
+	 */
+	private String _insertMetricsPerfGraph() {
+		Map<String, Integer> yAxis= new HashMap<String, Integer>();
+		yAxis.put("testcase", 0);
+		yAxis.put("MemUsed", 1);
+		yAxis.put("SysTime", 2);
+		yAxis.put("ERROR", 3);
+		yAxis.put("WARNING", 3);
+		
+		String strSeriesData= "";
+		for( String strMetric: this.mMetrics.keySet() ) {
+			strSeriesData+= "{\n  name: '"+strMetric+"',\n" + 
+							"  yAxis: "+yAxis.get(strMetric)+",\n";
+			if( strMetric.equals("ERROR"))
+				strSeriesData+="  type: 'column',\n  color: 'red',\n";
+			else if( strMetric.equals("WARNING"))
+				strSeriesData+="  type: 'column',\n  color: 'orange',\n";
+
+			strSeriesData+=	"  data: [ ";
+			for( Metric m : this.mMetrics.get(strMetric) )
+				strSeriesData+= String.format("[Date.UTC(%s), %s],", m._JSUTC(), m.m_strData ); // [Date.UTC(2015, 5, 17, 8, 55, 42, 559), 1]
+			strSeriesData+= " ]\n},";
+		}
+					
+		return (
+		"<hr>\n" +
+		"<script type=\"text/javascript\" src=\"GetResource?AutomationToolbox/Preferences/Templates/Resources/jquery.js\"></script>\n" +
+		"<script type=\"text/javascript\" src=\"GetResource?AutomationToolbox/Preferences/Templates/Resources/highcharts/highcharts.js\"></script>\n" +
+		"<script type=\"text/javascript\" src=\"GetResource?AutomationToolbox/Preferences/Templates/Resources/highcharts/exporting.js\"></script>\n" +
+		"<script>\n" +
+		"    $(function () {\n" +
+		"      $('#metricsgraph').highcharts({\n" +
+		"           chart: { type: 'spline', zoomType: 'xy' },\n" +
+		"           title: { text: 'Performance Metrics' },\n" +
+		"           subtitle: { text: 'Source: Testcases' },\n" +
+		"           xAxis: { title: { enabled:true,\n" +
+		"                    		  text: 'TOD' },\n" +
+		"           		 type: 'datetime' },\n" +
+		"           yAxis: [ { title: { text: 'Testcase' },\n" +
+		"                      labels: { formatter: function () { return this.value; } } },\n" +
+		"                    { title: { text: 'Memory' },\n" +
+		"                      labels: { formatter: function () { \n" +
+		"                                   var maxElement = this.axis.max;\n" +
+        "                                   if (maxElement > 1000000000) {\n" +
+        "                                       return (this.value / 1000000000).toFixed(1) + \" GB\";\n" +
+        "                                   } else if (maxElement > 1000000) {\n" +
+        "                                       return (this.value / 1000000).toFixed(1) + \" MB\";\n" +
+        "                                   } else if (maxElement > 1000) {\n" +
+        "                                       return (this.value / 1000).toFixed(1) + \" KB\";\n" +
+        "                                   } else {\n" +
+        "                                       return (this.value) + \" B\";\n" +
+        "                                };\n" +
+		"                              } } },\n" +
+		"                    { title: { text: 'CPU' },\n" +
+		"                      labels: { formatter: function () { return this.value + '%'; } } },\n" +
+		"                    { title: { text: '' },\n" +
+		"                      min:0, max:1,\n" +
+		"                      labels: { enabled: false } } ],\n" +
+		"           tooltip: { crosshairs: true,\n" +
+		"                      formatter: function () { var d= new Date(this.x);\n" +
+		"                                 				var strSuffix= Highcharts.numberFormat(this.y, 0, \".\", \",\");\n" +
+		"                                 				if( this.series.name.indexOf(\"testcase\") > -1 )\n" +
+		"                                 					strSuffix= \"Testcase \" + Highcharts.numberFormat(this.y, 0, \".\", \",\");\n" +
+		"                                 				else if( this.series.name.indexOf(\"SysTime\") > -1 )\n" +
+		"                                 					strSuffix= Highcharts.numberFormat(this.y, 2, \".\", \",\") + \"% CPU\";\n" +
+		"                                 				else if( this.series.name.indexOf(\"MemUsed\") > -1 )\n" +
+		"                                 					strSuffix= Highcharts.numberFormat(this.y, 0, \".\", \",\") + \" bytes\";\n" +
+		"\n" +
+		"                                 				return  '<b>' + this.series.name + '</b><br><b>' + strSuffix + '</b> on ' + d.toUTCString().replace(' GMT', \".\" + d.getMilliseconds()); } },\n" +
+		"            plotOptions: { spline: { marker: { radius: 3, lineColor: '#666666', lineWidth: 1 } } },\n" +
+		"            series: ["+strSeriesData+"]\n" +
+		"        });\n" +
+		"    });\n" +
+		"</script>\n" +
+		"<div id=\"metricsgraph\" style=\"min-width: 310px; height: 400px; margin: 0 auto\"></div>\n"
+		);
+	}
+	
+    /**
+     * Metric helper class
+     * @author terryskotz
+     *
+     */
+    public class Metric {
+    	public final Date 	m_Date;
+    	public final String m_strData;
+    	
+    	public Metric(String strData) {
+    		Calendar c = Calendar.getInstance(); 
+    		c.setTime(new Date()); 
+    		c.add(Calendar.MONTH, -1); //JS UTC is 0 based for month so subtract a month
+    		this.m_Date= c.getTime();
+    		this.m_strData= strData;
+    	}
+
+    	public String _JSUTC() {
+    		return new SimpleDateFormat("yyyy, MM, dd, hh, mm, ss, SSS").format( this.m_Date );
+    	}
     }
 
 }

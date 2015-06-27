@@ -31,8 +31,6 @@ public abstract class Test implements Runnable {
 	private SSHCore m_pActiveSSHCore= null;
 	private Map<String, SSHCore> m_mSSHCores= new HashMap<String, SSHCore>();
 	private Map<String, Testbed> m_mTestbeds= new HashMap<String, Testbed>();
-    protected int m_HopperTestId= 0;
-    protected int m_HopperTestCaseId= 0;
     private String m_strEmailErrorMessages= "";
 
     /**
@@ -189,12 +187,12 @@ public abstract class Test implements Runnable {
      */
     private void _setup() throws Exception {
 		this.m_ActiveTCParams= this._GetCommonParams();
-		this._Logs()._ResultLog()._logLine( "</pre><H1>"
+		this._Logs()._ResultLog()._logLine( "<H1>"
 											+ this.m_ActiveTCParams._GetTestScriptName()
 											+ "</H1>" 
 											+ " <i>" + TimeUtils.getTimestamp() + "</i><br>"
 											+ "Scripts Version: " + RPCServer.sRPCCoreVersion
-											+ "\n\n<pre>" );
+											+ "\n\n" );
 	}
 
 	/**
@@ -225,8 +223,9 @@ public abstract class Test implements Runnable {
             } else if( phase.equals(TestPhase.TESTCASE) ) {
 				this._RunTestCases();
             } else if( phase.equals(TestPhase.SHUTDOWN) ){
-                //Hopper.FinishedTestSet( this.m_HopperTestId );
+				this._Logs()._ResultLog()._logTestbedSystemMetrics( this._Testbed() );
 				this._ShutDown( this._GetCommonParams() );
+				this._Logs()._ResultLog()._logTestbedSystemMetrics( this._Testbed() );
             }
 		} catch( Exception e ) {
 			bPassed= false;
@@ -247,9 +246,10 @@ public abstract class Test implements Runnable {
 			try {
 				this.m_ActiveTCParams= this.m_TestParams._GetNextTestCase();
 				if( this.m_bVerboseLogs ) 
-					this._Logs()._ResultLog()._logTestInfo( this.m_ActiveTCParams );
+					this._Logs()._ResultLog()._logTestCaseStartupInfo( this.m_ActiveTCParams );
 
                 this._SetupTestCase( this.m_ActiveTCParams );
+				this._Logs()._ResultLog()._logTestbedSystemMetrics( this._Testbed() );
                 
                 // Run test case
 				this._TestCase( this.m_ActiveTCParams );
@@ -258,8 +258,11 @@ public abstract class Test implements Runnable {
 				this.m_strEmailErrorMessages += "<br>" + this.m_ActiveTCParams._GetTestCaseName() + " - " + e.getMessage();
 				this._OnTestCaseException( this.m_ActiveTCParams, e );
 			}
+			this._Logs()._ResultLog()._logTestbedSystemMetrics( this._Testbed() );
+			this._Logs()._ResultLog()._logTestCaseFinishInfo();
 		}
 
+		this._Logs()._ResultLog()._logMetric("testcase", "0"); // No more test cases
 		return( this._Logs()._ResultLog()._GetErrorCount() == 0 );
 	}
 
@@ -311,8 +314,6 @@ public abstract class Test implements Runnable {
 				else
 					message += "<br>No results link: Unable to retrieve build number from plugin";
 			}
-
-            //message += "<br><h4><a href='" + Hopper.GetUrl() + "/auto/report?id=" + this.m_HopperTestId + "'>Hopper Report</a></h4>";
 
             if( !this.m_strEmailErrorMessages.isEmpty() )
                 message += "<br><b><font color='RED'>Errors:" + this.m_strEmailErrorMessages + "</b></font>";
@@ -386,41 +387,6 @@ public abstract class Test implements Runnable {
 		this.m_strBuildNumber= strBuildNumber;
 	}
 
-    // -----------------------------------
-    // Hopper Helpers
-    // -----------------------------------
-    //! Post a float value related to the configuration of the test case
-//    public void _postTestCaseParam( String strName, float fVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "parameter", strName, "float", String.valueOf(fVal) );
-//    }
-//    //! Post a integer value related to the configuration of the test case
-//    protected void _postTestCaseParam( String strName, int nVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "parameter", strName, "int", String.valueOf(nVal) );
-//    }
-//    //! Post a boolean value related to the configuration of the test case
-//    protected void _postTestCaseParam( String strName, boolean bVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "parameter", strName, "bool", String.valueOf(bVal) );
-//    }
-//    //! Post a string value related to the configuration of the test case
-//    protected void _postTestCaseParam( String strName, String strVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "parameter", strName, "string", strVal );
-//    }
-//    //! Post a float value related to the output of the test case
-//    public void _postTestCaseResult( String strName, float fVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "result", strName, "float", String.valueOf(fVal) );
-//    }
-//    //! Post a integer value related to the output of the test case
-//    protected void _postTestCaseResult( String strName, int nVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "result", strName, "int", String.valueOf(nVal) );
-//    }
-//    //! Post a boolean value related to the output of the test case
-//    protected void _postTestCaseResult( String strName, boolean bVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "result", strName, "bool", String.valueOf(bVal) );
-//    }
-//    //! Post a string value related to the output of the test case
-//    protected void _postTestCaseResult( String strName, String strVal ) throws Exception {
-//        Hopper.PostValue( "testcase", this.m_HopperTestCaseId, "result", strName, "string", strVal );
-//    }
 
 	// -----------------------------------
 	// Abstract Phase Methods

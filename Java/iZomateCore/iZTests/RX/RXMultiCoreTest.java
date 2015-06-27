@@ -192,10 +192,6 @@ public class RXMultiCoreTest extends RXAppTest {
 				
 		String resultColor= result == TestResult.TEST_PASSED ? "ttgreen" :  result == TestResult.TEST_WARNING ? "ttyellow" : "ttred";
 		timingTableAddCell(processTime, 2, "ttprocess " + resultColor );
-
-        // Post to Hopper
-//        _postTestCaseParam( "RX2Baseline", baselineSeconds );
-//        _postTestCaseParam( "ProcessTime", processTime );
 		
 		// PercentBetter 
 		if( baselineSeconds == 0.0f)

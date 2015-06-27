@@ -17,6 +17,7 @@ public class XcodeBuilder extends Test {
 
 	@Override
 	protected void _StartUp(TestCaseParameters pCommonParameters) throws Exception {
+		this._Testbed( pCommonParameters._GetTestbed() );		
 	}
 
 	@Override
@@ -26,8 +27,6 @@ public class XcodeBuilder extends Test {
 
 	@Override
 	protected void _TestCase(TestCaseParameters pTestcaseParameters) throws Exception {		
-		this._Testbed( pTestcaseParameters._GetTestbed() );		
-
 		String strXcodeBuild= pTestcaseParameters._GetString("xcodebuild");
 		String strProject= pTestcaseParameters._GetString("xcodeProject");
 		String strScheme= pTestcaseParameters._GetString("xcodeScheme");
@@ -51,8 +50,12 @@ public class XcodeBuilder extends Test {
 		int iTimeout= 120;
 
 		this._Logs()._ResultLog()._logLine("<b>"+strDescription+"</b>");
-		this._Logs()._ResultLog()._logData("Command Args: " + Arrays.toString(sCmds));			
+		this._Logs()._ResultLog()._logData("Command Args: " + Arrays.toString(sCmds));
+		this._Logs()._ResultLog()._logTestbedSystemMetrics(this._Testbed());
+		if( Math.random() * 2 > 1 )
+			this._Logs()._ResultLog()._logWarning("Random warning");
 		this._Testbed()._RemoteServer()._commandLine(sCmds, null, strWorkingDir, stdOut, stdErr, bWaitFor, iTimeout);
+		this._Logs()._ResultLog()._logTestbedSystemMetrics(this._Testbed());
 		this._Logs()._ResultLog()._logData(stdOut.toString());
 		if( stdErr.length() > 0 )
 			this._Logs()._ResultLog()._logError(stdErr.toString(), true);		

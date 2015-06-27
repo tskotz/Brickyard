@@ -257,7 +257,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 		return
 		"<table style=\"width:100%;padding:0px;border:0px solid black;xbackground-color:#eeeeee;\">\n" +
 		"	<tr>\n" +
-		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\""+ this.mstrWebServerURL + "/AutoManager/GetImage?" + DatabaseMgr._Preferences()._GetPref( Preferences.DashboardLogo ) + "\" style=\"width:100\"></td>\n" +
+		"		<td style=\"padding:10px;border:0px solid black;width:100px\"><img src=\"/AutoManager/GetImage?" + DatabaseMgr._Preferences()._GetPref( Preferences.DashboardLogo ) + "\" style=\"width:100\"></td>\n" +
 		"		<td style=\"padding:10px;border:0px solid black\"><font style=\"font-size:32px;\"><b>" + strText + "</b></font><br>" + 
 		"											<a href=\"/AutoManager/JobEditor\"><button style=\"color:#0000ff;\">Create Job</button></a>\n" +
 		"											<a href=\"/AutoManager/Status\"><button style=\"color:#0000ff;\">Status Page</button></a>" + 
@@ -1105,17 +1105,17 @@ public class ToolboxHTTPServer implements HttpHandler {
 				
 				sbJobResults.append( "<input type=\"checkbox\">" );
 				if( aResFiles != null && aResFiles.length > 0 ) {
-					Boolean bErrors= this._AreThereErrors(aResFiles[0]); //tri-state Boolean: null,true,false
-					String strColor= bErrors == null?"black":(bErrors==true?"red":"#0B3B24");
+					Status eStatus= this._AreThereErrors(aResFiles[0]); //tri-state Boolean: null,true,false
+					String strColor= eStatus==Status.INPROGRESS?"black":(eStatus==Status.FAIL?"red":(eStatus==Status.WARNING?"orange":"#0B3B24"));
 					sbJobResults.append( "<a style=\"color:"+strColor+";\" href=\"GetResultData?" + aResFiles[0].getAbsolutePath() + "\">" + dpinfo._GetFile().getName().replace(".xml", "") + "</a> (" + dpinfo._GetTestbedAndGroup() + ")<br>" );
 
 					if( !strJobColor.equals("background-color:red") ) {
 						if( fResDir.getAbsolutePath().startsWith(ToolboxWindow._RunningDir().getAbsolutePath() ) ) {
-							if( bErrors != null && bErrors==true )
+							if( eStatus==Status.FAIL )
 								strJobColor= "background-color:red";
 						}
 						else
-							strJobColor= bErrors == null?"":(bErrors==true?"background-color:red":"background-color:#00BB00");
+							strJobColor= eStatus==Status.INPROGRESS?"":(eStatus==Status.FAIL?"background-color:red":"background-color:#00BB00");
 					}
 				}
 				else {
@@ -1136,12 +1136,16 @@ public class ToolboxHTTPServer implements HttpHandler {
 		}
 	}
 	
+	public enum Status {
+		INPROGRESS, PASS, FAIL, WARNING
+	}
+	
 	/**
 	 * 
 	 * @param aResultFile
 	 * @return
 	 */
-	private Boolean _AreThereErrors( File aResultFile ) {
+	private Status _AreThereErrors( File aResultFile ) {
 		//TODO: Store these results in a database so we dont have to parse it every time and we can use the database for presenting metrics
 		BufferedReader br= null;
 		try {
@@ -1149,9 +1153,14 @@ public class ToolboxHTTPServer implements HttpHandler {
 	        String line = br.readLine();
 
 	        while (line != null) {
-	        	if( line.startsWith("<H2>Test Summary</H2>")) {
+	        	if( line.contains("Test Summary</H2>")) {
 	        		line = br.readLine();
-	        			return line.contains("failed");
+	        			if( line.contains("failed") )
+	        				return Status.FAIL;
+	        			else if( line.contains("Warning(s)") )
+	        				return Status.WARNING;
+	        			else
+	        				return Status.PASS;
 	        	}
 	        	line = br.readLine();
 	        }
@@ -1169,7 +1178,7 @@ public class ToolboxHTTPServer implements HttpHandler {
 				}
 			}
 		}
-		return null;
+		return Status.INPROGRESS;
 	}
 	
 	/**

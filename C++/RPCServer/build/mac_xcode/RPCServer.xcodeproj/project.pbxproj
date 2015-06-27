@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7D3C48571533440900A44FAE /* iZTestAutomation.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DDE24D4152A29B700FE3BC2 /* iZTestAutomation.bundle */; };
 		7DCF13F8152B263E008B7D3B /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF13F0152B2600008B7D3B /* Accelerate.framework */; };
 		7DCF13F9152B2671008B7D3B /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF127B152B1EC3008B7D3B /* Carbon.framework */; };
 		7DCF13FA152B2671008B7D3B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DCF127D152B1ECA008B7D3B /* Cocoa.framework */; };
@@ -24,33 +23,9 @@
 		7DD13EE1152A32E000ECC6D2 /* RPCRequest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED2152A32E000ECC6D2 /* RPCRequest.cpp */; };
 		7DD13EE2152A32E000ECC6D2 /* RPCServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED4152A32E000ECC6D2 /* RPCServer.cpp */; };
 		7DD13EE3152A32E000ECC6D2 /* RPCServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD13ED4152A32E000ECC6D2 /* RPCServer.cpp */; };
-		7DD321661533532F00CEBE4B /* iZTestAutomationD.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DF14CB4152A28D8005ABBB4 /* iZTestAutomationD.bundle */; };
 		7DDE24CE152A29B700FE3BC2 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */; };
 		7DF14CB8152A28D8005ABBB4 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		7D3C4856153343FD00A44FAE /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = "/Library/Application Support/iZotope/TestAutomation";
-			dstSubfolderSpec = 0;
-			files = (
-				7D3C48571533440900A44FAE /* iZTestAutomation.bundle in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7DD321651533531600CEBE4B /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = "/Library/Application Support/iZotope/TestAutomation";
-			dstSubfolderSpec = 0;
-			files = (
-				7DD321661533532F00CEBE4B /* iZTestAutomationD.bundle in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		7DCF127B152B1EC3008B7D3B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
@@ -212,7 +187,6 @@
 				7DDE24CC152A29B700FE3BC2 /* Sources */,
 				7DDE24CD152A29B700FE3BC2 /* Frameworks */,
 				7DDE24CF152A29B700FE3BC2 /* Resources */,
-				7D3C4856153343FD00A44FAE /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -230,7 +204,6 @@
 				7DF14CB0152A28D8005ABBB4 /* Sources */,
 				7DF14CB1152A28D8005ABBB4 /* Frameworks */,
 				7DF14CB2152A28D8005ABBB4 /* Resources */,
-				7DD321651533531600CEBE4B /* CopyFiles */,
 			);
 			buildRules = (
 			);

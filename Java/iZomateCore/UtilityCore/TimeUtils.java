@@ -173,7 +173,7 @@ public class TimeUtils
      * @return the date in the format "YYYY-M-D hh:mm:ss" (space between date and time).
      */
     public static String getDateTime() {
-    	return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format( new Date() );
+    	return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS").format( new Date() );
     }
 
     /**
