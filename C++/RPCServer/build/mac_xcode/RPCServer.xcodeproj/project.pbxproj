@@ -27,6 +27,27 @@
 		7DF14CB8152A28D8005ABBB4 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DF14CB7152A28D8005ABBB4 /* CoreFoundation.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		387869841B44F3450059DC85 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		387869851B44F34F0059DC85 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		7DCF127B152B1EC3008B7D3B /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		7DCF127D152B1ECA008B7D3B /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -187,6 +208,7 @@
 				7DDE24CC152A29B700FE3BC2 /* Sources */,
 				7DDE24CD152A29B700FE3BC2 /* Frameworks */,
 				7DDE24CF152A29B700FE3BC2 /* Resources */,
+				387869841B44F3450059DC85 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -204,6 +226,7 @@
 				7DF14CB0152A28D8005ABBB4 /* Sources */,
 				7DF14CB1152A28D8005ABBB4 /* Frameworks */,
 				7DF14CB2152A28D8005ABBB4 /* Resources */,
+				387869851B44F34F0059DC85 /* CopyFiles */,
 			);
 			buildRules = (
 			);
